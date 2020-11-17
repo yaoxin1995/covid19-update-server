@@ -26,6 +26,12 @@ func (ws *Covid19UpdateWebServer) notFound(w http.ResponseWriter, r *http.Reques
 
 // Subscription
 
+type SubscriptionRequest struct {
+	Threshold uint    `json:"threshold"`
+	Email     *string `json:"email"`
+	Telegram  *string `json:"telegram"`
+}
+
 func (ws *Covid19UpdateWebServer) getSubscriptions(w http.ResponseWriter, r *http.Request) {
 	subs, err := model.GetSubscriptions()
 	if err != nil {
@@ -56,13 +62,8 @@ func (ws *Covid19UpdateWebServer) getSubscription(w http.ResponseWriter, r *http
 }
 
 func (ws *Covid19UpdateWebServer) createSubscription(w http.ResponseWriter, r *http.Request) {
-	type CreateSubscriptionRequest struct {
-		Threshold uint    `json:"threshold"`
-		Email     *string `json:"email"`
-		Telegram  *string `json:"telegram"`
-	}
 	decoder := json.NewDecoder(r.Body)
-	var createSubReq CreateSubscriptionRequest
+	var createSubReq SubscriptionRequest
 	err := decoder.Decode(&createSubReq)
 	if err != nil {
 		writeHttpResponse(NewError(fmt.Sprintf("Could not decode request: %v.", err)), http.StatusBadRequest, r, w)
@@ -94,4 +95,31 @@ func (ws *Covid19UpdateWebServer) deleteSubscription(w http.ResponseWriter, r *h
 		return
 	}
 	writeHttpResponse(nil, http.StatusNoContent, r, w)
+}
+
+func (ws *Covid19UpdateWebServer) updateSubscription(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := toUInt(vars["id"])
+	if err != nil {
+		writeHttpResponse(NewError("Subscription ID has to be an unsigned integer."), http.StatusBadRequest, r, w)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	var updateSubReq SubscriptionRequest
+	err = decoder.Decode(&updateSubReq)
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not decode request: %v.", err)), http.StatusBadRequest, r, w)
+		return
+	}
+	s, err := model.GetSubscription(id)
+	if err != nil {
+		writeHttpResponse(NewError("Could not find subscription."), http.StatusNotFound, r, w)
+		return
+	}
+	err = s.Update(updateSubReq.Threshold, updateSubReq.Email, updateSubReq.Telegram)
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not update subscription: %v.", err)), http.StatusInternalServerError, r, w)
+		return
+	}
+	writeHttpResponse(s, http.StatusOK, r, w)
 }

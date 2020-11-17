@@ -45,8 +45,8 @@ func (ws *Covid19UpdateWebServer) registerRoutes() {
 	router.HandleFunc("/subscriptions", ws.checkMediaType(ws.getSubscriptions)).Methods("GET")
 	router.HandleFunc("/subscriptions/{id}", ws.checkMediaType(ws.getSubscription)).Methods("GET")
 	router.HandleFunc("/subscriptions", ws.checkMediaType(ws.createSubscription)).Methods("POST")
-	router.HandleFunc("/subscriptions", ws.checkMediaType(ws.createSubscription)).Methods("POST")
 	router.HandleFunc("/subscriptions/{id}", ws.checkMediaType(ws.deleteSubscription)).Methods("DELETE")
+	router.HandleFunc("/subscriptions/{id}", ws.checkMediaType(ws.updateSubscription)).Methods("PUT")
 
 	ws.Handler = router
 }

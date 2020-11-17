@@ -38,3 +38,10 @@ func GetSubscriptions() ([]Subscription, error) {
 func DeleteSubscription(id uint) error {
 	return db.Where("id = ?", id).Delete(&Subscription{}).Error
 }
+
+func (s *Subscription) Update(threshold uint, email, telegram *string) error {
+	s.Threshold = threshold
+	s.Email = email
+	s.Telegram = telegram
+	return s.Store()
+}
