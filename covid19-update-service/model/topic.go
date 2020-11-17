@@ -2,7 +2,8 @@ package model
 
 type Topic struct {
 	CommonModelFields
-	Position GPSPosition `gorm:"embedded;embeddedPrefix:position_" ,json:"position"`
+	Position  GPSPosition `gorm:"embedded;embeddedPrefix:position_" ,json:"position"`
+	Threshold uint        `json:"threshold"`
 }
 
 type GPSPosition struct {

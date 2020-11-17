@@ -2,18 +2,16 @@ package model
 
 type Subscription struct {
 	CommonModelFields
-	Threshold uint    `json:"threshold"`
-	Email     *string `json:"email"`
-	Telegram  *string `json:"telegram"`
-	Topics    []Topic `gorm:"preload:true" json:"-"`
+	Email    *string `json:"email"`
+	Telegram *string `json:"telegram"`
+	Topics   []Topic `gorm:"preload:true" json:"-"`
 }
 
-func NewSubscription(threshold uint, email, telegram *string) (Subscription, error) {
+func NewSubscription(email, telegram *string) (Subscription, error) {
 	s := Subscription{
-		Threshold: threshold,
-		Email:     email,
-		Telegram:  telegram,
-		Topics:    []Topic{},
+		Email:    email,
+		Telegram: telegram,
+		Topics:   []Topic{},
 	}
 	err := s.Store()
 	return s, err
@@ -39,8 +37,7 @@ func DeleteSubscription(id uint) error {
 	return db.Where("id = ?", id).Delete(&Subscription{}).Error
 }
 
-func (s *Subscription) Update(threshold uint, email, telegram *string) error {
-	s.Threshold = threshold
+func (s *Subscription) Update(email, telegram *string) error {
 	s.Email = email
 	s.Telegram = telegram
 	return s.Store()
