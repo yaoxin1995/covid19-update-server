@@ -38,10 +38,6 @@ func (ws *Covid19UpdateWebServer) getSubscriptions(w http.ResponseWriter, r *htt
 		writeHttpResponse(NewError("could not load subscriptions."), http.StatusInternalServerError, r, w)
 		return
 	}
-	if len(subs) == 0 {
-		writeHttpResponse(subs, http.StatusNoContent, r, w)
-		return
-	}
 	writeHttpResponse(subs, http.StatusOK, r, w)
 }
 
@@ -130,7 +126,7 @@ func (ws *Covid19UpdateWebServer) updateSubscription(w http.ResponseWriter, r *h
 	}
 	err = s.Update(updateSubReq.Email, updateSubReq.Telegram)
 	if err != nil {
-		writeHttpResponse(NewError(fmt.Sprintf("Could not find subscription. %v.", err)), http.StatusInternalServerError, r, w)
+		writeHttpResponse(NewError(fmt.Sprintf("Could not update subscription: %v.", err)), http.StatusInternalServerError, r, w)
 		return
 	}
 	writeHttpResponse(*s, http.StatusOK, r, w)
@@ -163,7 +159,7 @@ func (ws *Covid19UpdateWebServer) createTopic(w http.ResponseWriter, r *http.Req
 		return
 	}
 	if s == nil {
-		writeHttpResponse(NewError("Could not find subscription."), http.StatusNotFound, r, w)
+		writeHttpResponse(NewError("Subscription does not exist."), http.StatusBadRequest, r, w)
 		return
 	}
 	t, err := model.NewTopic(createTopicReq.Position, createTopicReq.Threshold, s.ID)
@@ -171,4 +167,116 @@ func (ws *Covid19UpdateWebServer) createTopic(w http.ResponseWriter, r *http.Req
 		writeHttpResponse(NewError(fmt.Sprintf("Could not create topic: %v.", err)), http.StatusInternalServerError, r, w)
 	}
 	writeHttpResponse(t, http.StatusCreated, r, w)
+}
+
+func (ws *Covid19UpdateWebServer) getTopics(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sID, err := toUInt(vars["subscription_id"])
+	if err != nil {
+		writeHttpResponse(NewError("Subscription ID has to be an unsigned integer."), http.StatusBadRequest, r, w)
+		return
+	}
+	s, err := model.GetSubscription(sID)
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not load subscription: %v.", err)), http.StatusInternalServerError, r, w)
+		return
+	}
+	if s == nil {
+		writeHttpResponse(NewError("Could not find subscription."), http.StatusNotFound, r, w)
+		return
+	}
+	tops, err := model.GetTopics(s.ID)
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not load topics: %v.", err)), http.StatusInternalServerError, r, w)
+	}
+	writeHttpResponse(tops, http.StatusOK, r, w)
+}
+
+func (ws *Covid19UpdateWebServer) getTopic(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sID, err := toUInt(vars["subscription_id"])
+	if err != nil {
+		writeHttpResponse(NewError("Subscription ID has to be an unsigned integer."), http.StatusBadRequest, r, w)
+		return
+	}
+	tID, err := toUInt(vars["topic_id"])
+	if err != nil {
+		writeHttpResponse(NewError("Topic ID has to be an unsigned integer."), http.StatusBadRequest, r, w)
+		return
+	}
+	t, err := model.GetTopic(tID, sID)
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not load topic: %v.", err)), http.StatusInternalServerError, r, w)
+		return
+	}
+	if t == nil {
+		writeHttpResponse(NewError("Could not find topic."), http.StatusNotFound, r, w)
+		return
+	}
+	writeHttpResponse(*t, http.StatusOK, r, w)
+}
+
+func (ws *Covid19UpdateWebServer) deleteTopic(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sID, err := toUInt(vars["subscription_id"])
+	if err != nil {
+		writeHttpResponse(NewError("Subscription ID has to be an unsigned integer."), http.StatusBadRequest, r, w)
+		return
+	}
+	tID, err := toUInt(vars["topic_id"])
+	if err != nil {
+		writeHttpResponse(NewError("Topic ID has to be an unsigned integer."), http.StatusBadRequest, r, w)
+		return
+	}
+	t, err := model.GetTopic(tID, sID)
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not load topic: %v.", err)), http.StatusInternalServerError, r, w)
+		return
+	}
+	if t == nil {
+		writeHttpResponse(NewError("Could not find topic."), http.StatusNotFound, r, w)
+		return
+	}
+	err = t.Delete()
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not delete topic: %v", err)), http.StatusInternalServerError, r, w)
+		return
+	}
+	writeHttpResponse(nil, http.StatusNoContent, r, w)
+}
+
+func (ws *Covid19UpdateWebServer) updateTopic(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sID, err := toUInt(vars["subscription_id"])
+	if err != nil {
+		writeHttpResponse(NewError("Subscription ID has to be an unsigned integer."), http.StatusBadRequest, r, w)
+		return
+	}
+	tID, err := toUInt(vars["topic_id"])
+	if err != nil {
+		writeHttpResponse(NewError("Topic ID has to be an unsigned integer."), http.StatusBadRequest, r, w)
+		return
+	}
+	decoder := json.NewDecoder(r.Body)
+	var updateTopicReq TopicRequest
+	err = decoder.Decode(&updateTopicReq)
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not decode request: %v.", err)), http.StatusBadRequest, r, w)
+		return
+	}
+	t, err := model.GetTopic(tID, sID)
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not load topic: %v.", err)), http.StatusInternalServerError, r, w)
+		return
+	}
+	if t == nil {
+		writeHttpResponse(NewError("Could not find topic"), http.StatusNotFound, r, w)
+		return
+	}
+	err = t.Update(updateTopicReq.Position, updateTopicReq.Threshold)
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not update topic: %v.", err)), http.StatusInternalServerError, r, w)
+		return
+	}
+	writeHttpResponse(*t, http.StatusOK, r, w)
 }

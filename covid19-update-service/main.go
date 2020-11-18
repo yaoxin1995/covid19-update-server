@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	err := model.SetupDB("sqlite3", "storage.db")
+	err := model.SetupDB("sqlite3", "storage.db?_foreign_keys=on")
 	if err != nil {
 		log.Fatalf("Could not setup database: %v", err)
 	}
