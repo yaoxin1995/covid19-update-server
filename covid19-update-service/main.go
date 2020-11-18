@@ -8,14 +8,18 @@ import (
 )
 
 func init() {
-	err := model.SetupDB("sqlite3", "storage.db?_foreign_keys=on")
+	dbType := os.Getenv("DB_TYPE")
+	dbSource := os.Getenv("DB_SOURCE")
+	err := model.SetupDB(dbType, dbSource)
 	if err != nil {
 		log.Fatalf("Could not setup database: %v", err)
 	}
 }
 
 func main() {
-	updateServer, err := server.SetupServer("localhost", "9005")
+	host := os.Getenv("SERVER_HOST")
+	port := os.Getenv("SERVER_PORT")
+	updateServer, err := server.SetupServer(host, port)
 	if err != nil {
 		log.Fatalf("Could not start web server: %v", err)
 	}

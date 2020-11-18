@@ -1,0 +1,12 @@
+version: '2'
+services:
+  covid19-update-service:
+    build: .
+    environment:
+      - DB_TYPE=sqlite3
+      - DB_SOURCE=storage.db?_foreign_keys=on
+      - SERVER_PORT=9005
+    expose:
+       - 9005
+    ports:
+    - 9005:9005
