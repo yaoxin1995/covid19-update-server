@@ -2,6 +2,7 @@ package server
 
 import (
 	"covid19-update-service/model"
+	"covid19-update-service/rki"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -162,7 +163,13 @@ func (ws *Covid19UpdateWebServer) createTopic(w http.ResponseWriter, r *http.Req
 		writeHttpResponse(NewError("Subscription does not exist."), http.StatusBadRequest, r, w)
 		return
 	}
-	t, err := model.NewTopic(createTopicReq.Position, createTopicReq.Threshold, s.ID)
+	rkiObjectID, err := rki.GetRkiObjectIdForPosition(createTopicReq.Position)
+	if err != nil {
+		log.Printf("Could not find RKI object ID: %v", err)
+		writeHttpResponse(NewError("Could not process position."), http.StatusInternalServerError, r, w)
+		return
+	}
+	t, err := model.NewTopic(createTopicReq.Position, createTopicReq.Threshold, s.ID, rkiObjectID)
 	if err != nil {
 		writeHttpResponse(NewError(fmt.Sprintf("Could not create topic: %v.", err)), http.StatusInternalServerError, r, w)
 	}
@@ -273,7 +280,13 @@ func (ws *Covid19UpdateWebServer) updateTopic(w http.ResponseWriter, r *http.Req
 		writeHttpResponse(NewError("Could not find topic"), http.StatusNotFound, r, w)
 		return
 	}
-	err = t.Update(updateTopicReq.Position, updateTopicReq.Threshold)
+	rkiObjectID, err := rki.GetRkiObjectIdForPosition(updateTopicReq.Position)
+	if err != nil {
+		log.Printf("Could not find RKI object ID: %v", err)
+		writeHttpResponse(NewError("Could not process position."), http.StatusInternalServerError, r, w)
+		return
+	}
+	err = t.Update(updateTopicReq.Position, updateTopicReq.Threshold, rkiObjectID)
 	if err != nil {
 		writeHttpResponse(NewError(fmt.Sprintf("Could not update topic: %v.", err)), http.StatusInternalServerError, r, w)
 		return

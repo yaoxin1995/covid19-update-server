@@ -1,12 +1,15 @@
 package model
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 type Topic struct {
 	CommonModelFields
 	Position       GPSPosition `gorm:"embedded;embeddedPrefix:position_" json:"position"`
 	Threshold      uint        `json:"threshold"`
 	SubscriptionID uint        `sql:"type:bigint REFERENCES subscriptions(id) ON DELETE CASCADE" json:"-"`
+	RkiObjectID    uint        `json:"-"`
 }
 
 type GPSPosition struct {
@@ -14,11 +17,12 @@ type GPSPosition struct {
 	Longitude float64 `json:"longitude"`
 }
 
-func NewTopic(position GPSPosition, threshold, subID uint) (Topic, error) {
+func NewTopic(position GPSPosition, threshold, subID uint, rkiObjectId uint) (Topic, error) {
 	t := Topic{
 		Position:       position,
 		Threshold:      threshold,
 		SubscriptionID: subID,
+		RkiObjectID:    rkiObjectId,
 	}
 	err := t.Store()
 	return t, err
@@ -28,9 +32,10 @@ func (t *Topic) Store() error {
 	return db.Save(&t).Error
 }
 
-func (t *Topic) Update(position GPSPosition, threshold uint) error {
+func (t *Topic) Update(position GPSPosition, threshold uint, rkiObjectId uint) error {
 	t.Position = position
 	t.Threshold = threshold
+	t.RkiObjectID = rkiObjectId
 	return t.Store()
 }
 
