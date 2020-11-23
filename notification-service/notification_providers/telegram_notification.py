@@ -1,4 +1,4 @@
-import os
+import os, time
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext, Filters
 import logging
@@ -15,9 +15,13 @@ class TelegramNotifier:
 
         # Define some callback functions
         def callback_start(update, context):
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Welcome! You are now able to configure "
-                                                                            "COVID-19 incidence update notifications via "
-                                                                            "Telegram.")
+            chat_id = update.effective_chat.id
+            context.bot.send_message(chat_id=chat_id, text="Welcome! You are now able to configure "
+                                                           "COVID-19 incidence update notifications "
+                                                           "via Telegram.")
+            context.bot.send_message(chat_id=chat_id,
+                                     text=f"Go to your dashboard and add the Telegram notification provider by "
+                                          f"entering this ID {chat_id}.")
 
         def callback_unknown(update, context):
             # print(update.effective_chat.id)
@@ -38,8 +42,16 @@ class TelegramNotifier:
         queue = self.updater.job_queue
         # Send message to chat immediately
         queue.run_once(callback_send_msg, when=0, context={'chat_id': chat_id, 'msg': msg})
+        # Check for bot messages every x seconds from Telegram
+        self.updater.start_polling(poll_interval=5)
+        # Wait until all jobs are done
+        while len(self.updater.job_queue.jobs()) > 0:
+            time.sleep(1)
+        # Stopping Telegram polling service
+        self.updater.stop()
 
     def start_polling(self):
         # Check for bot messages every x seconds from Telegram
         self.updater.start_polling(poll_interval=5)
-        self.updater.idle()
+        #self.updater.stop()
+        #self.updater.idle()
