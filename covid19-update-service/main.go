@@ -2,9 +2,12 @@ package main
 
 import (
 	"covid19-update-service/model"
+	"covid19-update-service/rki"
 	"covid19-update-service/server"
 	"log"
 	"os"
+	"strconv"
+	"time"
 )
 
 func init() {
@@ -25,6 +28,9 @@ func main() {
 	}
 
 	go updateServer.Start()
+
+	pollInterval, _ := strconv.Atoi(os.Getenv("POLL_INTERVAL_MINUTES"))
+	_ = rki.NewCovid19Poller(time.Duration(pollInterval) * time.Minute)
 
 	done := make(chan os.Signal, 1)
 
