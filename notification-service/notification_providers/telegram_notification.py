@@ -55,3 +55,8 @@ class TelegramNotifier:
         self.updater.start_polling(poll_interval=5)
         #self.updater.stop()
         #self.updater.idle()
+
+
+if __name__ == '__main__':
+    tn = TelegramNotifier()
+    tn.start_polling()
