@@ -7,9 +7,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
+	"strings"
+	"time"
 )
 
-const rkiBaseUrl = "https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/RKI_Landkreisdaten/FeatureServer/0/query?where=1%3D1&outFields=OBJECTID,cases7_per_100k&returnGeometry=false&f=json"
+const rkiBaseUrl = "https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/RKI_Landkreisdaten/FeatureServer/0/query?where=1%3D1&outFields=OBJECTID,cases7_per_100k,last_update&returnGeometry=false&f=json"
 const rkiGeoParams = "&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelWithin"
 
 type Response struct {
@@ -23,6 +26,26 @@ type Feature struct {
 type Attributes struct {
 	ObjectID      uint    `json:"OBJECTID"`
 	Cases7Per100k float64 `json:"cases7_per_100k"`
+	RawLastUpdate string  `json:"last_update"`
+}
+
+func (a *Attributes) LastUpdate() (time.Time, error) {
+	// RKI API returns timestamp in dd:mm:yyyy HH:mm, but Go does not support 24h time format with leading zeros
+	rkiHourRegExp := regexp.MustCompile(`\d{2}:`)
+
+	nonZeroHourTime := rkiHourRegExp.ReplaceAllStringFunc(a.RawLastUpdate, func(entry string) string {
+		if strings.Index(entry, "0") == 0 {
+			return strings.Replace(entry, "0", "", 1)
+		} else {
+			return entry
+		}
+	})
+	timeString := strings.Replace(nonZeroHourTime, " Uhr", "", -1)
+	t, err := time.Parse("2.1.2006, 15:04", timeString)
+	if err != nil {
+		return t, fmt.Errorf("could not parse timestamp: %v", err)
+	}
+	return t, nil
 }
 
 func requestRKI(url string) (Response, error) {

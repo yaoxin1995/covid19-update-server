@@ -25,29 +25,61 @@ func (cp *Covid19Poller) run() error {
 	for {
 		select {
 		case <-cp.ticker.C:
-			log.Printf("Start polling...")
-			successfulPolls, totalPolls, err := poll()
+			log.Printf("Updating Covid 19 incidence values...")
+			updatedIncidenceIDs, err := updateIncidences()
 			if err != nil {
-				log.Printf("Could not poll incidences: %v", err)
+				log.Printf("Could perform incidence update: %v", err)
 				break
 			}
-			log.Printf("Polling finished successfully. %d of %d incidences were updated.", successfulPolls, totalPolls)
-			// ToDo Trigger Notification Logic
+			log.Printf("Updating Covid 19 incidence values finished successfully. %d regions were updated.", len(*updatedIncidenceIDs))
+			// ToDo Find topics that are associated with updated value
 		}
 	}
 }
 
-func poll() (int, int, error) {
+func updateIncidences() (*[]uint, error) {
 	rsp, err := GetAllIncidences()
 	if err != nil {
-		return 0, 0, err
+		return nil, err
 	}
-	updateSuccessCnt := 0
+	updatedIncidenceIDs := make([]uint, 0)
 	for _, f := range rsp.Features {
-		_, err := model.NewIncidence(f.Attributes.ObjectID, f.Attributes.Cases7Per100k)
-		if err == nil {
-			updateSuccessCnt++
+		isNew, err := updateIfNew(&f)
+		if err != nil {
+			log.Printf("Could not update incidence: %v", err)
+		}
+		if isNew {
+			updatedIncidenceIDs = append(updatedIncidenceIDs, f.Attributes.ObjectID)
 		}
 	}
-	return updateSuccessCnt, len(rsp.Features), nil
+	return &updatedIncidenceIDs, err
+}
+
+func updateIfNew(f *Feature) (bool, error) {
+	i, err := model.GetIncidence(f.Attributes.ObjectID)
+	if err != nil {
+		return false, err
+	}
+	// Entry does not exist
+	if i == nil {
+		_, err := model.NewIncidence(f.Attributes.ObjectID, f.Attributes.Cases7Per100k)
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	}
+
+	// Entry does exist
+	newTime, err := f.Attributes.LastUpdate()
+	if err != nil {
+		return false, nil
+	}
+	if i.UpdatedAt.UTC().Before(newTime.UTC()) {
+		_, err := model.NewIncidence(f.Attributes.ObjectID, f.Attributes.Cases7Per100k)
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	}
+	return false, nil
 }
