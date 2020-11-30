@@ -10,6 +10,7 @@ type Topic struct {
 	Threshold      uint        `json:"threshold"`
 	SubscriptionID uint        `sql:"type:bigint REFERENCES subscriptions(id) ON DELETE CASCADE" json:"-"`
 	IncidenceId    uint        `json:"-"`
+	Events         []Event     `json:"-"`
 }
 
 type GPSPosition struct {
@@ -41,7 +42,7 @@ func (t *Topic) Update(position GPSPosition, threshold uint, rkiObjectId uint) e
 
 func GetTopic(tID, sID uint) (*Topic, error) {
 	t := &Topic{}
-	err := db.Where("id = ? AND subscription_id = ?", tID, sID).First(t).Error
+	err := db.Where("id = ? AND subscription_id = ?", tID, sID).Preload("Events").First(t).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return nil, nil
@@ -51,9 +52,15 @@ func GetTopic(tID, sID uint) (*Topic, error) {
 	return t, nil
 }
 
-func GetTopics(sID uint) ([]Topic, error) {
+func GetTopicsBySubscriptionID(sID uint) ([]Topic, error) {
 	var tops []Topic
-	err := db.Where("subscription_id = ?", sID).Find(&tops).Error
+	err := db.Where("subscription_id = ?", sID).Preload("Events").Find(&tops).Error
+	return tops, err
+}
+
+func GetTopicsByIncidence(i Incidence) ([]Topic, error) {
+	var tops []Topic
+	err := db.Where("incidence_id = ? AND threshold <= ?", i.ID, i.Cases7Per100k).Preload("Events").Find(&tops).Error
 	return tops, err
 }
 

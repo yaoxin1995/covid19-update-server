@@ -192,7 +192,7 @@ func (ws *Covid19UpdateWebServer) getTopics(w http.ResponseWriter, r *http.Reque
 		writeHttpResponse(NewError("Could not find subscription."), http.StatusNotFound, r, w)
 		return
 	}
-	tops, err := model.GetTopics(s.ID)
+	tops, err := model.GetTopicsBySubscriptionID(s.ID)
 	if err != nil {
 		writeHttpResponse(NewError(fmt.Sprintf("Could not load topics: %v.", err)), http.StatusInternalServerError, r, w)
 	}
