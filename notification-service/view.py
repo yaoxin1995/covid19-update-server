@@ -1,7 +1,7 @@
 from app import app, db
 from model import Notification, ModelJSONEncoder
 from flask import Response, request
-from notification_providers.telegram_notification import TelegramNotifier
+from notification_providers.channel_telegram import ChannelTelegram
 import datetime
 import json
 
@@ -11,12 +11,11 @@ def notification():
     """
     Return all notifications using JSON format on a GET request.
     Create a new notification object and send the message. Return this object using JSON format on a POST request.
+    TODO: Get requests by recipient
     """
     if request.method == 'GET':
         notifications = Notification.query.all()
     else:
-        # TODO: Does caller need to get immediate response about success of sending message?
-        # TODO: Better implement sender queue if e.g., Telegram/mail server access currently not available.
         try:
             channel = str(request.form['channel'])
             recipient = str(request.form['recipient'])
@@ -24,18 +23,17 @@ def notification():
         except KeyError:
             return Response('Required arguments: channel, recipient, msg!', status=400)
 
+        telegram = ChannelTelegram()
+        telegram_response, human_readable_error_msg = telegram.send_message(chat_id=recipient, msg=msg)
+
         n = Notification(
             creation_date=datetime.datetime.utcnow(),
             channel=channel,
             recipient=recipient,
             msg=msg,
-            error_msg=None
+            error_msg=json.dumps(telegram_response),
+            error_msg_human_readable=human_readable_error_msg
         )
-
-        tn = TelegramNotifier()
-        tn.send_message(chat_id=recipient, msg=msg)
-        # TODO: Do some error checking here.
-        # n.error_msg =
 
         db.session.add(n)
         db.session.commit()

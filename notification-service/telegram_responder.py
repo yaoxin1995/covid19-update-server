@@ -1,10 +1,9 @@
-import os, time
-from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext, Filters
+import os
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
 
 
-class TelegramNotifier:
+class TelegramResponder:
     def __init__(self):
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -33,30 +32,13 @@ class TelegramNotifier:
         unknown_handler = MessageHandler(Filters.text, callback_unknown)
         self.dispatcher.add_handler(unknown_handler)
 
-    def send_message(self, chat_id, msg):
-        def callback_send_msg(context):
-            params = context.job.context
-            context.bot.send_message(chat_id=params['chat_id'],
-                                     text=params['msg'])
-
-        queue = self.updater.job_queue
-        # Send message to chat immediately
-        queue.run_once(callback_send_msg, when=0, context={'chat_id': chat_id, 'msg': msg})
-        # Check for bot messages every x seconds from Telegram
-        self.updater.start_polling(poll_interval=5)
-        # Wait until all jobs are done
-        while len(self.updater.job_queue.jobs()) > 0:
-            time.sleep(1)
-        # Stopping Telegram polling service
-        self.updater.stop()
-
     def start_polling(self):
         # Check for bot messages every x seconds from Telegram
         self.updater.start_polling(poll_interval=5)
+        self.updater.idle()
         #self.updater.stop()
-        #self.updater.idle()
 
 
 if __name__ == '__main__':
-    tn = TelegramNotifier()
+    tn = TelegramResponder()
     tn.start_polling()

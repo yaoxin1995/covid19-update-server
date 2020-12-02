@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
@@ -6,8 +7,9 @@ class Config:
     """
     Some additional Flask config parameters
     """
-    DEBUG = True
+    DEBUG = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///db.sql'
+    TELEGRAM_BOT_TOKEN = os.environ['TELEGRAM_BOT_TOKEN']
 
 
 app = Flask(__name__)
@@ -18,10 +20,6 @@ db = SQLAlchemy(app)
 
 from view import *
 
-from model import *
-
 # create db and tables
 db.create_all()
 
-if __name__ == '__main__':
-    app.run()

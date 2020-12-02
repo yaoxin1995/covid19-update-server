@@ -30,6 +30,7 @@ class Notification(db.Model):
     recipient = Column(Text, nullable=False)
     msg = Column(Text, nullable=False)
     error_msg = Column(Text, nullable=True)
+    error_msg_human_readable = Column(Text, nullable=True)
 
     def __str__(self):
         return f'Notification {self.id}: {self.creation_date} - {self.channel} - {self.recipient} - {self.msg}'
