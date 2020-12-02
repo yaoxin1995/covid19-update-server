@@ -1,15 +1,13 @@
 # Notification Service
 
-This web service uses Telegram bot API to send messages.
-TODO...
+This web service is able to send notifications to users via the Telegram bot API.
 
 ## Prerequisites
 
 In order to be able to send messages via Telegram you need create a
 [Telegram bot](https://telegram.org/blog/bot-revolution).
 Read [this](https://core.telegram.org/bots) introduction to get in touch with the Telegram bot platform.
-After you created a bot you get a bot token.
-
+You are able to generate a bot token after you created the bot.
 
 ## How to run the web service
 

@@ -1,7 +1,7 @@
 from app import app, db
 from model import Notification, ModelJSONEncoder
 from flask import Response, request
-from notification_providers.channel_telegram import ChannelTelegram
+from channel_telegram import ChannelTelegram
 import datetime
 import json
 
@@ -35,18 +35,16 @@ def notification():
             status_code = 200
     else:
         try:
-            channel = str(request.form['channel'])
             recipient = str(request.form['recipient'])
             msg = str(request.form['msg'])
         except KeyError:
-            return Response('Required arguments: channel, recipient, msg!', mimetype='application/json', status=400)
+            return Response('Required arguments: recipient, msg!', mimetype='application/json', status=400)
 
         telegram = ChannelTelegram()
         telegram_response, human_readable_error_msg = telegram.send_message(chat_id=recipient, msg=msg)
 
         n = Notification(
             creation_date=datetime.datetime.utcnow(),
-            channel=channel,
             recipient=recipient,
             msg=msg,
             error_msg=json.dumps(telegram_response),
