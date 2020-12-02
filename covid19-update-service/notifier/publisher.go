@@ -1,6 +1,9 @@
 package notifier
 
-import "covid19-update-service/model"
+import (
+	"covid19-update-service/model"
+	"log"
+)
 
 type Publisher interface {
 	Publish(e model.Event) error
@@ -16,6 +19,7 @@ func NewTelegramPublisher(chatID string) TelegramPublisher {
 
 func (tp *TelegramPublisher) Publish(e model.Event) error {
 	// ToDo Publish via Telegram
+	log.Printf("Sent telegram")
 	return nil
 }
 
@@ -29,5 +33,6 @@ func NewEmailPublisher(email string) EmailPublisher {
 
 func (ep *EmailPublisher) Publish(e model.Event) error {
 	// ToDo Publish via email
+	log.Printf("Sent Email")
 	return nil
 }

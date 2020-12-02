@@ -4,27 +4,27 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type Incidence struct {
+type Covid19Region struct {
 	CommonModelFields
-	Cases7Per100k float64 `json:"cases7_per_100k"`
+	Incidence float64 `json:"incidence"`
 }
 
-func NewIncidence(iID uint, cases7per100k float64) (Incidence, error) {
-	i := Incidence{
-		CommonModelFields: CommonModelFields{ID: iID},
-		Cases7Per100k:     cases7per100k,
+func NewCovid19Region(cID uint, incidence float64) (Covid19Region, error) {
+	i := Covid19Region{
+		CommonModelFields: CommonModelFields{ID: cID},
+		Incidence:         incidence,
 	}
 	err := i.Store()
 	return i, err
 }
 
-func (i *Incidence) Store() error {
-	return db.Save(&i).Error
+func (c *Covid19Region) Store() error {
+	return db.Save(&c).Error
 }
 
-func GetIncidence(iID uint) (*Incidence, error) {
-	i := &Incidence{}
-	err := db.Where("id = ?", iID).First(i).Error
+func GetCovid19Region(cID uint) (*Covid19Region, error) {
+	i := &Covid19Region{}
+	err := db.Where("id = ?", cID).First(i).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return nil, nil

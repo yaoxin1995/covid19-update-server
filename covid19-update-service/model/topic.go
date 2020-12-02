@@ -6,11 +6,11 @@ import (
 
 type Topic struct {
 	CommonModelFields
-	Position       GPSPosition `gorm:"embedded;embeddedPrefix:position_" json:"position"`
-	Threshold      uint        `json:"threshold"`
-	SubscriptionID uint        `sql:"type:bigint REFERENCES subscriptions(id) ON DELETE CASCADE" json:"-"`
-	IncidenceId    uint        `json:"-"`
-	Events         []Event     `json:"-"`
+	Position        GPSPosition `gorm:"embedded;embeddedPrefix:position_" json:"position"`
+	Threshold       uint        `json:"threshold"`
+	SubscriptionID  uint        `sql:"type:bigint REFERENCES subscriptions(id) ON DELETE CASCADE" json:"-"`
+	Covid19RegionID uint        `json:"-"`
+	Events          []Event     `json:"-"`
 }
 
 type GPSPosition struct {
@@ -18,12 +18,12 @@ type GPSPosition struct {
 	Longitude float64 `json:"longitude"`
 }
 
-func NewTopic(position GPSPosition, threshold, subID uint, incidenceId uint) (Topic, error) {
+func NewTopic(position GPSPosition, threshold, subID uint, cov19RegID uint) (Topic, error) {
 	t := Topic{
-		Position:       position,
-		Threshold:      threshold,
-		SubscriptionID: subID,
-		IncidenceId:    incidenceId,
+		Position:        position,
+		Threshold:       threshold,
+		SubscriptionID:  subID,
+		Covid19RegionID: cov19RegID,
 	}
 	err := t.Store()
 	return t, err
@@ -33,10 +33,10 @@ func (t *Topic) Store() error {
 	return db.Save(&t).Error
 }
 
-func (t *Topic) Update(position GPSPosition, threshold uint, rkiObjectId uint) error {
+func (t *Topic) Update(position GPSPosition, threshold uint, cov19RegID uint) error {
 	t.Position = position
 	t.Threshold = threshold
-	t.IncidenceId = rkiObjectId
+	t.Covid19RegionID = cov19RegID
 	return t.Store()
 }
 
@@ -58,9 +58,9 @@ func GetTopicsBySubscriptionID(sID uint) ([]Topic, error) {
 	return tops, err
 }
 
-func GetTopicsByIncidence(i Incidence) ([]Topic, error) {
+func GetTopicsWithThresholdAlert(c Covid19Region) ([]Topic, error) {
 	var tops []Topic
-	err := db.Where("incidence_id = ? AND threshold <= ?", i.ID, i.Cases7Per100k).Preload("Events").Find(&tops).Error
+	err := db.Where("covid19_region_id = ? AND threshold <= ?", c.ID, c.Incidence).Find(&tops).Error
 	return tops, err
 }
 

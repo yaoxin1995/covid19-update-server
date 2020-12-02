@@ -27,7 +27,7 @@ func SetupDB(dbType, dbSource string) error {
 	db.DB().SetMaxOpenConns(0)
 
 	// Add domain models to DB
-	err = db.AutoMigrate(&Subscription{}, &Topic{}, &Incidence{}, &Event{}).Error
+	err = db.AutoMigrate(&Subscription{}, &Topic{}, &Covid19Region{}, &Event{}).Error
 	if err != nil {
 		return err
 	}

@@ -67,11 +67,11 @@ func requestRKI(url string) (Response, error) {
 	return rkiResponse, nil
 }
 
-func GetAllIncidences() (Response, error) {
+func GetAllRegions() (Response, error) {
 	return requestRKI(rkiBaseUrl)
 }
 
-func GetRkiObjectIdForPosition(position model.GPSPosition) (uint, error) {
+func GetRegionIDForPosition(position model.GPSPosition) (uint, error) {
 	location := fmt.Sprintf("&geometry=%f%%2C%f", position.Longitude, position.Latitude)
 	url := fmt.Sprintf("%s%s%s", rkiBaseUrl, rkiGeoParams, location)
 	resp, err := requestRKI(url)

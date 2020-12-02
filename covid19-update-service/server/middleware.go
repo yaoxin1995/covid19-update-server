@@ -10,7 +10,7 @@ import (
 const jsonContentType string = "application/json"
 
 func writeHttpResponse(d interface{}, statusCode int, r *http.Request, w http.ResponseWriter) {
-	switch r.Header.Get("Content-type") {
+	switch r.Header.Get("Accept") {
 	case jsonContentType:
 		dj, err := json.MarshalIndent(d, "", "  ")
 		if err != nil {
@@ -28,7 +28,7 @@ func writeHttpResponse(d interface{}, statusCode int, r *http.Request, w http.Re
 
 func (ws *Covid19UpdateWebServer) checkMediaType(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Header.Get("Content-type") {
+		switch r.Header.Get("Accept") {
 		case jsonContentType:
 			next.ServeHTTP(w, r)
 		default:
