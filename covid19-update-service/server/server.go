@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/handlers"
+
 	"github.com/gorilla/mux"
 )
 
@@ -61,5 +63,9 @@ func (ws *Covid19UpdateWebServer) registerRoutes() {
 	// Events
 	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}/events", ws.checkAcceptType(ws.getEvents)).Methods("GET")
 
-	ws.Handler = router
+	// Support CORS Preflight
+	headersOk := handlers.AllowedHeaders([]string{"Content-Type"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+	ws.Handler = handlers.CORS(originsOk, headersOk, methodsOk)(router)
 }

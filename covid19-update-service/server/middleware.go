@@ -15,6 +15,7 @@ func writeHttpResponse(d interface{}, statusCode int, w http.ResponseWriter) {
 		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 	}
 	w.Header().Set("Content-Type", jsonContentType)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(statusCode)
 	_, _ = fmt.Fprintf(w, "%s", dj)
 }
