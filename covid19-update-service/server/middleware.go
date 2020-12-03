@@ -7,14 +7,15 @@ import (
 	"strings"
 )
 
-const jsonContentType string = "application/json"
+const jsonType string = "application/json"
+const allTypes string = "*/*"
 
 func writeHttpResponse(d interface{}, statusCode int, w http.ResponseWriter) {
 	dj, err := json.MarshalIndent(d, "", "  ")
 	if err != nil {
 		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 	}
-	w.Header().Set("Content-Type", jsonContentType)
+	w.Header().Set("Content-Type", jsonType)
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(statusCode)
 	_, _ = fmt.Fprintf(w, "%s", dj)
@@ -23,7 +24,7 @@ func writeHttpResponse(d interface{}, statusCode int, w http.ResponseWriter) {
 func (ws *Covid19UpdateWebServer) checkAcceptType(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		options := getHeaderOptions("Accept", r)
-		if contains(options, jsonContentType) {
+		if contains(options, jsonType) || contains(options, allTypes) || (len(options) == 0) {
 			next.ServeHTTP(w, r)
 		} else {
 			w.WriteHeader(http.StatusNotAcceptable)
@@ -34,7 +35,7 @@ func (ws *Covid19UpdateWebServer) checkAcceptType(next http.HandlerFunc) http.Ha
 func (ws *Covid19UpdateWebServer) checkContentType(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Header.Get("Content-Type") {
-		case jsonContentType:
+		case jsonType:
 			next.ServeHTTP(w, r)
 		default:
 			w.WriteHeader(http.StatusUnsupportedMediaType)
