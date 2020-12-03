@@ -55,5 +55,8 @@ func (ws *Covid19UpdateWebServer) registerRoutes() {
 	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.checkAcceptType(ws.deleteTopic)).Methods("DELETE")
 	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.checkAcceptType(ws.checkContentType(ws.updateTopic))).Methods("PUT")
 
+	// Incidence routes
+	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}/incidence", ws.checkAcceptType(ws.getIncidence)).Methods("POST")
+
 	ws.Handler = router
 }
