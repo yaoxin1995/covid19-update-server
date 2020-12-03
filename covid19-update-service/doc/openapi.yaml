@@ -1,0 +1,143 @@
+openapi: "3.0.0"
+info:
+  description: "SCC WS2020 Group8"
+  version: "1.0.0"
+  title: "Covid19 Update Service"
+servers:
+  - url: localhost:9005
+    description: Local Server
+  - url: 185.128.119.135:9005
+    description: Cloud'n'Heat Server
+paths:
+  /subscriptions:
+    post:
+      tags: ["subscriptions"]
+      summary: Create new subscription
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                telegramChatID:
+                  type: string
+                  description: "Telegram Chat ID received from Telegram Bot."
+                email:
+                  type: string
+                  format: "email"
+      responses:
+        201:
+          description: Successful creation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+    get:
+      tags: ["subscriptions"]
+      summary: Get list of all subscriptions
+      responses:
+        200:
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subscription'
+  /subscriptions/{id}:
+    get:
+      tags: ["subscriptions"]
+      summary: Get subscription by ID
+      parameters:
+        - name: id
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        200:
+          description: Succesfull operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        404:
+          description: Subscription with given ID was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+components:
+  schemas:
+    Position:
+      type: "object"
+      properties:
+        latitude:
+          type: "number"
+          format: "double"
+        longitude:
+          type: "number"
+          format: "double"
+      xml:
+        name: "Position"
+    Subscription:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          minimum: 0
+        email:
+          type: "string"
+          format: "email"
+          x-nullable: true
+        telegramChatID:
+          type: "string"
+          x-nullable: true
+      xml:
+        name: "Subscription"
+    Topic:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          minimum: 0
+        position:
+         $ref: "#/components/schemas/Position"
+        treshold:
+          type: "integer"
+          format: "int64"
+          minimum: 0
+      xml:
+        name: "Topic"
+    Event:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          minimum: 0
+        message:
+          type: "string"
+          format: "int64"
+      xml:
+        name: "Event"
+    Incidence:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          minimum: 0
+        message:
+          type: "string"
+          format: "int64"
+      xml:
+        name: "Incidence"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
