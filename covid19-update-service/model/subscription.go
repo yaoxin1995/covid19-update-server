@@ -6,16 +6,16 @@ import (
 
 type Subscription struct {
 	CommonModelFields
-	Email    *string `json:"email"`
-	Telegram *string `json:"telegram"`
-	Topics   []Topic `json:"-"`
+	Email          *string `json:"email"`
+	TelegramChatID *string `json:"telegramChatId"`
+	Topics         []Topic `json:"-"`
 }
 
 func NewSubscription(email, telegram *string) (Subscription, error) {
 	s := Subscription{
-		Email:    email,
-		Telegram: telegram,
-		Topics:   []Topic{},
+		Email:          email,
+		TelegramChatID: telegram,
+		Topics:         []Topic{},
 	}
 	err := s.Store()
 	return s, err
@@ -49,6 +49,6 @@ func (s *Subscription) Delete() error {
 
 func (s *Subscription) Update(email, telegram *string) error {
 	s.Email = email
-	s.Telegram = telegram
+	s.TelegramChatID = telegram
 	return s.Store()
 }

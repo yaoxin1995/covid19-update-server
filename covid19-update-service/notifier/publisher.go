@@ -18,7 +18,7 @@ func NewTelegramPublisher(chatID string) TelegramPublisher {
 }
 
 func (tp *TelegramPublisher) Publish(e model.Event) error {
-	// ToDo Publish via Telegram
+	// ToDo Publish via TelegramChatID
 	log.Printf("Sent telegram")
 	return nil
 }

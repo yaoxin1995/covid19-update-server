@@ -28,8 +28,8 @@ func (ws *Covid19UpdateWebServer) notFound(w http.ResponseWriter, _ *http.Reques
 // Subscription
 
 type SubscriptionRequest struct {
-	Email    *string `json:"email"`
-	Telegram *string `json:"telegram"`
+	Email          *string `json:"email"`
+	TelegramChatID *string `json:"telegramChatID"`
 }
 
 func (ws *Covid19UpdateWebServer) getSubscriptions(w http.ResponseWriter, _ *http.Request) {
@@ -69,7 +69,7 @@ func (ws *Covid19UpdateWebServer) createSubscription(w http.ResponseWriter, r *h
 		writeHttpResponse(NewError(fmt.Sprintf("Could not decode request: %v.", err)), http.StatusBadRequest, w)
 		return
 	}
-	s, err := model.NewSubscription(createSubReq.Email, createSubReq.Telegram)
+	s, err := model.NewSubscription(createSubReq.Email, createSubReq.TelegramChatID)
 	if err != nil {
 		writeHttpResponse(NewError(fmt.Sprintf("Could not create subscription: %v.", err)), http.StatusInternalServerError, w)
 		return
@@ -125,7 +125,7 @@ func (ws *Covid19UpdateWebServer) updateSubscription(w http.ResponseWriter, r *h
 		writeHttpResponse(NewError("Could not find subscription"), http.StatusNotFound, w)
 		return
 	}
-	err = s.Update(updateSubReq.Email, updateSubReq.Telegram)
+	err = s.Update(updateSubReq.Email, updateSubReq.TelegramChatID)
 	if err != nil {
 		writeHttpResponse(NewError(fmt.Sprintf("Could not update subscription: %v.", err)), http.StatusInternalServerError, w)
 		return
