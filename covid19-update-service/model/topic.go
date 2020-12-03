@@ -42,7 +42,7 @@ func (t *Topic) Update(position GPSPosition, threshold uint, cov19RegID uint) er
 
 func GetTopic(tID, sID uint) (*Topic, error) {
 	t := &Topic{}
-	err := db.Where("id = ? AND subscription_id = ?", tID, sID).Preload("Events").First(t).Error
+	err := db.Where("id = ? AND subscription_id = ?", tID, sID).First(t).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return nil, nil
@@ -54,7 +54,7 @@ func GetTopic(tID, sID uint) (*Topic, error) {
 
 func GetTopicsBySubscriptionID(sID uint) ([]Topic, error) {
 	var tops []Topic
-	err := db.Where("subscription_id = ?", sID).Preload("Events").Find(&tops).Error
+	err := db.Where("subscription_id = ?", sID).Find(&tops).Error
 	return tops, err
 }
 

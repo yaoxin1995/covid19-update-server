@@ -1,6 +1,8 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Event struct {
 	CommonModelFields
@@ -21,4 +23,16 @@ func NewEvent(c Covid19Region, t Topic) (Event, error) {
 
 func (e *Event) Store() error {
 	return db.Save(&e).Error
+}
+
+func GetEvents(tID uint) ([]Event, error) {
+	var e []Event
+	err := db.Where("topic_id = ?", tID).Find(&e).Error
+	return e, err
+}
+
+func GetEventsWithLimit(tID, limit uint) ([]Event, error) {
+	var e []Event
+	err := db.Where("topic_id = ?", tID).Limit(limit).Order("created_at DESC").Find(&e).Error
+	return e, err
 }

@@ -36,7 +36,7 @@ func (ws *Covid19UpdateWebServer) getSubscriptions(w http.ResponseWriter, _ *htt
 	subs, err := model.GetSubscriptions()
 	if err != nil {
 		log.Printf("could not subscriptions: %v", err)
-		writeHttpResponse(NewError("could not load subscriptions."), http.StatusInternalServerError, w)
+		writeHttpResponse(NewError("Could not load subscriptions."), http.StatusInternalServerError, w)
 		return
 	}
 	writeHttpResponse(subs, http.StatusOK, w)
@@ -294,7 +294,12 @@ func (ws *Covid19UpdateWebServer) updateTopic(w http.ResponseWriter, r *http.Req
 	writeHttpResponse(*t, http.StatusOK, w)
 }
 
+// Incidence
+
 func (ws *Covid19UpdateWebServer) getIncidence(w http.ResponseWriter, r *http.Request) {
+	type IncidenceResponse struct {
+		Incidence float64 `json:"incidence"`
+	}
 	vars := mux.Vars(r)
 	sID, err := toUInt(vars["subscription_id"])
 	if err != nil {
@@ -324,5 +329,55 @@ func (ws *Covid19UpdateWebServer) getIncidence(w http.ResponseWriter, r *http.Re
 		writeHttpResponse(NewError("No incidence available"), http.StatusInternalServerError, w)
 		return
 	}
-	writeHttpResponse(*c, http.StatusOK, w)
+	rsp := IncidenceResponse{c.Incidence}
+	writeHttpResponse(rsp, http.StatusOK, w)
+}
+
+// Events
+
+func (ws *Covid19UpdateWebServer) getEvents(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sID, err := toUInt(vars["subscription_id"])
+	if err != nil {
+		writeHttpResponse(NewError("Subscription ID has to be an unsigned integer."), http.StatusBadRequest, w)
+		return
+	}
+	tID, err := toUInt(vars["topic_id"])
+	if err != nil {
+		writeHttpResponse(NewError("Topic ID has to be an unsigned integer."), http.StatusBadRequest, w)
+		return
+	}
+	query := r.URL.Query()
+	var limit uint
+	limitRequested := false
+	if rawLimit, ok := query["limit"]; ok {
+		limit, err = toUInt(rawLimit[0])
+		limitRequested = true
+		if err != nil {
+			writeHttpResponse(NewError("Limit has to be an unsigned integer."), http.StatusBadRequest, w)
+			return
+		}
+	}
+	t, err := model.GetTopic(tID, sID)
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not load topic: %v.", err)), http.StatusInternalServerError, w)
+		return
+	}
+	if t == nil {
+		writeHttpResponse(NewError("Could not find topic."), http.StatusNotFound, w)
+		return
+	}
+	var e []model.Event
+	log.Printf("%s", limitRequested)
+	if limitRequested {
+		e, err = model.GetEventsWithLimit(tID, limit)
+	} else {
+		e, err = model.GetEvents(tID)
+	}
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not load events: %v.", err)), http.StatusInternalServerError, w)
+		return
+	}
+
+	writeHttpResponse(e, http.StatusOK, w)
 }
