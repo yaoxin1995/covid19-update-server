@@ -42,18 +42,18 @@ func (ws *Covid19UpdateWebServer) registerRoutes() {
 	router.NotFoundHandler = http.HandlerFunc(ws.notFound)
 
 	// Subscription routes
-	router.HandleFunc("/subscriptions", ws.checkMediaType(ws.getSubscriptions)).Methods("GET")
-	router.HandleFunc("/subscriptions/{id}", ws.checkMediaType(ws.getSubscription)).Methods("GET")
-	router.HandleFunc("/subscriptions", ws.checkMediaType(ws.createSubscription)).Methods("POST")
-	router.HandleFunc("/subscriptions/{id}", ws.checkMediaType(ws.deleteSubscription)).Methods("DELETE")
-	router.HandleFunc("/subscriptions/{id}", ws.checkMediaType(ws.updateSubscription)).Methods("PUT")
+	router.HandleFunc("/subscriptions", ws.checkAcceptType(ws.getSubscriptions)).Methods("GET")
+	router.HandleFunc("/subscriptions/{id}", ws.checkAcceptType(ws.getSubscription)).Methods("GET")
+	router.HandleFunc("/subscriptions", ws.checkAcceptType(ws.checkContentType(ws.createSubscription))).Methods("POST")
+	router.HandleFunc("/subscriptions/{id}", ws.checkAcceptType(ws.deleteSubscription)).Methods("DELETE")
+	router.HandleFunc("/subscriptions/{id}", ws.checkAcceptType(ws.checkContentType(ws.updateSubscription))).Methods("PUT")
 
 	// Topic routes
-	router.HandleFunc("/subscriptions/{subscription_id}/topics", ws.checkMediaType(ws.getTopics)).Methods("GET")
-	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.checkMediaType(ws.getTopic)).Methods("GET")
-	router.HandleFunc("/subscriptions/{subscription_id}/topics", ws.checkMediaType(ws.createTopic)).Methods("POST")
-	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.checkMediaType(ws.deleteTopic)).Methods("DELETE")
-	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.checkMediaType(ws.updateTopic)).Methods("PUT")
+	router.HandleFunc("/subscriptions/{subscription_id}/topics", ws.checkAcceptType(ws.getTopics)).Methods("GET")
+	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.checkAcceptType(ws.getTopic)).Methods("GET")
+	router.HandleFunc("/subscriptions/{subscription_id}/topics", ws.checkAcceptType(ws.checkContentType(ws.createTopic))).Methods("POST")
+	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.checkAcceptType(ws.deleteTopic)).Methods("DELETE")
+	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.checkAcceptType(ws.checkContentType(ws.updateTopic))).Methods("PUT")
 
 	ws.Handler = router
 }
