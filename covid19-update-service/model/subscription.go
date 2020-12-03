@@ -2,19 +2,20 @@ package model
 
 import (
 	"github.com/jinzhu/gorm"
+	"gopkg.in/guregu/null.v3"
 )
 
 type Subscription struct {
 	CommonModelFields
-	Email          *string `json:"email"`
-	TelegramChatID *string `json:"telegramChatId"`
-	Topics         []Topic `json:"-"`
+	Email          null.String `json:"email"`
+	TelegramChatID null.String `json:"telegramChatId"`
+	Topics         []Topic     `json:"-"`
 }
 
 func NewSubscription(email, telegram *string) (Subscription, error) {
 	s := Subscription{
-		Email:          email,
-		TelegramChatID: telegram,
+		Email:          null.StringFromPtr(email),
+		TelegramChatID: null.StringFromPtr(telegram),
 		Topics:         []Topic{},
 	}
 	err := s.Store()
@@ -48,7 +49,7 @@ func (s *Subscription) Delete() error {
 }
 
 func (s *Subscription) Update(email, telegram *string) error {
-	s.Email = email
-	s.TelegramChatID = telegram
+	s.Email = null.StringFromPtr(email)
+	s.TelegramChatID = null.StringFromPtr(telegram)
 	return s.Store()
 }

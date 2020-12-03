@@ -29,7 +29,7 @@ func (ws *Covid19UpdateWebServer) notFound(w http.ResponseWriter, _ *http.Reques
 
 type SubscriptionRequest struct {
 	Email          *string `json:"email"`
-	TelegramChatID *string `json:"telegramChatID"`
+	TelegramChatID *string `json:"telegramChatId"`
 }
 
 func (ws *Covid19UpdateWebServer) getSubscriptions(w http.ResponseWriter, _ *http.Request) {
