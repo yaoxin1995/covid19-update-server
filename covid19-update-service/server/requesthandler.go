@@ -140,6 +140,30 @@ type TopicRequest struct {
 	Threshold uint              `json:"threshold"`
 }
 
+func (t *TopicRequest) UnmarshalJSON(data []byte) (err error) {
+	required := struct {
+		Position  *model.GPSPosition `json:"position"`
+		Threshold *uint              `json:"threshold"`
+	}{}
+	all := struct {
+		Position  model.GPSPosition `json:"position"`
+		Threshold uint              `json:"threshold"`
+	}{}
+	err = json.Unmarshal(data, &required)
+	if err != nil {
+		return err
+	} else if required.Threshold == nil {
+		err = fmt.Errorf("threshold is missing")
+	} else if required.Position == nil {
+		err = fmt.Errorf("position is missing")
+	} else {
+		err = json.Unmarshal(data, &all)
+		t.Position = all.Position
+		t.Threshold = all.Threshold
+	}
+	return err
+}
+
 func (ws *Covid19UpdateWebServer) createTopic(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	sid, err := toUInt(vars["subscription_id"])

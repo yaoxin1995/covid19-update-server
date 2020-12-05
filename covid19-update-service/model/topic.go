@@ -1,6 +1,9 @@
 package model
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -16,6 +19,30 @@ type Topic struct {
 type GPSPosition struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
+}
+
+func (p *GPSPosition) UnmarshalJSON(data []byte) (err error) {
+	required := struct {
+		Latitude  *float64 `json:"latitude"`
+		Longitude *float64 `json:"longitude"`
+	}{}
+	all := struct {
+		Latitude  float64 `json:"latitude"`
+		Longitude float64 `json:"longitude"`
+	}{}
+	err = json.Unmarshal(data, &required)
+	if err != nil {
+		return err
+	} else if required.Latitude == nil {
+		err = fmt.Errorf("latitude is missing")
+	} else if required.Longitude == nil {
+		err = fmt.Errorf("longitude is missing")
+	} else {
+		err = json.Unmarshal(data, &all)
+		p.Longitude = all.Longitude
+		p.Latitude = all.Latitude
+	}
+	return err
 }
 
 func NewTopic(position GPSPosition, threshold, subID uint, cov19RegID uint) (Topic, error) {
