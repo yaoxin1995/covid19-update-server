@@ -62,14 +62,18 @@ func shipEvent(e model.Event, sID uint) error {
 			}
 			log.Printf("Sending telegram notification finished successfully")
 		}()
-
 	}
 	if s.Email.Ptr() != nil {
-		ep := NewEmailPublisher(s.Email.String)
-		err = ep.Publish(e)
-		if err != nil {
-			fmt.Printf("Could not publish event via email: %v", err)
-		}
+		go func() {
+			log.Printf("Sending email notification...")
+			ep := NewEmailPublisher(s.Email.String)
+			err = ep.Publish(e)
+			if err != nil {
+				fmt.Printf("Could not publish event %d via telegram: %v", e.ID, err)
+				return
+			}
+			log.Printf("Sending email notification finished successfully")
+		}()
 	}
 	return nil
 }

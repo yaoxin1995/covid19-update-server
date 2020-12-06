@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"strings"
+
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 type Publisher interface {
@@ -19,6 +21,7 @@ type Publisher interface {
 // Telegram
 
 var TelegramApiURI = ""
+var SendGridAPIKey = ""
 
 type TelegramPublisher struct {
 	ChatID string
@@ -74,7 +77,17 @@ func NewEmailPublisher(email string) EmailPublisher {
 }
 
 func (ep *EmailPublisher) Publish(e model.Event) error {
-	// ToDo Publish via email
-	log.Printf("Sent Email")
+	from := mail.NewEmail("Covid 19 Updater", "ludwig_maximilian.leibl@mailbox.tu-dresden.de")
+	subject := "Covid19 Update"
+	to := mail.NewEmail(ep.Email, ep.Email)
+	message := mail.NewSingleEmail(from, subject, to, e.Message, e.Message)
+	client := sendgrid.NewSendClient(SendGridAPIKey)
+	resp, err := client.Send(message)
+	if err != nil {
+		return fmt.Errorf("could not send email request: %v", err)
+	}
+	if resp.StatusCode != http.StatusAccepted {
+		return fmt.Errorf("request failed with status %d: %s", resp.StatusCode, resp.Body)
+	}
 	return nil
 }

@@ -29,6 +29,11 @@ func init() {
 		log.Fatalf("TELEGRAM_CONTACT_URI missing")
 	}
 	notifier.TelegramApiURI = telegramAPIUri
+	sendGridAPIUri, ok := os.LookupEnv("SENDGRID_API_KEY")
+	if !ok {
+		log.Fatalf("SENDGRID_API_KEY missing")
+	}
+	notifier.SendGridAPIKey = sendGridAPIUri
 }
 
 func main() {

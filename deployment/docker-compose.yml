@@ -10,6 +10,7 @@ services:
       - SERVER_PORT=9005
       - POLL_INTERVAL_MINUTES=5
       - TELEGRAM_CONTACT_URI=http://localhost:80/notification
+      - SENDGRID_API_KEY=
     expose:
        - 9005
     ports:
