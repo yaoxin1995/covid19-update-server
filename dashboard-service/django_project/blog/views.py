@@ -120,7 +120,7 @@ def topicCreation(request):
 			else:
 				# context ={ 'error_message':"creat a topic failed try again"}
 				# return render(request,'blog/create_topic.html',context)
-				messages.success(request, 'successful creat a topic.')
+				messages.warning(request, 'creat a topic failed.')
 				return redirect('post-create')
 	else:
 		form = TopicForm()
@@ -203,7 +203,7 @@ def update(request,id):
 				return redirect('blog-home')
 			else:
 				messages.warning(request, 'update this topic failed,try again')
-				return redirect('detail', id=id)
+				return redirect('blog-home')
 		else:
 			messages.warning(request, 'format not correct,try agian')
 
