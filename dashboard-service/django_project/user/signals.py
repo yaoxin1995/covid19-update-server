@@ -8,14 +8,26 @@ from django.dispatch import receiver
 
 from .models import Profile
 
+import requests , json
+
+
+
+
+# # some JSON:
+# x =  '{ "name":"John", "age":30, "city":"New York"}'
+
+
 @receiver(post_save,sender=User)
 def create_profile(sender,instance,created,**kwargs):
 	if created:
+
+
 		Profile.objects.create(user=instance)
 
 
 @receiver(post_save,sender=User)
 def save_profile(sender,instance,**kwargs):
+
 		instance.profile.save()
 
 #必须在 apps.py 中注册该信号，才能成功

@@ -1,12 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import User
 from PIL import Image
-from phonenumber_field.modelfields import PhoneNumberField
+# from phonenumber_field.modelfields import PhoneNumberField
 # Create your models here.
+
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 #不要忘记在当前目录下的admin.py注册model，这样才能在admin下显示该model
 
-
+import requests , json
 class Profile(models.Model):
 
 	# 删除user，profil 也会被删除，反之不会
@@ -16,7 +18,13 @@ class Profile(models.Model):
 
 	subscipted = models.BooleanField(default=False)
 
-	phone = PhoneNumberField( blank=False, unique=False,default='000000000000')
+	subscribtionStatus = models.BooleanField(default=False)
+
+	telegram=  models.CharField(max_length=300,default='0000000')
+
+	subscribtionId = models.IntegerField(default=0,validators=[MinValueValidator(0)])
+
+
 
 	def __str__(self):
 		return f'{self.user.username} Profile'

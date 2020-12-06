@@ -10,6 +10,12 @@ from .form import UserRegistionForm ,UserUpdateForm, ProfileUpdateForm
 from django.contrib.auth.decorators import login_required
 # Create your views here.
 
+import requests , json
+
+
+
+url = 'http://localhost:9005/subscriptions'
+
 
 def register(request):
 
@@ -46,9 +52,37 @@ def profile(request):
 								request.FILES, 
 								instance= request.user.profile)
 
+
 		if u_form.is_valid() and p_form.is_valid():
+
 			u_form.save()
 			p_form.save()
+
+			subscipted_form = p_form.cleaned_data.get('subscipted')
+
+			current_profile =  request.user.profile
+
+			if subscipted_form != current_profile.subscribtionStatus:
+				#get a id from update server
+				if subscipted_form == True:
+
+					headers={"content-type": "application/json"} #设置requist 中的传输格式
+					date ={ 'email':request.user.email}
+					date= json.dumps(date) # 将dic变为json 格式
+					respons = requests.post(url,date,headers=headers)
+					r_dic= respons.json() # 将json格式转化为dic
+					id= r_dic['id']
+					current_profile.subscribtionStatus = True
+					current_profile.subscribtionId = id 
+					current_profile.save()
+					# delate a id from update server
+				else: 
+					current_profile.subscribtionId=0
+					current_profile.subscribtionStatus=False
+					current_profile.save()  # 204==204
+
+
+
 			messages.success(request,f'Account has been updated ')
 			return redirect('profile')
 
