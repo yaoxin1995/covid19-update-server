@@ -14,7 +14,7 @@ import requests , json
 
 
 
-url = 'http://localhost:9005/subscriptions'
+url_subsribtion = 'http://localhost:9005/subscriptions'
 
 
 def register(request):
@@ -66,24 +66,38 @@ def profile(request):
 				#get a id from update server
 				if subscipted_form == True:
 
-					headers={"content-type": "application/json"} #设置requist 中的传输格式
+					headers={"content-type": "application/json","accept": "application/json"} #设置requist 中的传输格式
 					date ={ 'email':request.user.email}
 					date= json.dumps(date) # 将dic变为json 格式
-					respons = requests.post(url,date,headers=headers)
+					respons = requests.post(url_subsribtion,date,headers=headers)
 					r_dic= respons.json() # 将json格式转化为dic
 					id= r_dic['id']
 					current_profile.subscribtionStatus = True
 					current_profile.subscribtionId = id 
 					current_profile.save()
 					# delate a id from update server
+					messages.success(request,'Account and Substribtion has been updated ')
 				else: 
-					current_profile.subscribtionId=0
-					current_profile.subscribtionStatus=False
-					current_profile.save()  # 204==204
+
+
+					headers={"content-type": "application/json"}
+					id = current_profile.subscribtionId
+					url_delate_subribtion = url_subsribtion+"/"+str(id)
+					request= requests.delete(url_delate_subribtion,headers=headers)
+
+					if request.status_code == 204:
+						current_profile.subscribtionId=0
+						current_profile.subscribtionStatus=False
+						current_profile.save()  # 204==204
+						#messages.success(request,'Account and Substribtion has been updated ')
+					else:
+
+						messages.warning(request, 'subscription is not delated,try again')
 
 
 
-			messages.success(request,f'Account has been updated ')
+
+
 			return redirect('profile')
 
 	else:
