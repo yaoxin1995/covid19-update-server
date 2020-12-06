@@ -187,13 +187,19 @@ func (ws *Covid19UpdateWebServer) createTopic(w http.ResponseWriter, r *http.Req
 		writeHttpResponse(NewError("Subscription does not exist."), http.StatusBadRequest, w)
 		return
 	}
-	cov19RegID, err := rki.GetRegionIDForPosition(createTopicReq.Position)
+	cov19RegionID, err := rki.GetRegionIDForPosition(createTopicReq.Position)
 	if err != nil {
-		log.Printf("Could not find RKI region: %v", err)
-		writeHttpResponse(NewError("Could not process position."), http.StatusInternalServerError, w)
-		return
+		switch err.(type) {
+		default:
+			log.Printf("Could not find RKI region: %v", err)
+			writeHttpResponse(NewError("Could not process position."), http.StatusInternalServerError, w)
+			return
+		case *rki.LocationNotFoundError:
+			writeHttpResponse(NewError("Position not supported."), http.StatusUnprocessableEntity, w)
+			return
+		}
 	}
-	t, err := model.NewTopic(createTopicReq.Position, createTopicReq.Threshold, s.ID, cov19RegID)
+	t, err := model.NewTopic(createTopicReq.Position, createTopicReq.Threshold, s.ID, cov19RegionID)
 	if err != nil {
 		writeHttpResponse(NewError(fmt.Sprintf("Could not create topic: %v.", err)), http.StatusInternalServerError, w)
 	}
@@ -306,9 +312,15 @@ func (ws *Covid19UpdateWebServer) updateTopic(w http.ResponseWriter, r *http.Req
 	}
 	cov19RegionID, err := rki.GetRegionIDForPosition(updateTopicReq.Position)
 	if err != nil {
-		log.Printf("Could not find RKI region: %v", err)
-		writeHttpResponse(NewError("Could not process position."), http.StatusInternalServerError, w)
-		return
+		switch err.(type) {
+		default:
+			log.Printf("Could not find RKI region: %v", err)
+			writeHttpResponse(NewError("Could not process position."), http.StatusInternalServerError, w)
+			return
+		case *rki.LocationNotFoundError:
+			writeHttpResponse(NewError("Position not supported."), http.StatusUnprocessableEntity, w)
+			return
+		}
 	}
 	err = t.Update(updateTopicReq.Position, updateTopicReq.Threshold, cov19RegionID)
 	if err != nil {

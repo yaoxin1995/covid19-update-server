@@ -3,7 +3,6 @@ package rki
 import (
 	"covid19-update-service/model"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -48,6 +47,12 @@ func (a *Attributes) LastUpdate() (time.Time, error) {
 	return t, nil
 }
 
+type LocationNotFoundError struct{}
+
+func (e *LocationNotFoundError) Error() string {
+	return "The provided location is not supported."
+}
+
 func requestRKI(url string) (Response, error) {
 	rkiResponse := Response{}
 	rawResponse, err := http.Get(url)
@@ -79,7 +84,7 @@ func GetRegionIDForPosition(position model.GPSPosition) (uint, error) {
 		return 0, err
 	}
 	if len(resp.Features) == 0 {
-		return 0, errors.New("could not find feature for position")
+		return 0, &LocationNotFoundError{}
 	}
 	return resp.Features[0].Attributes.ObjectID, nil
 }
