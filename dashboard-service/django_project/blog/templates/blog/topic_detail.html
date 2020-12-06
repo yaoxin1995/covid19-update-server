@@ -1,0 +1,36 @@
+
+
+<!-- 声明集成一个父html -->
+{% extends "blog/base.html" %}
+
+
+
+{% block content %}
+
+
+	{% if user.is_authenticated %}
+
+
+		<article class="media content-section">
+		  <div class="media-body">
+
+<!-- 		对应于url.py 中的该 url :    post/<int:pk>/' -->
+		    	<h2 class="article-title">Detail</h2>
+		   		 <p class="article-content">{{ r_dic.id }}</p>
+				 <p class="article-content">latitude: {{ r_dic.position.latitude }}</p>
+		    	<p class="article-content">longitude:{{ r_dic.position.longitude }}</p>
+		    	<p class="article-content">threshold:{{ r_dic.threshold }}</p>
+
+		    	<div>
+            		<a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'post-update' r_dic.id  %}">Update</a>
+           		 	<a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'post-delete' r_dic.id %}">Delete</a>
+          		</div>
+
+		 		 </div>
+		</article>
+
+	{% endif%}
+		
+
+
+{% endblock content %}

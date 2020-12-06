@@ -10,11 +10,13 @@ import requests , json
 #当一个class继承了该LoginRequiredMixin 则该class仅在login后才能看
 #当一个class继承了该UserPassesTestMixin可设置其中	def test_func(self)方法，为继承该class的类设置使用条件
 from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
+from django.contrib.auth.decorators import login_required
 
 
 from django.views.generic import ListView ,DetailView,CreateView,UpdateView,DeleteView
 
 url_subsribtion = 'http://localhost:9005/subscriptions'
+
 
 # posts = [
 # 	{
@@ -49,13 +51,19 @@ def home(request):
 		else:
 			# get all topic from update server
 
+			ulr_gettopic = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics"
+			headers={"accept": "application/json"}
+			respons = requests.get(ulr_gettopic,headers=headers)
+			if respons.status_code == 200:
+				messages.success(request, 'successful get all topics from update server.')
+				r_list= respons.json() # 将json格式转化为list
+				context ={ 'topics':r_list}
+				return render(request,'blog/home.html',context)
+			else:
+				messages.warning(request, 'get topics from server failed')
+				return render(request,'blog/home.html')
 
 
-
-	
-		context ={ 'posts':current_user.post_set.all()}
-
-		return render(request,'blog/home.html',context)
 	else:
 		return redirect('login')
 
@@ -127,3 +135,41 @@ def topicCreation(request):
 #         "longitude": 13.763787
 #     }
 # }
+
+#{{BASE_URL}}/subscriptions/1/topics/1
+def detail(request,id):
+	current_user=request.user
+	current_profile = current_user.profile 
+	url_detail = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics/"+str(id)
+
+
+	headers={"accept": "application/json"}
+	respons = requests.get(url_detail,headers=headers)
+	if respons.status_code == 200:
+		messages.success(request, 'successful get this topics from update server.')
+		r_dic= respons.json() # 将json格式转化为dic
+
+		return render(request,'blog/topic_detail.html',{'r_dic':r_dic})
+	else:
+		messages.warning(request, 'get this topic failed')
+		return redirect('blog-home')
+
+#{{BASE_URL}}/subscriptions/1/topics/1
+def delate(request,id):
+	current_user=request.user
+	current_profile = current_user.profile
+	url_delate = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics/"+str(id)
+	r = requests.delete(url_delate)
+	if r.status_code == 204:
+		messages.success(request, 'successful delate this topic from update server.')
+		return redirect('blog-home')
+	else:
+		messages.warning(request, 'delate this topic failed,try again ')
+		return redirect('detail', id=id) # This is the argument of a view
+
+
+
+
+def update(request,id): 
+	current_user=request.user
+	current_profile = current_user.profile

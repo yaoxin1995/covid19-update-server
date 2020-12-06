@@ -15,14 +15,14 @@ urlpatterns = [
     path('', views.home, name='blog-home'),
     path('register/',register,name='register'),
     path('subscription/topic/', views.topicCreation, name='post-create'),
-    path('about/',views.about,name='blog-about')
+    path('about/',views.about,name='blog-about'),
     #int:pk :primary key of post 
-  #  path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
+   path('subscription/topic/<int:id>/', views.detail, name='post-detail'),
 
   # 对应于 post_detail 中的该 <h2><a class="article-title" href="{%url 'post-detail' post.id %}">{{ post.title }}</a></h2>
 #	path('post/new/', views.creatTopic, name='post-create'),
-#	path('post/<int:pk>/update/', PostUpdateView.as_view(), name='post-update'),
-#	path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post-delete'),
+	path('subscription/topic/<int:id>/update', views.update, name='post-update'),
+	path('subscription/topic/<int:id>/delate', views.delate, name='post-delete'),
 
 
 
