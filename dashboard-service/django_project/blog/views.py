@@ -4,7 +4,7 @@ from .models import Post
 #引入当前的user
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .form import TopicForm
+from .form import TopicForm,TopicUpdateForm
 import requests , json
 
 #当一个class继承了该LoginRequiredMixin 则该class仅在login后才能看
@@ -168,8 +168,48 @@ def delate(request,id):
 		return redirect('detail', id=id) # This is the argument of a view
 
 
-
+#{{BASE_URL}}/subscriptions/1/topics/1
 
 def update(request,id): 
 	current_user=request.user
 	current_profile = current_user.profile
+	url_update = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics/"+str(id)
+
+	if request.method == 'POST':
+		form = TopicUpdateForm(request.POST)
+
+		if form.is_valid():
+
+			threshold = form.cleaned_data['threshold']
+			latitude =form.cleaned_data['latitude']
+			longitude =form.cleaned_data['longitude']
+
+			date_dic = {
+				'threshold':threshold,
+				'position' :{ 'latitude':latitude,'longitude':longitude}
+				}
+
+			headers={"content-type": "application/json","accept": "application/json"} #设置requist 中的传输格式
+				
+			date= json.dumps(date_dic) # 将dic变为json 格式
+			respons = requests.put(url_update,date,headers=headers)
+			if respons.status_code == 200:
+					# topic created
+					# delate a id from update server
+				# context ={ 'successful_message':"successful creat a topic"}
+				messages.success(request, 'successful update this topic.')
+
+				# return render(request,'blog/create_topic.html',context)
+				return redirect('blog-home')
+			else:
+				messages.warning(request, 'update this topic failed,try again')
+				return redirect('detail', id=id)
+		else:
+			messages.warning(request, 'format not correct,try agian')
+
+	form = TopicUpdateForm()
+
+	return render(request,'blog/topic_update.html',{'form': form})
+
+
+
