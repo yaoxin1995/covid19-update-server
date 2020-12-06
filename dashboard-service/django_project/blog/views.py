@@ -3,7 +3,9 @@ from  django.http import HttpResponse
 from .models import Post
 #引入当前的user
 from django.contrib.auth.models import User
-
+from django.contrib import messages
+from .form import TopicForm
+import requests , json
 
 #当一个class继承了该LoginRequiredMixin 则该class仅在login后才能看
 #当一个class继承了该UserPassesTestMixin可设置其中	def test_func(self)方法，为继承该class的类设置使用条件
@@ -12,6 +14,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
 
 from django.views.generic import ListView ,DetailView,CreateView,UpdateView,DeleteView
 
+url_subsribtion = 'http://localhost:9005/subscriptions'
 
 # posts = [
 # 	{
@@ -30,11 +33,25 @@ from django.views.generic import ListView ,DetailView,CreateView,UpdateView,Dele
 
 # ]
 
+
+#show all the topic  in homep.html if user is login and subscribed the server
 def home(request):
 
 	current_user = request.user
 
+	current_profile=current_user.profile
+
 	if current_user.is_authenticated:
+
+		if current_profile.subscribtionStatus == False:
+			messages.warning(request, 'you haven\'t subscribed yed ,please subscribe in profile')
+			return redirect('profile')
+		else:
+			# get all topic from update server
+
+
+
+
 	
 		context ={ 'posts':current_user.post_set.all()}
 
@@ -44,77 +61,69 @@ def home(request):
 
 
 
-#一个postlist view   home()
-class PostListView(ListView):
-	"""docstring for ClassName"""
-	#查询哪个model 去创建一个list
-
-	# if self.request.user.is_authenticated:
-	# 	# model = \
-	# 	template_name= 'blog/home.html'   #   <app>/<model>_<viewtype>.html  viewtype 这里指listview
-	# 	queryset = current_user.post_set
-	# 	context_object_name = 'posts' #指定在 html中list的名字
-	# else:
-	template_name= 'blog/home.html'   #   <app>/<model>_<viewtype>.html  viewtype 这里指listview
-	model = Post
-	context_object_name = 'posts'  #指定在 html中list的名字
-
-	#改变 post的出现顺序
-	odering = ['data_posted']
-
-
-#一个postlist view   home()
-class PostDetailView(DetailView):
-	model= Post
-
-
-
-#一个postlist view   home()
-class PostCreateView(LoginRequiredMixin,CreateView):
-	model= Post
-#需要输入的 变量
-	fields =['title','latitude','longitude']
-
-	# 给每个提交的form一个auther
-
-	def form_valid(self,form):
-		form.instance.author = self.request.user
-		return super().form_valid(form)
-
-	# 要想成功创建一个 post 必须在Post model定义其 absolut url def get_absolute_url(self):
-	# 这样才能在成功创建后返回
-
-
-class PostUpdateView(LoginRequiredMixin,UserPassesTestMixin,UpdateView):
-	model= Post
-#需要输入的 变量
-	fields =['title','latitude','longitude']
-
-	# 给每个提交的form一个auther
-
-	def form_valid(self,form):
-		form.instance.author = self.request.user
-		return super().form_valid(form)
-
-	def test_func(self):
- 		post = self.get_object()
- 		if self.request.user == post.author:
- 			return True
- 		else:
- 			return False
-
-class PostDeleteView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
-	model= Post
-
-	# delete 后的返回页面
-	success_url = '/'
-
-	def test_func(self):
- 		post = self.get_object()
- 		if self.request.user == post.author:
- 			return True
- 		else:
- 			return False
-
 def about(request):
-	return render(request,'blog/about.html',{'title':'about'})
+	return render(request,'blog/about.html')
+
+
+
+
+@login_required	
+def topicCreation(request):
+	current_user=request.user
+	current_profile = current_user.profile 
+
+	if current_profile.subscribtionStatus== False:
+		# context ={ 'error_message':"you haven't subscribed yed ,please go to profile to subscribe it"}
+		# return render(request,'blog/create_topic.html',context)
+
+		messages.warning(request, 'you haven\'t subscribed yed ,please go to profile to subscribe it')
+		return redirect('profile')
+
+
+	elif request.method == 'POST':
+		form = TopicForm(request.POST)
+
+		if form.is_valid():
+
+			threshold = form.cleaned_data['threshold']
+			latitude =form.cleaned_data['latitude']
+			longitude =form.cleaned_data['longitude']
+
+			date_dic = {
+				'threshold':threshold,
+				'position' :{ 'latitude':latitude,'longitude':longitude}
+				}
+
+			url_topic_creation = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics"
+
+			headers={"content-type": "application/json","accept": "application/json"} #设置requist 中的传输格式
+				
+			date= json.dumps(date_dic) # 将dic变为json 格式
+			respons = requests.post(url_topic_creation,date,headers=headers)
+			if respons.status_code == 201:
+					# topic created
+					# delate a id from update server
+				# context ={ 'successful_message':"successful creat a topic"}
+				messages.success(request, 'successful creat a topic.')
+
+				# return render(request,'blog/create_topic.html',context)
+				return redirect('post-create')
+
+			else:
+				# context ={ 'error_message':"creat a topic failed try again"}
+				# return render(request,'blog/create_topic.html',context)
+				messages.success(request, 'successful creat a topic.')
+				return redirect('post-create')
+	else:
+		form = TopicForm()
+
+		return render(request,'blog/create_topic.html',{'form': form})
+
+
+# 				{
+#     "threshold": 20,
+#     "position": {
+#         "latitude": 51.150505,
+#         "longitude": 13.763787
+#     }
+# }

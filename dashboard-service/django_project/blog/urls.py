@@ -4,7 +4,7 @@ from user.views import register
 
 from . import views
 
-from .views import PostListView, PostDetailView,PostCreateView,PostUpdateView,PostDeleteView
+
 
 #path('', views.home, name='blog-home')  运用 function view 的url
 
@@ -13,15 +13,16 @@ from .views import PostListView, PostDetailView,PostCreateView,PostUpdateView,Po
 urlpatterns = [
     #path('', PostListView.as_view(), name='blog-home'),
     path('', views.home, name='blog-home'),
-    path('about/', views.about, name='blog-about'),
-    #path('register/',user_views.register,name='register')
+    path('register/',register,name='register'),
+    path('subscription/topic/', views.topicCreation, name='post-create'),
+    path('about/',views.about,name='blog-about')
     #int:pk :primary key of post 
-    path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
+  #  path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
 
   # 对应于 post_detail 中的该 <h2><a class="article-title" href="{%url 'post-detail' post.id %}">{{ post.title }}</a></h2>
-	path('post/new/', PostCreateView.as_view(), name='post-create'),
-	path('post/<int:pk>/update/', PostUpdateView.as_view(), name='post-update'),
-	path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post-delete'),
+#	path('post/new/', views.creatTopic, name='post-create'),
+#	path('post/<int:pk>/update/', PostUpdateView.as_view(), name='post-update'),
+#	path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post-delete'),
 
 
 
