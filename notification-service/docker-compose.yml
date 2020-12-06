@@ -1,0 +1,12 @@
+version: '3'
+services:
+  notification-service:
+    container_name: notification-service
+    build:
+      context: .
+    environment:
+      - TELEGRAM_BOT_TOKEN=
+    command: ./startup.sh
+    ports:
+      - 80:5000
+    restart: always
