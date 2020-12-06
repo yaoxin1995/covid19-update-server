@@ -52,11 +52,17 @@ func shipEvent(e model.Event, sID uint) error {
 		return fmt.Errorf("could not load subscription: %v", err)
 	}
 	if s.TelegramChatID.Ptr() != nil {
-		tp := NewTelegramPublisher(s.TelegramChatID.String)
-		err = tp.Publish(e)
-		if err != nil {
-			fmt.Printf("Could not publish event via telegram: %v", err)
-		}
+		go func() {
+			log.Printf("Sending telegram notification...")
+			tp := NewTelegramPublisher(s.TelegramChatID.String)
+			err = tp.Publish(e)
+			if err != nil {
+				fmt.Printf("Could not publish event %d via telegram: %v", e.ID, err)
+				return
+			}
+			log.Printf("Sending telegram notification finished successfully")
+		}()
+
 	}
 	if s.Email.Ptr() != nil {
 		ep := NewEmailPublisher(s.Email.String)

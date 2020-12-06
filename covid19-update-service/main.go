@@ -12,17 +12,34 @@ import (
 )
 
 func init() {
-	dbType := os.Getenv("DB_TYPE")
-	dbSource := os.Getenv("DB_SOURCE")
+	dbType, ok := os.LookupEnv("DB_TYPE")
+	if !ok {
+		log.Fatalf("DB_TYPE missing")
+	}
+	dbSource, ok := os.LookupEnv("DB_SOURCE")
+	if !ok {
+		log.Fatalf("DB_SOURCE missing")
+	}
 	err := model.SetupDB(dbType, dbSource)
 	if err != nil {
 		log.Fatalf("Could not setup database: %v", err)
 	}
+	telegramAPIUri, ok := os.LookupEnv("TELEGRAM_CONTACT_URI")
+	if !ok {
+		log.Fatalf("TELEGRAM_CONTACT_URI missing")
+	}
+	notifier.TelegramApiURI = telegramAPIUri
 }
 
 func main() {
-	host := os.Getenv("SERVER_HOST")
-	port := os.Getenv("SERVER_PORT")
+	host, ok := os.LookupEnv("SERVER_HOST")
+	if !ok {
+		log.Fatalf("SERVER_HOST missing")
+	}
+	port, ok := os.LookupEnv("SERVER_PORT")
+	if !ok {
+		log.Fatalf("SERVER_PORT missing")
+	}
 	respAPI, err := server.SetupServer(host, port)
 	if err != nil {
 		log.Fatalf("Could not start web server: %v", err)

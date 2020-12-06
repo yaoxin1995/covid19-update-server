@@ -5,7 +5,7 @@ services:
     build:
       context: .
     environment:
-      - TELEGRAM_BOT_TOKEN=
+      - TELEGRAM_BOT_TOKEN=1408066607:AAGngahMqS98-oJpxEWdbf0Q0ktKJ_ETiIo
     command: ./startup.sh
     ports:
       - 80:5000
