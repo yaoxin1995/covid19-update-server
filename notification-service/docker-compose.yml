@@ -6,6 +6,12 @@ services:
       context: .
     environment:
       - TELEGRAM_BOT_TOKEN=
+      # Define messages for each message type
+      - WELCOME_MESSAGE=Welcome, {{ USER_FULL_NAME }}! You are now able to configure {{ SERVICE_NAME }} via Telegram.
+        Go to your dashboard and add the Telegram notification provider by entering this ID {{ USER_CHAT_ID }}.
+      - UNKNOWN_MESSAGE=Sorry, {{ USER_FULL_NAME }}. I didn't understand you.
+      # Use template variables (prefix TEMPLATE_VAR_)
+      - TEMPLATE_VAR_SERVICE_NAME=COVID-19 incidence update notifications
     command: ./startup.sh
     ports:
       - 80:5000
