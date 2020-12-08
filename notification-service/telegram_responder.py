@@ -62,7 +62,7 @@ class TelegramResponder:
     def start_polling(self):
         # Check for bot messages every x seconds from Telegram
         self.updater.start_polling(poll_interval=5)
-        self.updater.idle()
+        #self.updater.idle()
         #self.updater.stop()
 
 

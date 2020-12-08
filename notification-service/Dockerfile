@@ -28,5 +28,3 @@ RUN pip3 install APScheduler==3.6.3 \
 WORKDIR /opt/notification-service
 
 COPY . .
-
-RUN chmod +x ./startup.sh

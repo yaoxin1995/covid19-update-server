@@ -1,6 +1,7 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from telegram_responder import TelegramResponder
 
 
 class Config:
@@ -23,3 +24,10 @@ from view import *
 # create db and tables
 db.create_all()
 
+tn = TelegramResponder()
+# Run telegram responder for being able to react to user messages
+tn.start_polling()
+
+# To show messages we produced so far
+# https://stackoverflow.com/questions/44405708/flask-doesnt-print-to-console
+print(flush=True)

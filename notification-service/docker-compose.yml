@@ -5,6 +5,7 @@ services:
     build:
       context: .
     environment:
+      - FLASK_APP=app.py
       - TELEGRAM_BOT_TOKEN=
       # Define messages for each message type
       - WELCOME_MESSAGE=Welcome, {{ USER_FULL_NAME }}! You are now able to configure {{ SERVICE_NAME }} via Telegram.
@@ -12,7 +13,7 @@ services:
       - UNKNOWN_MESSAGE=Sorry, {{ USER_FULL_NAME }}. I didn't understand you.
       # Use template variables (prefix TEMPLATE_VAR_)
       - TEMPLATE_VAR_SERVICE_NAME=COVID-19 incidence update notifications
-    command: ./startup.sh
+    command: flask run --host=0.0.0.0
     ports:
       - 80:5000
     restart: always
