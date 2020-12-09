@@ -17,20 +17,25 @@ Have a look at the API documentation for more details.
 
 ## Prerequisites
 
-In order to be able to send messages via Telegram you need create a
+1) In order to be able to send messages via Telegram you need create a
 [Telegram bot](https://telegram.org/blog/bot-revolution).
 Read [this](https://core.telegram.org/bots) introduction to get in touch with the Telegram bot platform.
 You are able to generate a bot token after you created the bot.
+2) Open [docker-compose.yml](docker-compose.yml) file and set `TELEGRAM_BOT_TOKEN` environment variable to be able to
+   communicate with your bot via the Telegram bot API.
+3) By default, this web service uses HTTPS. Therefore, you need to create a certificate and corresponding private key.
+   This can be done by this command (if you don't own a certificate already):
+   `mkdir -p ./cert && openssl req -x509 -newkey rsa:4096 -nodes -out ./cert/cert.pem -keyout ./cert/key.pem -days 365`.
+   This directory has to be bind-mounted into the container which is done in the `volumes` section of the Docker compose
+   file.
+4) *optional:* Set your own messages (`WELCOME_MESSAGE` and `UNKNOWN_MESSAGE`) via environment variables in
+   [docker-compose.yml](docker-compose.yml) file.
+5) Run `docker-compose build` to create the container image.
 
 ## How to run the web service
 
- * Open [docker-compose.yml](docker-compose.yml) file and set `TELEGRAM_BOT_TOKEN` environment variable to be able to
-   communicate with your bot via the Telegram bot API.
- * *optional:* Set your own messages (`WELCOME_MESSAGE` and `UNKNOWN_MESSAGE`) via environment variables in
-   [docker-compose.yml](docker-compose.yml) file.
- * Run `docker-compose build` to create the container image.
- * Run `docker-compose up -d` to create and start the container.
+ * Enter `docker-compose up -d` to create and start the container.
 
 ## How to stop the web service
 
- * Run `docker-compose down` to stop and destroy the container.
+ * Enter `docker-compose down` to stop and destroy the container.

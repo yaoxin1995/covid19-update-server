@@ -13,7 +13,10 @@ services:
       - UNKNOWN_MESSAGE=Sorry, {{ USER_FULL_NAME }}. I didn't understand you.
       # Use template variables (prefix TEMPLATE_VAR_)
       - TEMPLATE_VAR_SERVICE_NAME=COVID-19 incidence update notifications
-    command: flask run --host=0.0.0.0
+    command: flask run --host=0.0.0.0 --port 443 --cert=cert/cert.pem --key=cert/key.pem
     ports:
-      - 80:5000
+      - 443:443
+    volumes:
+      # Include certificate dir needed for HTTPS support
+      - ./cert/:/opt/notification-service/cert:ro
     restart: unless-stopped

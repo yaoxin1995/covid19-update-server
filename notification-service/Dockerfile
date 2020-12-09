@@ -23,7 +23,8 @@ RUN pip3 install APScheduler==3.6.3 \
     tornado==6.1 \
     tzlocal==2.1 \
     urllib3==1.26.2 \
-    Werkzeug==1.0.1
+    Werkzeug==1.0.1 \
+    pyOpenSSL==20.0.0
 
 WORKDIR /opt/notification-service
 
