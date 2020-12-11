@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/handlers"
-
 	"github.com/gorilla/mux"
 )
 
@@ -45,27 +43,29 @@ func (ws *Covid19UpdateWebServer) registerRoutes() {
 
 	// Subscription routes
 	router.HandleFunc("/subscriptions", ws.checkAcceptType(ws.getSubscriptions)).Methods("GET")
-	router.HandleFunc("/subscriptions/{id}", ws.checkAcceptType(ws.getSubscription)).Methods("GET")
 	router.HandleFunc("/subscriptions", ws.checkAcceptType(ws.checkContentType(ws.createSubscription))).Methods("POST")
+	router.HandleFunc("/subscriptions", ws.preflightHandler("GET", "POST")).Methods("OPTIONS")
+	router.HandleFunc("/subscriptions/{id}", ws.checkAcceptType(ws.getSubscription)).Methods("GET")
 	router.HandleFunc("/subscriptions/{id}", ws.checkAcceptType(ws.deleteSubscription)).Methods("DELETE")
 	router.HandleFunc("/subscriptions/{id}", ws.checkAcceptType(ws.checkContentType(ws.updateSubscription))).Methods("PUT")
+	router.HandleFunc("\"/subscriptions/{id}\"", ws.preflightHandler("GET", "DELETE", "PUT")).Methods("OPTIONS")
 
 	// Topic routes
 	router.HandleFunc("/subscriptions/{subscription_id}/topics", ws.checkAcceptType(ws.getTopics)).Methods("GET")
-	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.checkAcceptType(ws.getTopic)).Methods("GET")
 	router.HandleFunc("/subscriptions/{subscription_id}/topics", ws.checkAcceptType(ws.checkContentType(ws.createTopic))).Methods("POST")
+	router.HandleFunc("/subscriptions/{subscription_id}/topics", ws.preflightHandler("GET", "POST")).Methods("OPTIONS")
+	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.checkAcceptType(ws.getTopic)).Methods("GET")
 	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.checkAcceptType(ws.deleteTopic)).Methods("DELETE")
 	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.checkAcceptType(ws.checkContentType(ws.updateTopic))).Methods("PUT")
+	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}", ws.preflightHandler("GET", "DELETE", "PUT")).Methods("OPTIONS")
 
 	// Incidence routes
 	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}/incidence", ws.checkAcceptType(ws.getIncidence)).Methods("POST")
+	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}/incidence", ws.preflightHandler("POST")).Methods("OPTIONS")
 
 	// Events
 	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}/events", ws.checkAcceptType(ws.getEvents)).Methods("GET")
+	router.HandleFunc("/subscriptions/{subscription_id}/topics/{topic_id}/events", ws.preflightHandler("GET")).Methods("OPTIONS")
 
-	// Support CORS Preflight
-	headersOk := handlers.AllowedHeaders([]string{"Content-Type"})
-	originsOk := handlers.AllowedOrigins([]string{"*"})
-	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
-	ws.Handler = handlers.CORS(originsOk, headersOk, methodsOk)(router)
+	ws.Handler = router
 }

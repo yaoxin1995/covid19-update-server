@@ -61,3 +61,12 @@ func contains(s []string, e string) bool {
 	}
 	return false
 }
+
+func (ws *Covid19UpdateWebServer) preflightHandler(allowedMethods ...string) func(w http.ResponseWriter,
+	r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", strings.Join(allowedMethods, ", "))
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length")
+	}
+}
