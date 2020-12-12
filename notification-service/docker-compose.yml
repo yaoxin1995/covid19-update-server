@@ -29,3 +29,17 @@ services:
       # Should only be used by Swagger
       - 127.0.0.1:80:80
     restart: unless-stopped
+
+# Use Swagger.io editor for manual api tests
+# Comment in the following line if you want to start Swagger editor container.
+x-disabled:
+  swagger-editor:
+      container_name: swagger-editor
+      image: swaggerapi/swagger-editor
+      environment:
+        - SWAGGER_FILE=/tmp/swagger.yaml
+      volumes:
+        - ./swagger_api_docu.yaml:/tmp/swagger.yaml
+      ports:
+        - 8080:8080
+      restart: unless-stopped
