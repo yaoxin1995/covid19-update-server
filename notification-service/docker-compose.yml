@@ -13,10 +13,19 @@ services:
       - UNKNOWN_MESSAGE=Sorry, {{ USER_FULL_NAME }}. I didn't understand you.
       # Use template variables (prefix TEMPLATE_VAR_)
       - TEMPLATE_VAR_SERVICE_NAME=COVID-19 incidence update notifications
-    command: flask run --host=0.0.0.0 --port 443 --cert=cert/cert.pem --key=cert/key.pem
-    ports:
-      - 443:443
+    command: flask run --host=0.0.0.0 --port 80
+    restart: unless-stopped
+
+  nginx:
+    container_name: nginx
+    image: nginx:latest
     volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       # Include certificate dir needed for HTTPS support
-      - ./cert/:/opt/notification-service/cert:ro
+      - ./nginx/cert:/etc/nginx/cert:ro
+    ports:
+      # Default port on which we want to access notification-service
+      - 443:443
+      # Should only be used by Swagger
+      - 127.0.0.1:80:80
     restart: unless-stopped

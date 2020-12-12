@@ -25,7 +25,7 @@ You are able to generate a bot token after you created the bot.
    communicate with your bot via the Telegram bot API.
 3) By default, this web service uses HTTPS. Therefore, you need to create a certificate and corresponding private key.
    This can be done by this command (if you don't own a certificate already):
-   `mkdir -p ./cert && openssl req -x509 -newkey rsa:4096 -nodes -out ./cert/cert.pem -keyout ./cert/key.pem -days 365`.
+   `mkdir -p ./nginx/cert && openssl req -x509 -newkey rsa:4096 -nodes -out ./nginx/cert/cert.pem -keyout ./nginx/cert/key.pem -days 365`.
    This directory has to be bind-mounted into the container which is done in the `volumes` section of the Docker compose
    file.
 4) *optional:* Set your own messages (`WELCOME_MESSAGE` and `UNKNOWN_MESSAGE`) via environment variables in
