@@ -1,6 +1,7 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from telegram_responder import TelegramResponder
 
 
@@ -14,6 +15,8 @@ class Config:
 
 
 app = Flask(__name__)
+# enabling CORS support
+CORS(app)
 # load some additional config parameters
 app.config.from_object(Config)
 
