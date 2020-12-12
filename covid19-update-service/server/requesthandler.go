@@ -404,7 +404,6 @@ func (ws *Covid19UpdateWebServer) getEvents(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	var e []model.Event
-	log.Printf("%s", limitRequested)
 	if limitRequested {
 		e, err = model.GetEventsWithLimit(tID, limit)
 	} else {
