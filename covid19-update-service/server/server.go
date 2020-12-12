@@ -60,7 +60,7 @@ func (ws *Covid19UpdateWebServer) registerRoutes() {
 	subscriptionRouter.HandleFunc("", ws.checkAcceptType(ws.getSubscription)).Methods("GET")
 	subscriptionRouter.HandleFunc("", ws.checkAcceptType(ws.deleteSubscription)).Methods("DELETE")
 	subscriptionRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.updateSubscription))).Methods("PUT")
-	subscriptionsRouter.HandleFunc("", nil).Methods("OPTIONS")
+	subscriptionRouter.HandleFunc("", nil).Methods("OPTIONS")
 	subscriptionRouter.Use(
 		handlers.CORS(
 			handlers.AllowedHeaders(allowedHeaders),

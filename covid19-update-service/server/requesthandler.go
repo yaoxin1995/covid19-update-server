@@ -35,7 +35,7 @@ type SubscriptionRequest struct {
 func (ws *Covid19UpdateWebServer) getSubscriptions(w http.ResponseWriter, _ *http.Request) {
 	subs, err := model.GetSubscriptions()
 	if err != nil {
-		log.Printf("could not subscriptions: %v", err)
+		log.Printf("could not load subscriptions: %v", err)
 		writeHttpResponse(NewError("Could not load subscriptions."), http.StatusInternalServerError, w)
 		return
 	}

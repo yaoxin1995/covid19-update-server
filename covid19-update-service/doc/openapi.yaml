@@ -4,52 +4,51 @@ info:
   version: "1.0.0"
   title: "Covid19 Update Service"
 servers:
-  - url: localhost:9005
+  - url: http://0.0.0.0:9005
     description: Local Server
   - url: 185.128.119.135:9005
     description: Cloud'n'Heat Server
 paths:
   /subscriptions:
     post:
-      tags: ["subscriptions"]
-      summary: Create new subscription
+      tags: ["Subscriptions"]
+      summary: Create a new subscription
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                telegramChatID:
-                  type: string
-                  description: "Telegram Chat ID received from Telegram Bot."
-                email:
-                  type: string
-                  format: "email"
+              $ref: '#/components/schemas/Subscription'
       responses:
         201:
-          description: Successful creation.
+          description: Subscription was created successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Subscription'
+        400:
+          description: Request is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     get:
-      tags: ["subscriptions"]
-      summary: Get list of all subscriptions
+      tags: ["Subscriptions"]
+      summary: List all subscriptions
       responses:
         200:
-          description: Successful operation.
+          description: Subscriptions are loaded successfully
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Subscription'
-  /subscriptions/{id}:
+  /subscriptions/{subscriptionId}:
     get:
-      tags: ["subscriptions"]
-      summary: Get subscription by ID
+      tags: ["Subscriptions"]
+      summary: Get a subscription by its ID
       parameters:
-        - name: id
+        - name: subscriptionId
           in: path
           description: Subscription ID
           required: true
@@ -59,71 +58,451 @@ paths:
             minimum: 0
       responses:
         200:
-          description: Succesfull operation.
+          description: Subscription was loaded successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Subscription'
+        400:
+          description: Request is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         404:
-          description: Subscription with given ID was not found.
+          description: Subscription with given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: ["Subscriptions"]
+      summary: Update a subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subscription'
+      responses:
+        200:
+          description: Subscription was updated successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Subscription'
+        400:
+          description: Request is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Subscription with given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: ["Subscriptions"]
+      summary: Delete subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        204:
+          description: Subscription was deleted successfully
+        400:
+          description: Request is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Subscription with given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /subscriptions/{subscriptionId}/topics:
+    post:
+      tags: ["Topics", "Subscriptions"]
+      summary: "Create a new topic for a subscription"
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Topic'
+      responses:
+        201:
+          description: Topic was created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Topic'
+        400:
+          description: Request is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Subscription with given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: Provided location is not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags: ["Topics", "Subscriptions"]
+      summary: "List all topics of a subscription"
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        200:
+          description: Topics were loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Topic'
+        400:
+          description: Request is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Subscription with given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /subscriptions/{subscriptionId}/topics/{topicId}:
+    get:
+      tags: ["Topics"]
+      summary: Get a topic of a subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: topicId
+          in: path
+          description: Topic ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        200:
+          description: Topic was loaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Topic'
+        400:
+          description: Request is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Topic with given ID was not found for subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: ["Topics"]
+      summary: Update a topic of a subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: topicId
+          in: path
+          description: Topic ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Topic'
+      responses:
+        200:
+          description: Topic was updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Topic'
+        400:
+          description: Request is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Topic with given ID was not found for subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: Provided location is not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: ["Topics"]
+      summary: Delete topic of subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: topicId
+          in: path
+          description: Topic ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        204:
+          description: Subscription was deleted successfully
+        400:
+          description: Request is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Subscription with given ID was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /subscriptions/{subscriptionId}/topics/{topicId}/incidence:
+    post:
+      tags: ["Topics", "Incidences"]
+      summary: Get current incidence of topic of a subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: topicId
+          in: path
+          description: Topic ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        200:
+          description: Incidence value is loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Incidence'
+        400:
+          description: Request is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Topic with given ID was not found for subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /subscriptions/{subscriptionId}/topics/{topicId}/events:
+    get:
+      tags: ["Topics", "Events"]
+      summary: List all topics of a subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: topicId
+          in: path
+          description: Topic ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        200:
+          description: Events were loaded successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        400:
+          description: Request is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Topic with given ID was not found for subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   schemas:
     Position:
+      required: 
+        - longitude
+        - latitude
       type: "object"
+      description: "GPS position"
       properties:
         latitude:
           type: "number"
           format: "double"
+          example: 51.031945
         longitude:
           type: "number"
           format: "double"
+          example: 13.712836
       xml:
         name: "Position"
     Subscription:
       type: "object"
+      description: "Configuration of output channels for Covid 19 events."
       properties:
         id:
           type: "integer"
           format: "int64"
           minimum: 0
+          description: "ID of the subscription"
+          readOnly: true
         email:
           type: "string"
           format: "email"
           x-nullable: true
-        telegramChatID:
+          description: "Email address to which event notifications are sent. If no email notification should be received the parameter is set to `null`."
+        telegramChatId:
           type: "string"
           x-nullable: true
+          description: "Telegram chat ID, which is provided by the Telegram Bot, to which event notifications are sent. If no Telegram notification should be received the parameter is set to `null`.."
+          example: "578989238"
       xml:
         name: "Subscription"
     Topic:
       type: "object"
+      description: "Configuration of location that should be monitored for Covid 19 cases."
+      required:
+        - position
+        - threshold
       properties:
         id:
           type: "integer"
           format: "int64"
           minimum: 0
+          description: "ID of topic"
+          readOnly: true
         position:
          $ref: "#/components/schemas/Position"
-        treshold:
+         description: "Position for which the Covid incidence value is monitored"
+        threshold:
           type: "integer"
           format: "int64"
           minimum: 0
+          example: 50
+          description: "Threshold value of Covid 19 cases per 100k people in the last 7 days above which an event is generated and shipped to the configured output channels of the subscription."
       xml:
         name: "Topic"
     Event:
       type: "object"
+      description: "Event that is created each time the Covid 19 cases per 100k people in the last 7 days exceed the threshold."
       properties:
         id:
           type: "integer"
           format: "int64"
           minimum: 0
+          description: "ID of event"
+          readOnly: true
         message:
           type: "string"
           format: "int64"
+          description: "Message of event"
+          example: "The Covid 19 7-day-incidence value at your location (13.712836, 51.031945) currently is 192.715256. You receive this message, because you set the alert threshold to 50."
       xml:
         name: "Event"
     Incidence:
@@ -133,11 +512,21 @@ components:
           type: "integer"
           format: "int64"
           minimum: 0
-        message:
-          type: "string"
-          format: "int64"
+          description: "ID of incidence value"
+          readOnly: true
+        incidence:
+          type: "number"
+          format: "double"
+          description: "Covid 19 cases per 100k people in the last 7 days at the topic's location"
+          example: 192.715256
       xml:
         name: "Incidence"
-externalDocs:
-  description: "Find out more about Swagger"
-  url: "http://swagger.io"
+    Error:
+      type: "object"
+      properties:
+        error:
+          type: "string"
+          description: "Error descriptions"
+          example: "Invalid input"
+      xml:
+        name: "Error"
