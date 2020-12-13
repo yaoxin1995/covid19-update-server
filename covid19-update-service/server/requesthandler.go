@@ -416,3 +416,42 @@ func (ws *Covid19UpdateWebServer) getEvents(w http.ResponseWriter, r *http.Reque
 
 	writeHttpResponse(e, http.StatusOK, w)
 }
+
+func (ws *Covid19UpdateWebServer) getEvent(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sID, err := toUInt(vars["subscription_id"])
+	if err != nil {
+		writeHttpResponse(NewError("Subscription ID has to be an unsigned integer."), http.StatusBadRequest, w)
+		return
+	}
+	tID, err := toUInt(vars["topic_id"])
+	if err != nil {
+		writeHttpResponse(NewError("Topic ID has to be an unsigned integer."), http.StatusBadRequest, w)
+		return
+	}
+	eID, err := toUInt(vars["event_id"])
+	if err != nil {
+		writeHttpResponse(NewError("Event ID has to be an unsigned integer."), http.StatusBadRequest, w)
+		return
+	}
+	t, err := model.GetTopic(tID, sID)
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not load topic: %v.", err)), http.StatusInternalServerError, w)
+		return
+	}
+	if t == nil {
+		writeHttpResponse(NewError("Could not find event."), http.StatusNotFound, w)
+		return
+	}
+	e, err := model.GetEvent(eID, tID)
+	if e == nil {
+		writeHttpResponse(NewError("Could not find event."), http.StatusNotFound, w)
+		return
+	}
+	if err != nil {
+		writeHttpResponse(NewError(fmt.Sprintf("Could not load event: %v.", err)), http.StatusInternalServerError, w)
+		return
+	}
+
+	writeHttpResponse(*e, http.StatusOK, w)
+}

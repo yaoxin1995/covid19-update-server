@@ -2,6 +2,8 @@ package model
 
 import (
 	"fmt"
+
+	"github.com/jinzhu/gorm"
 )
 
 type Event struct {
@@ -29,6 +31,18 @@ func GetEvents(tID uint) ([]Event, error) {
 	var e []Event
 	err := db.Where("topic_id = ?", tID).Find(&e).Error
 	return e, err
+}
+
+func GetEvent(eID, tID uint) (*Event, error) {
+	e := &Event{}
+	err := db.Where("id = ? AND topic_id = ?", eID, tID).Find(&e).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return e, nil
 }
 
 func GetEventsWithLimit(tID, limit uint) ([]Event, error) {

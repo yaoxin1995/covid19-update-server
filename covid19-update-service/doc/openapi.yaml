@@ -2,7 +2,7 @@ openapi: "3.0.0"
 info:
   description: "SCC WS2020 Group8"
   version: "1.0.0"
-  title: "Covid19 Update Service"
+  title: "COVID-19 Update Service"
 servers:
   - url: http://0.0.0.0:9005
     description: Local Server
@@ -340,7 +340,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   /subscriptions/{subscriptionId}/topics/{topicId}/incidence:
-    post:
+    get:
       tags: ["Topics", "Incidences"]
       summary: Get current incidence of topic of a subscription by its ID
       parameters:
@@ -362,13 +362,11 @@ paths:
             minimum: 0
       responses:
         200:
-          description: Incidence value is loaded successfully
+          description: Incidence value was loaded successfully
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Incidence'
+                $ref: '#/components/schemas/Incidence'
         400:
           description: Request is malformed
           content:
@@ -384,7 +382,7 @@ paths:
   /subscriptions/{subscriptionId}/topics/{topicId}/events:
     get:
       tags: ["Topics", "Events"]
-      summary: List all topics of a subscription by its ID
+      summary: List all events of a subscription by its ID
       parameters:
         - name: subscriptionId
           in: path
@@ -423,6 +421,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /subscriptions/{subscriptionId}/topics/{topicId}/events/{eventId}:
+    get:
+      tags: ["Events"]
+      summary: Get event a topic by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: topicId
+          in: path
+          description: Topic ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: eventId
+          in: path
+          description: Event ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        200:
+          description: Event was loaded successfully
+          content:
+            application/json:
+              schema:
+               $ref: '#/components/schemas/Event'
+        400:
+          description: Request is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Event with given ID was not found for topic
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 components:
   schemas:
     Position:
@@ -444,7 +490,7 @@ components:
         name: "Position"
     Subscription:
       type: "object"
-      description: "Configuration of output channels for Covid 19 events."
+      description: "Configuration of output channels for COVID-19 incidence events."
       properties:
         id:
           type: "integer"
@@ -466,7 +512,7 @@ components:
         name: "Subscription"
     Topic:
       type: "object"
-      description: "Configuration of location that should be monitored for Covid 19 cases."
+      description: "Configuration of location that should be monitored for COVID-19 cases."
       required:
         - position
         - threshold
@@ -485,12 +531,12 @@ components:
           format: "int64"
           minimum: 0
           example: 50
-          description: "Threshold value of Covid 19 cases per 100k people in the last 7 days above which an event is generated and shipped to the configured output channels of the subscription."
+          description: "Threshold value of COVID-19 cases per 100k people in the last 7 days above which an event is generated and shipped to the configured output channels of the subscription."
       xml:
         name: "Topic"
     Event:
       type: "object"
-      description: "Event that is created each time the Covid 19 cases per 100k people in the last 7 days exceed the threshold."
+      description: "Event that is created each time the COVID-19 cases per 100k people in the last 7 days exceed the threshold."
       properties:
         id:
           type: "integer"
@@ -502,22 +548,16 @@ components:
           type: "string"
           format: "int64"
           description: "Message of event"
-          example: "The Covid 19 7-day-incidence value at your location (13.712836, 51.031945) currently is 192.715256. You receive this message, because you set the alert threshold to 50."
+          example: "The COVID-19 7-day-incidence value at your location (13.712836, 51.031945) currently is 192.715256. You receive this message, because you set the alert threshold to 50."
       xml:
         name: "Event"
     Incidence:
       type: "object"
       properties:
-        id:
-          type: "integer"
-          format: "int64"
-          minimum: 0
-          description: "ID of incidence value"
-          readOnly: true
         incidence:
           type: "number"
           format: "double"
-          description: "Covid 19 cases per 100k people in the last 7 days at the topic's location"
+          description: "COVID-19 cases per 100k people in the last 7 days at the topic's location"
           example: 192.715256
       xml:
         name: "Incidence"

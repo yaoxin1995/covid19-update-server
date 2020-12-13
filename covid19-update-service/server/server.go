@@ -91,17 +91,26 @@ func (ws *Covid19UpdateWebServer) registerRoutes() {
 
 	// Incidence routes
 	incidenceRouter := router.Path("/subscriptions/{subscription_id}/topics/{topic_id}/incidence").Subrouter()
-	incidenceRouter.HandleFunc("", ws.checkAcceptType(ws.getIncidence)).Methods("POST")
+	incidenceRouter.HandleFunc("", ws.checkAcceptType(ws.getIncidence)).Methods("GET")
 	incidenceRouter.HandleFunc("", nil).Methods("OPTIONS")
 	incidenceRouter.Use(
 		handlers.CORS(
 			handlers.AllowedHeaders(allowedHeaders),
-			handlers.AllowedMethods([]string{"POST", "OPTIONS"}),
+			handlers.AllowedMethods([]string{"GET", "OPTIONS"}),
 		))
 
 	// Events
-	eventRouter := router.Path("/subscriptions/{subscription_id}/topics/{topic_id}/events").Subrouter()
-	eventRouter.HandleFunc("", ws.checkAcceptType(ws.getEvents)).Methods("GET")
+	eventsRouter := router.Path("/subscriptions/{subscription_id}/topics/{topic_id}/events").Subrouter()
+	eventsRouter.HandleFunc("", ws.checkAcceptType(ws.getEvents)).Methods("GET")
+	eventsRouter.HandleFunc("", nil).Methods("OPTIONS")
+	eventsRouter.Use(
+		handlers.CORS(
+			handlers.AllowedHeaders(allowedHeaders),
+			handlers.AllowedMethods([]string{"GET", "OPTIONS"}),
+		))
+
+	eventRouter := router.Path("/subscriptions/{subscription_id}/topics/{topic_id}/events/{event_id}").Subrouter()
+	eventRouter.HandleFunc("", ws.checkAcceptType(ws.getEvent)).Methods("GET")
 	eventRouter.HandleFunc("", nil).Methods("OPTIONS")
 	eventRouter.Use(
 		handlers.CORS(
