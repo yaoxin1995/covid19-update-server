@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/handlers"
-
 	"github.com/gorilla/mux"
 )
 
@@ -16,8 +14,7 @@ type Covid19UpdateWebServer struct {
 }
 
 const timeout = 2 * time.Minute
-
-var allowedHeaders = []string{"Accept", "Content-Type", "Content-Length"}
+const strictSlash = false
 
 func SetupServer(host, port string) (*Covid19UpdateWebServer, error) {
 	addr := net.JoinHostPort(host, port)
@@ -41,82 +38,61 @@ func (ws *Covid19UpdateWebServer) Start() error {
 }
 
 func (ws *Covid19UpdateWebServer) registerRoutes() {
-	router := mux.NewRouter().StrictSlash(true)
+	router := mux.NewRouter().StrictSlash(strictSlash) // Default Router
 
-	router.NotFoundHandler = http.HandlerFunc(ws.notFound)
+	router.NotFoundHandler = ws.notFound()
 
 	// Subscription routes
-	subscriptionsRouter := router.Path("/subscriptions").Subrouter()
+	subscriptionsRouter := router.Path("/subscriptions").Subrouter().StrictSlash(strictSlash)
 	subscriptionsRouter.HandleFunc("", ws.checkAcceptType(ws.getSubscriptions)).Methods("GET")
 	subscriptionsRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.createSubscription))).Methods("POST")
 	subscriptionsRouter.HandleFunc("", nil).Methods("OPTIONS")
-	subscriptionsRouter.Use(
-		handlers.CORS(
-			handlers.AllowedHeaders(allowedHeaders),
-			handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS"}),
-		))
+	subscriptionsRouter.Use(cors(subscriptionsRouter))
+	subscriptionsRouter.MethodNotAllowedHandler = ws.notAllowed(subscriptionsRouter)
 
-	subscriptionRouter := router.Path("/subscriptions/{id}").Subrouter()
+	subscriptionRouter := router.Path("/subscriptions/{id}").Subrouter().StrictSlash(strictSlash)
 	subscriptionRouter.HandleFunc("", ws.checkAcceptType(ws.getSubscription)).Methods("GET")
 	subscriptionRouter.HandleFunc("", ws.checkAcceptType(ws.deleteSubscription)).Methods("DELETE")
 	subscriptionRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.updateSubscription))).Methods("PUT")
 	subscriptionRouter.HandleFunc("", nil).Methods("OPTIONS")
-	subscriptionRouter.Use(
-		handlers.CORS(
-			handlers.AllowedHeaders(allowedHeaders),
-			handlers.AllowedMethods([]string{"GET", "DELETE", "PUT", "OPTIONS"}),
-		))
+	subscriptionRouter.Use(cors(subscriptionRouter))
+	subscriptionRouter.MethodNotAllowedHandler = ws.notAllowed(subscriptionRouter)
 
 	// Topic routes
-	topicsRouter := router.Path("/subscriptions/{subscription_id}/topics").Subrouter()
+	topicsRouter := router.Path("/subscriptions/{subscription_id}/topics").Subrouter().StrictSlash(strictSlash)
 	topicsRouter.HandleFunc("", ws.checkAcceptType(ws.getTopics)).Methods("GET")
 	topicsRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.createTopic))).Methods("POST")
 	topicsRouter.HandleFunc("", nil).Methods("OPTIONS")
-	topicsRouter.Use(
-		handlers.CORS(
-			handlers.AllowedHeaders(allowedHeaders),
-			handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS"}),
-		))
+	topicsRouter.Use(cors(topicsRouter))
+	topicsRouter.MethodNotAllowedHandler = ws.notAllowed(topicsRouter)
 
-	topicRouter := router.Path("/subscriptions/{subscription_id}/topics/{topic_id}").Subrouter()
+	topicRouter := router.Path("/subscriptions/{subscription_id}/topics/{topic_id}").Subrouter().StrictSlash(strictSlash)
 	topicRouter.HandleFunc("", ws.checkAcceptType(ws.getTopic)).Methods("GET")
 	topicRouter.HandleFunc("", ws.checkAcceptType(ws.deleteTopic)).Methods("DELETE")
 	topicRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.updateTopic))).Methods("PUT")
 	topicRouter.HandleFunc("", nil).Methods("OPTIONS")
-	topicRouter.Use(
-		handlers.CORS(
-			handlers.AllowedHeaders(allowedHeaders),
-			handlers.AllowedMethods([]string{"GET", "DELETE", "PUT", "OPTIONS"}),
-		))
+	topicRouter.Use(cors(topicRouter))
+	topicRouter.MethodNotAllowedHandler = ws.notAllowed(topicRouter)
 
 	// Incidence routes
-	incidenceRouter := router.Path("/subscriptions/{subscription_id}/topics/{topic_id}/incidence").Subrouter()
+	incidenceRouter := router.Path("/subscriptions/{subscription_id}/topics/{topic_id}/incidence").Subrouter().StrictSlash(strictSlash)
 	incidenceRouter.HandleFunc("", ws.checkAcceptType(ws.getIncidence)).Methods("GET")
 	incidenceRouter.HandleFunc("", nil).Methods("OPTIONS")
-	incidenceRouter.Use(
-		handlers.CORS(
-			handlers.AllowedHeaders(allowedHeaders),
-			handlers.AllowedMethods([]string{"GET", "OPTIONS"}),
-		))
+	incidenceRouter.Use(cors(incidenceRouter))
+	incidenceRouter.MethodNotAllowedHandler = ws.notAllowed(incidenceRouter)
 
 	// Events
-	eventsRouter := router.Path("/subscriptions/{subscription_id}/topics/{topic_id}/events").Subrouter()
+	eventsRouter := router.Path("/subscriptions/{subscription_id}/topics/{topic_id}/events").Subrouter().StrictSlash(strictSlash)
 	eventsRouter.HandleFunc("", ws.checkAcceptType(ws.getEvents)).Methods("GET")
 	eventsRouter.HandleFunc("", nil).Methods("OPTIONS")
-	eventsRouter.Use(
-		handlers.CORS(
-			handlers.AllowedHeaders(allowedHeaders),
-			handlers.AllowedMethods([]string{"GET", "OPTIONS"}),
-		))
+	eventsRouter.Use(cors(eventsRouter))
+	eventsRouter.MethodNotAllowedHandler = ws.notAllowed(eventsRouter)
 
-	eventRouter := router.Path("/subscriptions/{subscription_id}/topics/{topic_id}/events/{event_id}").Subrouter()
+	eventRouter := router.Path("/subscriptions/{subscription_id}/topics/{topic_id}/events/{event_id}").Subrouter().StrictSlash(strictSlash)
 	eventRouter.HandleFunc("", ws.checkAcceptType(ws.getEvent)).Methods("GET")
 	eventRouter.HandleFunc("", nil).Methods("OPTIONS")
-	eventRouter.Use(
-		handlers.CORS(
-			handlers.AllowedHeaders(allowedHeaders),
-			handlers.AllowedMethods([]string{"GET", "OPTIONS"}),
-		))
+	eventRouter.Use(cors(eventRouter))
+	eventRouter.MethodNotAllowedHandler = ws.notAllowed(eventRouter)
 
 	ws.Handler = router
 }

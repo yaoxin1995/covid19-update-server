@@ -22,7 +22,7 @@ func (cn *Covid19Notifier) run() error {
 	for {
 		select {
 		case cov19region := <-cn.c:
-			log.Printf("Creating notifications for region %d...", cov19region.ID)
+			// log.Printf("Creating notifications for region %d...", cov19region.ID)
 			notify(cov19region)
 		}
 	}

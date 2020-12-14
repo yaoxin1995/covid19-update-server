@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 const jsonType string = "application/json"
@@ -26,6 +28,7 @@ func (ws *Covid19UpdateWebServer) checkAcceptType(next http.HandlerFunc) http.Ha
 		if contains(options, jsonType) || contains(options, allTypes) || (len(options) == 0) {
 			next.ServeHTTP(w, r)
 		} else {
+			w.Header().Set("Accept", jsonType)
 			w.WriteHeader(http.StatusNotAcceptable)
 		}
 	})
@@ -59,4 +62,15 @@ func contains(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+func getAllMethodsForRoute(r *mux.Router) []string {
+	var allMethods []string
+	_ = r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		met, _ := route.GetMethods()
+		allMethods = append(allMethods, met...)
+		return nil
+	})
+
+	return allMethods
 }

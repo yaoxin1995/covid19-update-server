@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -21,8 +22,18 @@ func toUInt(s string) (uint, error) {
 	return uint(u64), nil
 }
 
-func (ws *Covid19UpdateWebServer) notFound(w http.ResponseWriter, _ *http.Request) {
-	writeHttpResponse(NewError("Resource not found."), http.StatusNotFound, w)
+func (ws *Covid19UpdateWebServer) notFound() http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		writeHttpResponse(NewError("Resource not found."), http.StatusNotFound, w)
+	})
+}
+
+func (ws *Covid19UpdateWebServer) notAllowed(r *mux.Router) http.HandlerFunc {
+	allowedMethods := getAllMethodsForRoute(r)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Allow", strings.Join(allowedMethods, ", "))
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	})
 }
 
 // Subscription
