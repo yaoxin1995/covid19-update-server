@@ -28,7 +28,7 @@ func (s *Subscription) Store() error {
 
 func GetSubscription(id uint) (*Subscription, error) {
 	s := &Subscription{}
-	err := db.First(s, id).Preload("Topics").Error
+	err := db.Preload("Topics").First(s, id).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return nil, nil
@@ -36,6 +36,15 @@ func GetSubscription(id uint) (*Subscription, error) {
 		return nil, err
 	}
 	return s, nil
+}
+
+func SubscriptionExists(id uint) bool {
+	s := &Subscription{}
+	err := db.First(s, id).Error
+	if err != nil {
+		return false
+	}
+	return true
 }
 
 func GetSubscriptions() ([]Subscription, error) {

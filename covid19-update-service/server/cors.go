@@ -16,11 +16,11 @@ type corsHandler struct {
 	wrapper        http.Handler
 }
 
-func cors(r *mux.Router) func(handlerFunc http.Handler) http.Handler {
-	allowedMethods := getAllMethodsForRoute(r)
+func newCorsHandler(r *mux.Router) func(handlerFunc http.Handler) http.Handler {
+	allowedMethods := getAllMethodsForRouter(r)
 	return func(h http.Handler) http.Handler {
 		return &corsHandler{
-			allowedMethods: getAllMethodsForRoute(r),
+			allowedMethods: getAllMethodsForRouter(r),
 			wrapper: handlers.CORS(handlers.AllowedHeaders(allowedHeaders),
 				handlers.AllowedMethods(allowedMethods))(h),
 		}

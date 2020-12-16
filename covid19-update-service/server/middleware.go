@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
-	"github.com/gorilla/mux"
 )
 
 const jsonType string = "application/json"
@@ -17,7 +15,9 @@ func writeHttpResponse(d interface{}, statusCode int, w http.ResponseWriter) {
 	if err != nil {
 		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
 	}
-	w.Header().Set("Content-Type", jsonType)
+	if d != nil {
+		w.Header().Set("Content-Type", jsonType)
+	}
 	w.WriteHeader(statusCode)
 	_, _ = fmt.Fprintf(w, "%s", dj)
 }
@@ -62,15 +62,4 @@ func contains(s []string, e string) bool {
 		}
 	}
 	return false
-}
-
-func getAllMethodsForRoute(r *mux.Router) []string {
-	var allMethods []string
-	_ = r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		met, _ := route.GetMethods()
-		allMethods = append(allMethods, met...)
-		return nil
-	})
-
-	return allMethods
 }

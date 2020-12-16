@@ -36,7 +36,7 @@ paths:
       summary: List all subscriptions
       responses:
         200:
-          description: Subscriptions are loaded successfully
+          description: Subscriptions were loaded successfully
           content:
             application/json:
               schema:
@@ -382,7 +382,7 @@ paths:
   /subscriptions/{subscriptionId}/topics/{topicId}/events:
     get:
       tags: ["Topics", "Events"]
-      summary: List all events of a subscription by its ID
+      summary: List all events of a topic by its ID
       parameters:
         - name: subscriptionId
           in: path
@@ -400,6 +400,13 @@ paths:
             type: integer
             format: int64
             minimum: 0
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+          description: Amount of events that should be loaded
       responses:
         200:
           description: Events were loaded successfully
@@ -409,6 +416,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Event'
+                description: Events in descending order of their creation time
         400:
           description: Request is malformed
           content:
@@ -424,7 +432,7 @@ paths:
   /subscriptions/{subscriptionId}/topics/{topicId}/events/{eventId}:
     get:
       tags: ["Events"]
-      summary: Get event a topic by its ID
+      summary: Get event of a topic by its ID
       parameters:
         - name: subscriptionId
           in: path
@@ -567,6 +575,6 @@ components:
         error:
           type: "string"
           description: "Error descriptions"
-          example: "Invalid input"
+          example: "An error occured"
       xml:
         name: "Error"
