@@ -17,3 +17,5 @@ Use the docker-compose file to run the service locally.
 |  DB_SOURCE  | Connection string, see: https://gorm.io/docs/connecting_to_the_database.html |
 | SERVER_PORT | Port the server binds to. This port has to be exposed! |
 | POLL_INTERVAL_MINUTES | Interval (in minutes) in which the data is retrieved from the RKI API |
+| TELEGRAM_CONTACT_URI | URL of Telegram notification REST API |
+| SENDGRID_API_KEY | API Key for SendGrid (https://sendgrid.com) |
