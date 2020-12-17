@@ -1,0 +1,63 @@
+version: '3.5'
+services:
+  notification-service:
+    container_name: notification-service
+    build:
+      context: ./notification-service
+    environment:
+      - FLASK_APP=app.py
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      # Define messages for each message type
+      - WELCOME_MESSAGE=Welcome, {{ USER_FULL_NAME }}! You are now able to configure {{ SERVICE_NAME }} via Telegram.
+        Go to your dashboard and add the Telegram notification provider by entering this ID {{ USER_CHAT_ID }}.
+      - UNKNOWN_MESSAGE=Sorry, {{ USER_FULL_NAME }}. I didn't understand you.
+      # Use template variables (prefix TEMPLATE_VAR_)
+      - TEMPLATE_VAR_SERVICE_NAME=COVID-19 incidence update notifications
+    command: flask run --host=0.0.0.0 --port 80
+    restart: unless-stopped
+
+  covid19-update-service:
+    container_name: covid19-update-service
+    build:
+      context: ./covid19-update-service
+    environment:
+      - DB_TYPE=sqlite3
+      - DB_SOURCE=storage.db?_foreign_keys=on
+      - SERVER_PORT=9005
+      - POLL_INTERVAL_MINUTES=5
+      - TELEGRAM_CONTACT_URI=http://notification-service:80/notification
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - SENDGRID_EMAIL=${SENDGRID_EMAIL}
+      - AUTH0_ISS=${AUTH0_ISS}
+      - AUTH0_AUD=${AUTH0_AUD}
+      # TODO: Why doesn't ip address work? Maybe set Access-Control-Allow-Origin: via nginx
+      - CORS_ORIGINS=*
+
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      # Include certificate dir needed for HTTPS support
+      - ./nginx/cert:/etc/nginx/cert:ro
+    ports:
+      # Default port on which we want to access notification-service
+      - 443:443
+      # HTTP mode needed to prevent certificate errors in Swagger
+      - 127.0.0.1:80:80
+    restart: unless-stopped
+
+# Use Swagger.io editor for manual api tests
+# Comment in the following line if you want to start Swagger editor container.
+#x-disabled:
+  swagger-ui:
+      container_name: swagger-ui
+      image: swaggerapi/swagger-ui
+      environment:
+        # Use multiple api docs
+        - "URLS=[{ url:  './api/covid19-update-service.yaml', name: 'Covid19 Update Service'},
+                 { url: './api/notification-service.yaml', name: 'Notification Service'}]"
+      volumes:
+        - ./covid19-update-service/doc/openapi.yaml:/usr/share/nginx/html/api/covid19-update-service.yaml
+        - ./notification-service/swagger_api_docu.yaml:/usr/share/nginx/html/api/notification-service.yaml
+      restart: unless-stopped
