@@ -3,8 +3,12 @@ package model
 import (
 	"fmt"
 
+	"github.com/pmoule/go2hal/hal"
+
 	"github.com/jinzhu/gorm"
 )
+
+type EventCollection []Event
 
 type Event struct {
 	CommonModelFields
@@ -27,8 +31,8 @@ func (e *Event) Store() error {
 	return db.Save(&e).Error
 }
 
-func GetEvents(tID uint) ([]Event, error) {
-	var e []Event
+func GetEvents(tID uint) (EventCollection, error) {
+	var e EventCollection
 	err := db.Where("topic_id = ?", tID).Find(&e).Error
 	return e, err
 }
@@ -45,8 +49,24 @@ func GetEvent(eID, tID uint) (*Event, error) {
 	return e, nil
 }
 
-func GetEventsWithLimit(tID, limit uint) ([]Event, error) {
-	var e []Event
+func GetEventsWithLimit(tID, limit uint) (EventCollection, error) {
+	var e EventCollection
 	err := db.Where("topic_id = ?", tID).Limit(limit).Order("created_at DESC").Find(&e).Error
 	return e, err
+}
+
+func (e Event) ToHAL() hal.Resource {
+	root := hal.NewResourceObject()
+
+	// ToDo
+
+	return root
+}
+
+func (ec EventCollection) ToHAL() hal.Resource {
+	root := hal.NewResourceObject()
+
+	// ToDo
+
+	return root
 }

@@ -1,22 +1,29 @@
 package server
 
 import (
-	"encoding/json"
+	"covid19-update-service/model"
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/pmoule/go2hal/hal"
 )
 
+const jsonHALType string = "application/hal+json"
 const jsonType string = "application/json"
 const allTypes string = "*/*"
 
-func writeHttpResponse(d interface{}, statusCode int, w http.ResponseWriter) {
-	dj, err := json.MarshalIndent(d, "", "  ")
-	if err != nil {
-		http.Error(w, "Error creating JSON response", http.StatusInternalServerError)
-	}
+func writeHTTPResponse(d model.HALCompatibleModel, statusCode int, w http.ResponseWriter) {
+	var dj []byte
+	var err error
 	if d != nil {
-		w.Header().Set("Content-Type", jsonType)
+		enc := hal.NewEncoder()
+		h := d.ToHAL()
+		dj, err = enc.ToJSON(h)
+		if err != nil {
+			http.Error(w, "ErrorT creating JSON HAL response", http.StatusInternalServerError)
+		}
+		w.Header().Set("Content-Type", jsonHALType)
 	}
 	w.WriteHeader(statusCode)
 	_, _ = fmt.Fprintf(w, "%s", dj)
@@ -25,10 +32,10 @@ func writeHttpResponse(d interface{}, statusCode int, w http.ResponseWriter) {
 func (ws *Covid19UpdateWebServer) checkAcceptType(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		options := getHeaderOptions("Accept", r)
-		if contains(options, jsonType) || contains(options, allTypes) || (len(options) == 0) {
+		if contains(options, jsonHALType) || contains(options, allTypes) || (len(options) == 0) {
 			next.ServeHTTP(w, r)
 		} else {
-			w.Header().Set("Accept", jsonType)
+			w.Header().Set("Accept", jsonHALType)
 			w.WriteHeader(http.StatusNotAcceptable)
 		}
 	})

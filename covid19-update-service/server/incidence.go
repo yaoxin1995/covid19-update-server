@@ -5,11 +5,21 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/pmoule/go2hal/hal"
+
 	"github.com/gorilla/mux"
 )
 
 type IncidenceResponse struct {
 	Incidence float64 `json:"incidence"`
+}
+
+func (i IncidenceResponse) ToHAL() hal.Resource {
+	root := hal.NewResourceObject()
+
+	// ToDo
+
+	return root
 }
 
 func (ws *Covid19UpdateWebServer) registerIncidenceRoutes(r *mux.Router) {
@@ -27,13 +37,13 @@ func (ws *Covid19UpdateWebServer) getIncidence(w http.ResponseWriter, r *http.Re
 	}
 	c, err := model.GetCovid19Region(t.Covid19RegionID)
 	if err != nil {
-		writeHttpResponse(NewError(fmt.Sprintf("Could not load incidence: %v.", err)), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not load incidence: %v.", err)), http.StatusInternalServerError, w)
 		return
 	}
 	if c == nil {
-		writeHttpResponse(NewError("No incidence available"), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError("No incidence available"), http.StatusInternalServerError, w)
 		return
 	}
 	rsp := IncidenceResponse{c.Incidence}
-	writeHttpResponse(rsp, http.StatusOK, w)
+	writeHTTPResponse(rsp, http.StatusOK, w)
 }

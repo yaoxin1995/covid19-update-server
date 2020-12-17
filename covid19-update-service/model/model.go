@@ -3,6 +3,8 @@ package model
 import (
 	"time"
 
+	"github.com/pmoule/go2hal/hal"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
@@ -15,6 +17,10 @@ type CommonModelFields struct {
 	CreatedAt time.Time  `json:"-"`
 	UpdatedAt time.Time  `json:"-"`
 	DeletedAt *time.Time `sql:"index" json:"-"`
+}
+
+type HALCompatibleModel interface {
+	ToHAL() hal.Resource
 }
 
 func SetupDB(dbType, dbSource string) error {

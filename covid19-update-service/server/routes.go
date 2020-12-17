@@ -11,15 +11,18 @@ const subscriptionRoute = subscriptionsBaseRoute + "/{" + subscriptionId + "}"
 
 // Topics
 const topicId = "topic_id"
-const topicsBaseRoute = subscriptionRoute + "/topics"
+const topics = "topics"
+const topicsBaseRoute = subscriptionRoute + "/" + topics
 const topicRoute = topicsBaseRoute + "/{" + topicId + "}"
 
 // Incidence
-const incidenceRoute = topicRoute + "/incidence"
+const incidence = "incidence"
+const incidenceRoute = topicRoute + "/" + incidence
 
 // Events
 const eventId = "event_id"
-const eventsBaseRoute = topicRoute + "/events"
+const events = "events"
+const eventsBaseRoute = topicRoute + "/" + events
 const eventRoute = eventsBaseRoute + "/{" + eventId + "}"
 
 func getAllMethodsForRouter(r *mux.Router) []string {

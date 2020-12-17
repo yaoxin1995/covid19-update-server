@@ -19,10 +19,37 @@ func parseSubscriptionRequest(w http.ResponseWriter, r *http.Request) (Subscript
 	var subReq SubscriptionRequest
 	err := decoder.Decode(&subReq)
 	if err != nil {
-		writeHttpResponse(NewError(fmt.Sprintf("Could not decode request body: %v.", err)), http.StatusBadRequest, w)
+		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not decode request body: %v.", err)), http.StatusBadRequest, w)
 		return subReq, false
 	}
 	return subReq, true
+}
+
+func parseSubscriptionId(w http.ResponseWriter, r *http.Request) (uint, bool) {
+	vars := mux.Vars(r)
+	sID, err := toUInt(vars[subscriptionId])
+	if err != nil {
+		writeHTTPResponse(model.NewError("Subscription ID has to be an unsigned integer."), http.StatusBadRequest, w)
+		return 0, false
+	}
+	return sID, true
+}
+
+func findSubscription(w http.ResponseWriter, r *http.Request) (model.Subscription, bool) {
+	sID, ok := parseSubscriptionId(w, r)
+	if !ok {
+		return model.Subscription{}, false
+	}
+	s, err := model.GetSubscription(sID)
+	if err != nil {
+		writeHTTPResponse(model.NewError("Could not load subscription."), http.StatusInternalServerError, w)
+		return model.Subscription{}, false
+	}
+	if s == nil {
+		writeHTTPResponse(model.NewError("Could not find subscription."), http.StatusNotFound, w)
+		return model.Subscription{}, false
+	}
+	return *s, true
 }
 
 func (ws *Covid19UpdateWebServer) registerSubscriptionRoutes(r *mux.Router) {
@@ -42,40 +69,13 @@ func (ws *Covid19UpdateWebServer) registerSubscriptionRoutes(r *mux.Router) {
 	subscriptionRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(subscriptionRouter)
 }
 
-func parseSubscriptionId(w http.ResponseWriter, r *http.Request) (uint, bool) {
-	vars := mux.Vars(r)
-	sID, err := toUInt(vars[subscriptionId])
-	if err != nil {
-		writeHttpResponse(NewError("Subscription ID has to be an unsigned integer."), http.StatusBadRequest, w)
-		return 0, false
-	}
-	return sID, true
-}
-
-func findSubscription(w http.ResponseWriter, r *http.Request) (model.Subscription, bool) {
-	sID, ok := parseSubscriptionId(w, r)
-	if !ok {
-		return model.Subscription{}, false
-	}
-	s, err := model.GetSubscription(sID)
-	if err != nil {
-		writeHttpResponse(NewError("Could not load subscription."), http.StatusInternalServerError, w)
-		return model.Subscription{}, false
-	}
-	if s == nil {
-		writeHttpResponse(NewError("Could not find subscription."), http.StatusNotFound, w)
-		return model.Subscription{}, false
-	}
-	return *s, true
-}
-
 func (ws *Covid19UpdateWebServer) getSubscriptions(w http.ResponseWriter, _ *http.Request) {
 	subs, err := model.GetSubscriptions()
 	if err != nil {
-		writeHttpResponse(NewError("Could not load subscriptions."), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError("Could not load subscriptions."), http.StatusInternalServerError, w)
 		return
 	}
-	writeHttpResponse(subs, http.StatusOK, w)
+	writeHTTPResponse(subs, http.StatusOK, w)
 }
 
 func (ws *Covid19UpdateWebServer) getSubscription(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +83,7 @@ func (ws *Covid19UpdateWebServer) getSubscription(w http.ResponseWriter, r *http
 	if !ok {
 		return
 	}
-	writeHttpResponse(s, http.StatusOK, w)
+	writeHTTPResponse(s, http.StatusOK, w)
 }
 
 func (ws *Covid19UpdateWebServer) createSubscription(w http.ResponseWriter, r *http.Request) {
@@ -93,10 +93,10 @@ func (ws *Covid19UpdateWebServer) createSubscription(w http.ResponseWriter, r *h
 	}
 	s, err := model.NewSubscription(createSubReq.Email, createSubReq.TelegramChatID)
 	if err != nil {
-		writeHttpResponse(NewError(fmt.Sprintf("Could not create subscription: %v.", err)), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not create subscription: %v.", err)), http.StatusInternalServerError, w)
 		return
 	}
-	writeHttpResponse(s, http.StatusCreated, w)
+	writeHTTPResponse(s, http.StatusCreated, w)
 }
 
 func (ws *Covid19UpdateWebServer) deleteSubscription(w http.ResponseWriter, r *http.Request) {
@@ -106,10 +106,10 @@ func (ws *Covid19UpdateWebServer) deleteSubscription(w http.ResponseWriter, r *h
 	}
 	err := s.Delete()
 	if err != nil {
-		writeHttpResponse(NewError(fmt.Sprintf("Could not delete subscription: %v", err)), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not delete subscription: %v", err)), http.StatusInternalServerError, w)
 		return
 	}
-	writeHttpResponse(nil, http.StatusNoContent, w)
+	writeHTTPResponse(nil, http.StatusNoContent, w)
 }
 
 func (ws *Covid19UpdateWebServer) updateSubscription(w http.ResponseWriter, r *http.Request) {
@@ -123,8 +123,8 @@ func (ws *Covid19UpdateWebServer) updateSubscription(w http.ResponseWriter, r *h
 	}
 	err := s.Update(updateSubReq.Email, updateSubReq.TelegramChatID)
 	if err != nil {
-		writeHttpResponse(NewError(fmt.Sprintf("Could not update subscription: %v.", err)), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not update subscription: %v.", err)), http.StatusInternalServerError, w)
 		return
 	}
-	writeHttpResponse(s, http.StatusOK, w)
+	writeHTTPResponse(s, http.StatusOK, w)
 }

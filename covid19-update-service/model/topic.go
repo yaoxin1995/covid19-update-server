@@ -4,8 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/pmoule/go2hal/hal"
+
 	"github.com/jinzhu/gorm"
 )
+
+type TopicCollection []Topic
 
 type Topic struct {
 	CommonModelFields
@@ -79,18 +83,34 @@ func GetTopic(tID, sID uint) (*Topic, error) {
 	return t, nil
 }
 
-func GetTopicsBySubscriptionID(sID uint) ([]Topic, error) {
-	var tops []Topic
+func GetTopicsBySubscriptionID(sID uint) (TopicCollection, error) {
+	var tops TopicCollection
 	err := db.Where("subscription_id = ?", sID).Find(&tops).Error
 	return tops, err
 }
 
-func GetTopicsWithThresholdAlert(c Covid19Region) ([]Topic, error) {
-	var tops []Topic
+func GetTopicsWithThresholdAlert(c Covid19Region) (TopicCollection, error) {
+	var tops TopicCollection
 	err := db.Where("covid19_region_id = ? AND threshold <= ?", c.ID, c.Incidence).Find(&tops).Error
 	return tops, err
 }
 
 func (t *Topic) Delete() error {
 	return db.Unscoped().Delete(t).Error
+}
+
+func (tc TopicCollection) ToHAL() hal.Resource {
+	root := hal.NewResourceObject()
+
+	// ToDo
+
+	return root
+}
+
+func (t Topic) ToHAL() hal.Resource {
+	root := hal.NewResourceObject()
+
+	// ToDo
+
+	return root
 }

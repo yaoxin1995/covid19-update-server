@@ -1,6 +1,7 @@
 package server
 
 import (
+	"covid19-update-service/model"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,7 +20,7 @@ func toUInt(s string) (uint, error) {
 
 func (ws *Covid19UpdateWebServer) defaultNotFoundHandler() http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		writeHttpResponse(NewError("Resource not found."), http.StatusNotFound, w)
+		writeHTTPResponse(model.NewError("Resource not found."), http.StatusNotFound, w)
 	})
 }
 
