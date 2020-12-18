@@ -20,7 +20,7 @@ type CommonModelFields struct {
 }
 
 type HALCompatibleModel interface {
-	ToHAL() hal.Resource
+	ToHAL(path string) hal.Resource
 }
 
 func SetupDB(dbType, dbSource string) error {

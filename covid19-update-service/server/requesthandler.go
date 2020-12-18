@@ -20,7 +20,7 @@ func toUInt(s string) (uint, error) {
 
 func (ws *Covid19UpdateWebServer) defaultNotFoundHandler() http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		writeHTTPResponse(model.NewError("Resource not found."), http.StatusNotFound, w)
+		writeHTTPResponse(model.NewError("Resource not found."), http.StatusNotFound, w, r)
 	})
 }
 

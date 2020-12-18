@@ -10,14 +10,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type IncidenceResponse struct {
+type Incidence struct {
 	Incidence float64 `json:"incidence"`
 }
 
-func (i IncidenceResponse) ToHAL() hal.Resource {
+func (i Incidence) ToHAL(path string) hal.Resource {
 	root := hal.NewResourceObject()
+	root.AddData(i)
 
-	// ToDo
+	selfRel := hal.NewSelfLinkRelation()
+	selfLink := &hal.LinkObject{Href: path}
+	selfRel.SetLink(selfLink)
+	root.AddLink(selfRel)
 
 	return root
 }
@@ -37,13 +41,13 @@ func (ws *Covid19UpdateWebServer) getIncidence(w http.ResponseWriter, r *http.Re
 	}
 	c, err := model.GetCovid19Region(t.Covid19RegionID)
 	if err != nil {
-		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not load incidence: %v.", err)), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not load incidence: %v.", err)), http.StatusInternalServerError, w, r)
 		return
 	}
 	if c == nil {
-		writeHTTPResponse(model.NewError("No incidence available"), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError("No incidence available"), http.StatusInternalServerError, w, r)
 		return
 	}
-	rsp := IncidenceResponse{c.Incidence}
-	writeHTTPResponse(rsp, http.StatusOK, w)
+	rsp := Incidence{c.Incidence}
+	writeHTTPResponse(rsp, http.StatusOK, w, r)
 }

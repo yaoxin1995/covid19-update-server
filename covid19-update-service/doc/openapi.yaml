@@ -40,9 +40,58 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Subscription'
+                type: "object"
+                properties:
+                  _links:
+                    type: "object"
+                    description: "Link relations following the HAL schema"
+                    properties:
+                      self:
+                        type: "object"
+                        properties:
+                          href:
+                            type: "string"
+                            example: "/subscriptions"
+                  _embedded:
+                    type: "object"
+                    description: "Embedded resources following the HAL schema"
+                    properties:
+                      subscriptions:
+                        description: "Available subscriptions"
+                        type: "array"
+                        items:
+                          type: "object"
+                          properties:
+                            id:
+                              type: "integer"
+                              format: "int64"
+                              minimum: 0
+                              description: "ID of the subscription"
+                              readOnly: true
+                            email:
+                              type: "string"
+                              format: "email"
+                              x-nullable: true
+                              description: "Email address to which event notifications are sent. If no email notification should be received the parameter is set to `null`."
+                            telegramChatId:
+                              type: "string"
+                              x-nullable: true
+                              description: "Telegram chat ID, which is provided by the Telegram Bot, to which event notifications are sent. If no Telegram notification should be received the parameter is set to `null`.."
+                              example: "578989238"
+                            _links:
+                              type: "object"
+                              readOnly: true
+                              description: Link relations following the HAL schema
+                              properties:
+                                self:
+                                  type: "object"
+                                  properties:
+                                    href:
+                                      type: "string"
+                                      example: "/subscriptions/42"
+                              
+                  
+                    
   /subscriptions/{subscriptionId}:
     get:
       tags: ["Subscriptions"]
@@ -199,9 +248,66 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Topic'
+                type: "object"
+                properties:
+                  _links:
+                    type: "object"
+                    description: "Link relations following the HAL schema"
+                    properties:
+                      self:
+                        type: "object"
+                        properties:
+                          href:
+                            type: "string"
+                            example: "/subscriptions/42/topics/1337"
+                  _embedded:
+                    type: "object"
+                    description: "Embedded resources following the HAL schema"
+                    properties:
+                      topics:
+                        description: "Topics of subscription"
+                        type: "array"
+                        items:
+                          type: "object"
+                          properties:
+                            id:
+                              type: "integer"
+                              format: "int64"
+                              minimum: 0
+                              description: "ID of topic"
+                              readOnly: true
+                            position:
+                              required: 
+                                - longitude
+                                - latitude
+                              type: "object"
+                              description: "Position for which the Covid incidence value is monitored"
+                              properties:
+                                latitude:
+                                  type: "number"
+                                  format: "double"
+                                  example: 51.031945
+                                longitude:
+                                  type: "number"
+                                  format: "double"
+                                  example: 13.712836
+                            threshold:
+                              type: "integer"
+                              format: "int64"
+                              minimum: 0
+                              example: 50
+                              description: "Threshold value of COVID-19 cases per 100k people in the last 7 days above which an event is generated and shipped to the configured output channels of the subscription."
+                            _links:
+                              type: "object"
+                              readOnly: true
+                              description: Link relations following the HAL schema
+                              properties:
+                                self:
+                                  type: "object"
+                                  properties:
+                                    href:
+                                      type: "string"
+                                      example: "/subscriptions/42/topics/1337"
         400:
           description: Request is malformed
           content:
@@ -413,10 +519,50 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Event'
-                description: Events in descending order of their creation time
+                type: "object"
+                properties:
+                  _links:
+                    type: "object"
+                    description: "Link relations following the HAL schema"
+                    properties:
+                      self:
+                        type: "object"
+                        properties:
+                          href:
+                            type: "string"
+                            example: "/subscriptions/42/topics/1337"
+                  _embedded:
+                    type: "object"
+                    description: "Embedded resources following the HAL schema"
+                    properties:
+                      events:
+                        description: Events of topic in descending order of their creation time
+                        type: "array"
+                        items:
+                          type: "object"
+                          properties:
+                            id:
+                              type: "integer"
+                              format: "int64"
+                              minimum: 0
+                              description: "ID of event"
+                              readOnly: true
+                            message:
+                              type: "string"
+                              format: "int64"
+                              description: "Message of event"
+                              example: "The COVID-19 7-day-incidence value at your location (13.712836, 51.031945) currently is 192.715256. You receive this message, because you set the alert threshold to 50."
+                            _links:
+                              type: "object"
+                              readOnly: true
+                              description: Link relations following the HAL schema
+                              properties:
+                                self:
+                                  type: "object"
+                                  properties:
+                                    href:
+                                      type: "string"
+                                      example: "/subscriptions/42/topics/1337/events/20"
         400:
           description: Request is malformed
           content:
@@ -479,23 +625,6 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   schemas:
-    Position:
-      required: 
-        - longitude
-        - latitude
-      type: "object"
-      description: "GPS position"
-      properties:
-        latitude:
-          type: "number"
-          format: "double"
-          example: 51.031945
-        longitude:
-          type: "number"
-          format: "double"
-          example: 13.712836
-      xml:
-        name: "Position"
     Subscription:
       type: "object"
       description: "Configuration of output channels for COVID-19 incidence events."
@@ -516,6 +645,25 @@ components:
           x-nullable: true
           description: "Telegram chat ID, which is provided by the Telegram Bot, to which event notifications are sent. If no Telegram notification should be received the parameter is set to `null`.."
           example: "578989238"
+        _links:
+          type: "object"
+          readOnly: true
+          description: Link relations following the HAL schema
+          properties:
+            self:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42"
+            topics:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42/topics"
+                  description: "Link relation to the topics value that are associated to the subscription"
+              
       xml:
         name: "Subscription"
     Topic:
@@ -532,14 +680,51 @@ components:
           description: "ID of topic"
           readOnly: true
         position:
-         $ref: "#/components/schemas/Position"
-         description: "Position for which the Covid incidence value is monitored"
+          required: 
+            - longitude
+            - latitude
+          type: "object"
+          description: "Position for which the Covid incidence value is monitored"
+          properties:
+            latitude:
+              type: "number"
+              format: "double"
+              example: 51.031945
+            longitude:
+              type: "number"
+              format: "double"
+              example: 13.712836
         threshold:
           type: "integer"
           format: "int64"
           minimum: 0
           example: 50
           description: "Threshold value of COVID-19 cases per 100k people in the last 7 days above which an event is generated and shipped to the configured output channels of the subscription."
+        _links:
+          type: "object"
+          readOnly: true
+          description: Link relations following the HAL schema
+          properties:
+            self:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42/topics/1337"
+            events:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42/topics/1337/events"
+                  description: "Link relation to events that are associated to the topic"
+            incidence:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42/topics/1337/incidence"
+                  description: "Link relation to the current incidence value that is associated to the topic"
       xml:
         name: "Topic"
     Event:
@@ -557,6 +742,17 @@ components:
           format: "int64"
           description: "Message of event"
           example: "The COVID-19 7-day-incidence value at your location (13.712836, 51.031945) currently is 192.715256. You receive this message, because you set the alert threshold to 50."
+        _links:
+          type: "object"
+          readOnly: true
+          description: Link relations following the HAL schema
+          properties:
+            self:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42/topics/1337/events/20"
       xml:
         name: "Event"
     Incidence:
@@ -567,6 +763,17 @@ components:
           format: "double"
           description: "COVID-19 cases per 100k people in the last 7 days at the topic's location"
           example: 192.715256
+        _links:
+          type: "object"
+          readOnly: true
+          description: Link relations following the HAL schema
+          properties:
+            self:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42/topics/1337/incidence"
       xml:
         name: "Incidence"
     Error:
@@ -576,5 +783,16 @@ components:
           type: "string"
           description: "Error descriptions"
           example: "An error occured"
+        _links:
+          type: "object"
+          readOnly: true
+          description: Link relations following the HAL schema
+          properties:
+            self:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: ""
       xml:
         name: "Error"

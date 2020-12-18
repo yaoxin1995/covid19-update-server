@@ -12,7 +12,7 @@ func NewError(message string) ErrorT {
 	return ErrorT{Error: message}
 }
 
-func (e ErrorT) ToHAL() hal.Resource {
+func (e ErrorT) ToHAL(_ string) hal.Resource {
 
 	root := hal.NewResourceObject()
 	root.AddData(e)

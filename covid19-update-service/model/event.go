@@ -55,18 +55,44 @@ func GetEventsWithLimit(tID, limit uint) (EventCollection, error) {
 	return e, err
 }
 
-func (e Event) ToHAL() hal.Resource {
+func (e Event) ToHAL(path string) hal.Resource {
 	root := hal.NewResourceObject()
+	root.AddData(e)
 
-	// ToDo
+	selfRel := hal.NewSelfLinkRelation()
+	selfLink := &hal.LinkObject{Href: path}
+	selfRel.SetLink(selfLink)
+	root.AddLink(selfRel)
 
 	return root
 }
 
-func (ec EventCollection) ToHAL() hal.Resource {
+func (ec EventCollection) ToHAL(path string) hal.Resource {
 	root := hal.NewResourceObject()
 
-	// ToDo
+	selfRel := hal.NewSelfLinkRelation()
+	selfLink := &hal.LinkObject{Href: path}
+	selfRel.SetLink(selfLink)
+	root.AddLink(selfRel)
+
+	var embeddedEvs []hal.Resource
+
+	for _, e := range ec {
+		eHref := fmt.Sprintf("%s/%d", path, e.ID)
+		eSelfLink, _ := hal.NewLinkObject(eHref)
+
+		eSelfRel, _ := hal.NewLinkRelation("self")
+		eSelfRel.SetLink(eSelfLink)
+
+		embeddedEv := hal.NewResourceObject()
+		embeddedEv.AddLink(eSelfRel)
+		embeddedEv.AddData(e)
+		embeddedEvs = append(embeddedEvs, embeddedEv)
+	}
+
+	evs, _ := hal.NewResourceRelation("events")
+	evs.SetResources(embeddedEvs)
+	root.AddResource(evs)
 
 	return root
 }

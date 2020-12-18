@@ -35,7 +35,7 @@ func (ws *Covid19UpdateWebServer) getEvents(w http.ResponseWriter, r *http.Reque
 		limit, err = toUInt(rawLimit[0])
 		limitRequested = true
 		if err != nil {
-			writeHTTPResponse(model.NewError("Limit has to be an unsigned integer."), http.StatusBadRequest, w)
+			writeHTTPResponse(model.NewError("Limit has to be an unsigned integer."), http.StatusBadRequest, w, r)
 			return
 		}
 	}
@@ -46,18 +46,18 @@ func (ws *Covid19UpdateWebServer) getEvents(w http.ResponseWriter, r *http.Reque
 		e, err = model.GetEvents(t.ID)
 	}
 	if err != nil {
-		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not load events: %v.", err)), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not load events: %v.", err)), http.StatusInternalServerError, w, r)
 		return
 	}
 
-	writeHTTPResponse(e, http.StatusOK, w)
+	writeHTTPResponse(e, http.StatusOK, w, r)
 }
 
 func (ws *Covid19UpdateWebServer) getEvent(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	eID, err := toUInt(vars[eventId])
 	if err != nil {
-		writeHTTPResponse(model.NewError("Event ID has to be an unsigned integer."), http.StatusBadRequest, w)
+		writeHTTPResponse(model.NewError("Event ID has to be an unsigned integer."), http.StatusBadRequest, w, r)
 		return
 	}
 
@@ -67,13 +67,13 @@ func (ws *Covid19UpdateWebServer) getEvent(w http.ResponseWriter, r *http.Reques
 	}
 	e, err := model.GetEvent(eID, t.ID)
 	if e == nil {
-		writeHTTPResponse(model.NewError("Could not find event."), http.StatusNotFound, w)
+		writeHTTPResponse(model.NewError("Could not find event."), http.StatusNotFound, w, r)
 		return
 	}
 	if err != nil {
-		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not load event: %v.", err)), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not load event: %v.", err)), http.StatusInternalServerError, w, r)
 		return
 	}
 
-	writeHTTPResponse(*e, http.StatusOK, w)
+	writeHTTPResponse(*e, http.StatusOK, w, r)
 }

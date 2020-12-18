@@ -68,9 +68,7 @@ func (s *Subscription) Update(email, telegram *string) error {
 	return s.Store()
 }
 
-func (s Subscription) ToHAL() hal.Resource {
-	href := fmt.Sprintf("/subscriptions/%d", s.ID)
-
+func (s Subscription) ToHAL(path string) hal.Resource {
 	root := hal.NewResourceObject()
 
 	// Add email and telegram manually, because HAL JSON encoder does not can handle null.String
@@ -80,32 +78,30 @@ func (s Subscription) ToHAL() hal.Resource {
 	root.AddData(data)
 
 	selfRel := hal.NewSelfLinkRelation()
-	selfLink := &hal.LinkObject{Href: href}
+	selfLink := &hal.LinkObject{Href: path}
 	selfRel.SetLink(selfLink)
 	root.AddLink(selfRel)
 
 	topicsRel, _ := hal.NewLinkRelation("topics")
-	topicsLink := &hal.LinkObject{Href: fmt.Sprintf("%s/topics", href)}
+	topicsLink := &hal.LinkObject{Href: fmt.Sprintf("%s/topics", path)}
 	topicsRel.SetLink(topicsLink)
 	root.AddLink(topicsRel)
 
 	return root
 }
 
-func (sc SubscriptionCollection) ToHAL() hal.Resource {
-	href := fmt.Sprintf("/subscriptions")
-
+func (sc SubscriptionCollection) ToHAL(path string) hal.Resource {
 	root := hal.NewResourceObject()
 
 	selfRel := hal.NewSelfLinkRelation()
-	selfLink := &hal.LinkObject{Href: href}
+	selfLink := &hal.LinkObject{Href: path}
 	selfRel.SetLink(selfLink)
 	root.AddLink(selfRel)
 
 	var embeddedSubs []hal.Resource
 
 	for _, s := range sc {
-		eHref := fmt.Sprintf("/subscriptions/%d", s.ID)
+		eHref := fmt.Sprintf("%s/%d", path, s.ID)
 		eSelfLink, _ := hal.NewLinkObject(eHref)
 
 		eSelfRel, _ := hal.NewLinkRelation("self")
@@ -113,10 +109,10 @@ func (sc SubscriptionCollection) ToHAL() hal.Resource {
 
 		embeddedSub := hal.NewResourceObject()
 		embeddedSub.AddLink(eSelfRel)
-		data := root.Data()
+		data := embeddedSub.Data()
 		data["email"] = s.Email.Ptr()
 		data["telegramChatId"] = s.TelegramChatID.Ptr()
-		root.AddData(data)
+		embeddedSub.AddData(data)
 		embeddedSubs = append(embeddedSubs, embeddedSub)
 	}
 

@@ -99,18 +99,54 @@ func (t *Topic) Delete() error {
 	return db.Unscoped().Delete(t).Error
 }
 
-func (tc TopicCollection) ToHAL() hal.Resource {
+func (tc TopicCollection) ToHAL(path string) hal.Resource {
 	root := hal.NewResourceObject()
 
-	// ToDo
+	selfRel := hal.NewSelfLinkRelation()
+	selfLink := &hal.LinkObject{Href: path}
+	selfRel.SetLink(selfLink)
+	root.AddLink(selfRel)
+
+	var embeddedTops []hal.Resource
+
+	for _, t := range tc {
+		eHref := fmt.Sprintf("%s/%d", path, t.ID)
+		eSelfLink, _ := hal.NewLinkObject(eHref)
+
+		eSelfRel, _ := hal.NewLinkRelation("self")
+		eSelfRel.SetLink(eSelfLink)
+
+		embeddedTop := hal.NewResourceObject()
+		embeddedTop.AddLink(eSelfRel)
+		embeddedTop.AddData(t)
+		embeddedTops = append(embeddedTops, embeddedTop)
+	}
+
+	tops, _ := hal.NewResourceRelation("topics")
+	tops.SetResources(embeddedTops)
+	root.AddResource(tops)
 
 	return root
 }
 
-func (t Topic) ToHAL() hal.Resource {
+func (t Topic) ToHAL(path string) hal.Resource {
 	root := hal.NewResourceObject()
+	root.AddData(t)
 
-	// ToDo
+	selfRel := hal.NewSelfLinkRelation()
+	selfLink := &hal.LinkObject{Href: path}
+	selfRel.SetLink(selfLink)
+	root.AddLink(selfRel)
+
+	eventsRel, _ := hal.NewLinkRelation("events")
+	eventLink := &hal.LinkObject{Href: fmt.Sprintf("%s/events", path)}
+	eventsRel.SetLink(eventLink)
+	root.AddLink(eventsRel)
+
+	incidenceRel, _ := hal.NewLinkRelation("incidence")
+	incidenceLink := &hal.LinkObject{Href: fmt.Sprintf("%s/incidence", path)}
+	incidenceRel.SetLink(incidenceLink)
+	root.AddLink(incidenceRel)
 
 	return root
 }

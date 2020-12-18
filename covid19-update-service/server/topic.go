@@ -45,7 +45,7 @@ func parseTopicRequest(w http.ResponseWriter, r *http.Request) (TopicRequest, bo
 	var topReq TopicRequest
 	err := decoder.Decode(&topReq)
 	if err != nil {
-		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not decode request body: %v.", err)), http.StatusBadRequest, w)
+		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not decode request body: %v.", err)), http.StatusBadRequest, w, r)
 		return TopicRequest{}, false
 	}
 	return topReq, true
@@ -68,16 +68,16 @@ func (ws *Covid19UpdateWebServer) registerTopicRoutes(r *mux.Router) {
 	topicRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(topicRouter)
 }
 
-func matchRegion(p model.GPSPosition, w http.ResponseWriter) (uint, bool) {
+func matchRegion(p model.GPSPosition, w http.ResponseWriter, r *http.Request) (uint, bool) {
 	rID, err := rki.GetRegionIDForPosition(p)
 	if err != nil {
 		switch err.(type) {
 		default:
 			log.Printf("Could not find RKI region: %v", err)
-			writeHTTPResponse(model.NewError("Could not process position."), http.StatusInternalServerError, w)
+			writeHTTPResponse(model.NewError("Could not process position."), http.StatusInternalServerError, w, r)
 			return 0, false
 		case *rki.LocationNotFoundError:
-			writeHTTPResponse(model.NewError("Position not supported."), http.StatusUnprocessableEntity, w)
+			writeHTTPResponse(model.NewError("Position not supported."), http.StatusUnprocessableEntity, w, r)
 			return 0, false
 		}
 	}
@@ -88,7 +88,7 @@ func parseTopicId(w http.ResponseWriter, r *http.Request) (uint, bool) {
 	vars := mux.Vars(r)
 	tID, err := toUInt(vars[topicId])
 	if err != nil {
-		writeHTTPResponse(model.NewError("Topic ID has to be an unsigned integer."), http.StatusBadRequest, w)
+		writeHTTPResponse(model.NewError("Topic ID has to be an unsigned integer."), http.StatusBadRequest, w, r)
 		return 0, false
 	}
 	return tID, true
@@ -101,7 +101,7 @@ func findTopic(w http.ResponseWriter, r *http.Request) (model.Topic, bool) {
 	}
 	subExists := model.SubscriptionExists(sID)
 	if !subExists {
-		writeHTTPResponse(model.NewError("Could not find subscription."), http.StatusNotFound, w)
+		writeHTTPResponse(model.NewError("Could not find subscription."), http.StatusNotFound, w, r)
 		return model.Topic{}, false
 	}
 	tID, ok := parseTopicId(w, r)
@@ -110,11 +110,11 @@ func findTopic(w http.ResponseWriter, r *http.Request) (model.Topic, bool) {
 	}
 	t, err := model.GetTopic(tID, sID)
 	if err != nil {
-		writeHTTPResponse(model.NewError("Could not load topic."), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError("Could not load topic."), http.StatusInternalServerError, w, r)
 		return model.Topic{}, false
 	}
 	if t == nil {
-		writeHTTPResponse(model.NewError("Could not find topic."), http.StatusNotFound, w)
+		writeHTTPResponse(model.NewError("Could not find topic."), http.StatusNotFound, w, r)
 		return model.Topic{}, false
 	}
 	return *t, true
@@ -129,15 +129,15 @@ func (ws *Covid19UpdateWebServer) createTopic(w http.ResponseWriter, r *http.Req
 	if !ok {
 		return
 	}
-	cID, ok := matchRegion(createTopReq.Position, w)
+	cID, ok := matchRegion(createTopReq.Position, w, r)
 	if !ok {
 		return
 	}
 	t, err := model.NewTopic(createTopReq.Position, createTopReq.Threshold, s.ID, cID)
 	if err != nil {
-		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not create topic: %v.", err)), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not create topic: %v.", err)), http.StatusInternalServerError, w, r)
 	}
-	writeHTTPResponse(t, http.StatusCreated, w)
+	writeHTTPResponse(t, http.StatusCreated, w, r)
 }
 
 func (ws *Covid19UpdateWebServer) getTopics(w http.ResponseWriter, r *http.Request) {
@@ -145,7 +145,7 @@ func (ws *Covid19UpdateWebServer) getTopics(w http.ResponseWriter, r *http.Reque
 	if !ok {
 		return
 	}
-	writeHTTPResponse(s.Topics, http.StatusOK, w)
+	writeHTTPResponse(s.Topics, http.StatusOK, w, r)
 }
 
 func (ws *Covid19UpdateWebServer) getTopic(w http.ResponseWriter, r *http.Request) {
@@ -153,7 +153,7 @@ func (ws *Covid19UpdateWebServer) getTopic(w http.ResponseWriter, r *http.Reques
 	if !ok {
 		return
 	}
-	writeHTTPResponse(t, http.StatusOK, w)
+	writeHTTPResponse(t, http.StatusOK, w, r)
 }
 
 func (ws *Covid19UpdateWebServer) deleteTopic(w http.ResponseWriter, r *http.Request) {
@@ -166,10 +166,10 @@ func (ws *Covid19UpdateWebServer) deleteTopic(w http.ResponseWriter, r *http.Req
 	}
 	err := t.Delete()
 	if err != nil {
-		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not delete topic: %v", err)), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not delete topic: %v", err)), http.StatusInternalServerError, w, r)
 		return
 	}
-	writeHTTPResponse(nil, http.StatusNoContent, w)
+	writeHTTPResponse(nil, http.StatusNoContent, w, r)
 }
 
 func (ws *Covid19UpdateWebServer) updateTopic(w http.ResponseWriter, r *http.Request) {
@@ -181,14 +181,14 @@ func (ws *Covid19UpdateWebServer) updateTopic(w http.ResponseWriter, r *http.Req
 	if !ok {
 		return
 	}
-	cID, ok := matchRegion(updateTopReq.Position, w)
+	cID, ok := matchRegion(updateTopReq.Position, w, r)
 	if !ok {
 		return
 	}
 	err := t.Update(updateTopReq.Position, updateTopReq.Threshold, cID)
 	if err != nil {
-		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not update topic: %v.", err)), http.StatusInternalServerError, w)
+		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not update topic: %v.", err)), http.StatusInternalServerError, w, r)
 		return
 	}
-	writeHTTPResponse(t, http.StatusOK, w)
+	writeHTTPResponse(t, http.StatusOK, w, r)
 }
