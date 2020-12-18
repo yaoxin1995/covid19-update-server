@@ -29,4 +29,6 @@ RUN pip3 install APScheduler==3.6.3 \
 
 WORKDIR /opt/notification-service
 
+RUN mkdir /opt/notification-service/db
+
 COPY . .

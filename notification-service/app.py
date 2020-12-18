@@ -10,7 +10,7 @@ class Config:
     Some additional Flask config parameters
     """
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///db.sql'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///./db/db.sql'
     TELEGRAM_BOT_TOKEN = os.environ['TELEGRAM_BOT_TOKEN']
 
 

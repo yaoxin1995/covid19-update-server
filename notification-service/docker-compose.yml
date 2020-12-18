@@ -13,6 +13,9 @@ services:
       - UNKNOWN_MESSAGE=Sorry, {{ USER_FULL_NAME }}. I didn't understand you.
       # Use template variables (prefix TEMPLATE_VAR_)
       - TEMPLATE_VAR_SERVICE_NAME=COVID-19 incidence update notifications
+    volumes:
+      # Persist notification database
+      - notification-service-db:/opt/notification-service/db:rw
     command: flask run --host=0.0.0.0 --port 80
     restart: unless-stopped
 
@@ -43,3 +46,6 @@ x-disabled:
       ports:
         - 8080:8080
       restart: unless-stopped
+
+volumes:
+  notification-service-db:
