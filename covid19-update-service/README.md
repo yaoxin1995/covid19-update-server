@@ -19,3 +19,5 @@ Use the docker-compose file to run the service locally.
 | POLL_INTERVAL_MINUTES | Interval (in minutes) in which the data is retrieved from the RKI API |
 | TELEGRAM_CONTACT_URI | URL of Telegram notification REST API |
 | SENDGRID_API_KEY | API Key for SendGrid (https://sendgrid.com) |
+| AUTH0_ISS | Auth0 issuer |
+| AUTH0_AUD | Auth0 API ID |
