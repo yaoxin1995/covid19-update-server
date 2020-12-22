@@ -49,6 +49,11 @@ func findSubscription(w http.ResponseWriter, r *http.Request) (model.Subscriptio
 		writeHTTPResponse(model.NewError("Could not find subscription."), http.StatusNotFound, w, r)
 		return model.Subscription{}, false
 	}
+	if s.ClientID != r.Context().Value(clientContext).(string) {
+		writeHTTPResponse(model.NewError("Access not allowed."), http.StatusForbidden, w, r)
+		return model.Subscription{}, false
+	}
+
 	return *s, true
 }
 
@@ -70,7 +75,7 @@ func (ws *Covid19UpdateWebServer) registerSubscriptionRoutes(r *mux.Router) {
 }
 
 func (ws *Covid19UpdateWebServer) getSubscriptions(w http.ResponseWriter, r *http.Request) {
-	subs, err := model.GetSubscriptions()
+	subs, err := model.GetSubscriptions(r.Context().Value(clientContext).(string))
 	if err != nil {
 		writeHTTPResponse(model.NewError("Could not load subscriptions."), http.StatusInternalServerError, w, r)
 		return
@@ -91,11 +96,13 @@ func (ws *Covid19UpdateWebServer) createSubscription(w http.ResponseWriter, r *h
 	if !ok {
 		return
 	}
-	s, err := model.NewSubscription(createSubReq.Email, createSubReq.TelegramChatID)
+	s, err := model.NewSubscription(createSubReq.Email, createSubReq.TelegramChatID, r.Context().Value(clientContext).(string),
+		model.TopicCollection{})
 	if err != nil {
 		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not create subscription: %v.", err)), http.StatusInternalServerError, w, r)
 		return
 	}
+	r.URL.Path = fmt.Sprintf("%s/%d", r.URL, s.ID)
 	writeHTTPResponse(s, http.StatusCreated, w, r)
 }
 

@@ -21,3 +21,4 @@ Use the docker-compose file to run the service locally.
 | SENDGRID_API_KEY | API Key for SendGrid (https://sendgrid.com) |
 | AUTH0_ISS | Auth0 issuer |
 | AUTH0_AUD | Auth0 API ID |
+| AUTH0_AUD | Auth0 Realm |

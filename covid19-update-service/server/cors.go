@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/handlers"
 )
 
-var allowedHeaders = []string{"Accept", "Content-Type", "Content-Length"}
+var allowedHeaders = []string{"Accept", "Content-Type", "Content-Length", "Authorization"}
 
 type corsHandler struct {
 	allowedMethods []string

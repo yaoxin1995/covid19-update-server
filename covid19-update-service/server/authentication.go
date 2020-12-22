@@ -28,20 +28,22 @@ type AuthenticationHandler struct {
 	JWKS       Jwks
 	ISS        string
 	AUD        string
+	Realm      string
 	Middleware *jwtmiddleware.JWTMiddleware
 }
 
-const ownerContext = "resourceOwner"
+const tokenContext = "tokenContext"
 
-func NewAuthenticationHandler(iss, aud string) (AuthenticationHandler, error) {
+func NewAuthenticationHandler(iss, aud, realm string) (AuthenticationHandler, error) {
 	jwks, err := getJwks(iss)
 	if err != nil {
-		return AuthenticationHandler{}, fmt.Errorf("could not create authentication handler: %v", err)
+		return AuthenticationHandler{}, err
 	}
 	handler := AuthenticationHandler{
-		JWKS: jwks,
-		ISS:  iss,
-		AUD:  aud,
+		JWKS:  jwks,
+		ISS:   iss,
+		AUD:   aud,
+		Realm: realm,
 	}
 	handler.createJWTMiddleWare()
 	return handler, nil
@@ -49,7 +51,7 @@ func NewAuthenticationHandler(iss, aud string) (AuthenticationHandler, error) {
 
 func getJwks(iss string) (Jwks, error) {
 	var jwks = Jwks{}
-	resp, err := http.Get(fmt.Sprintf("%s/.well-known/jwks.json", iss))
+	resp, err := http.Get(fmt.Sprintf("%s.well-known/jwks.json", iss))
 
 	if err != nil {
 		return jwks, fmt.Errorf("could not load Jwks: %v", err)
@@ -103,10 +105,36 @@ func (a *AuthenticationHandler) createJWTMiddleWare() {
 			return result, nil
 		},
 		SigningMethod: jwt.SigningMethodRS256,
-		UserProperty:  ownerContext,
+		UserProperty:  tokenContext,
 		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err string) {
+			w.Header().Set("WWW-Authenticate", fmt.Sprintf("Bearer realm=\"%s\"", a.Realm))
 			writeHTTPResponse(model.NewError(fmt.Sprintf("could not perfrom authentcation: %v", err)), http.StatusUnauthorized, w, r)
 		},
 		EnableAuthOnOptions: true,
 	})
+}
+
+func (a *AuthenticationHandler) getSubject(tokenString string) (string, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		cert, err := a.getPemCert(token)
+		if err != nil {
+			return nil, err
+		}
+		result, err := jwt.ParseRSAPublicKeyFromPEM([]byte(cert))
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	claims, ok := token.Claims.(*jwt.StandardClaims)
+	if !ok {
+		return "", errors.New("could not get claims")
+	}
+
+	return claims.Subject, nil
 }

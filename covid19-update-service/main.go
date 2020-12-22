@@ -45,7 +45,19 @@ func main() {
 	if !ok {
 		log.Fatalf("SERVER_PORT missing")
 	}
-	respAPI, err := server.SetupServer(host, port)
+	aud, ok := os.LookupEnv("AUTH0_AUD")
+	if !ok {
+		log.Fatalf("AUTH0_AUD missing")
+	}
+	iss, ok := os.LookupEnv("AUTH0_ISS")
+	if !ok {
+		log.Fatalf("AUTH0_ISS missing")
+	}
+	realm, ok := os.LookupEnv("AUTH0_REALM")
+	if !ok {
+		log.Fatalf("AUTH0_REALM missing")
+	}
+	respAPI, err := server.SetupServer(host, port, iss, aud, realm)
 	if err != nil {
 		log.Fatalf("Could not start web server: %v", err)
 	}
