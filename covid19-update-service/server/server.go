@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -11,11 +12,12 @@ import (
 
 type Covid19UpdateWebServer struct {
 	*http.Server
+	AuthHandler *AuthenticationHandler
 }
 
 const timeout = 2 * time.Minute
 
-func SetupServer(host, port string) (*Covid19UpdateWebServer, error) {
+func SetupServer(host, port, iss, aud, realm, rawCorsOrigins string) (*Covid19UpdateWebServer, error) {
 	addr := net.JoinHostPort(host, port)
 	server := &http.Server{
 		Addr:         addr,
@@ -23,8 +25,16 @@ func SetupServer(host, port string) (*Covid19UpdateWebServer, error) {
 		WriteTimeout: timeout,
 	}
 
+	setupOrigins(rawCorsOrigins)
+
+	authHandler, err := NewAuthenticationHandler(iss, aud, realm)
+	if err != nil {
+		return nil, fmt.Errorf("could not create authentication handler: %v", err)
+	}
+
 	ws := &Covid19UpdateWebServer{
-		Server: server,
+		Server:      server,
+		AuthHandler: &authHandler,
 	}
 
 	ws.registerRoutes()

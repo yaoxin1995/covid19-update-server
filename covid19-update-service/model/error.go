@@ -12,13 +12,13 @@ func NewError(message string) ErrorT {
 	return ErrorT{Error: message}
 }
 
-func (e ErrorT) ToHAL(_ string) hal.Resource {
+func (e ErrorT) ToHAL(path string) hal.Resource {
 
 	root := hal.NewResourceObject()
 	root.AddData(e)
 
 	selfRel := hal.NewSelfLinkRelation()
-	selfLink := &hal.LinkObject{Href: ""}
+	selfLink := &hal.LinkObject{Href: path}
 	selfRel.SetLink(selfLink)
 	root.AddLink(selfRel)
 

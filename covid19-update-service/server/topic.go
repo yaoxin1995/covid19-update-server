@@ -55,16 +55,18 @@ func (ws *Covid19UpdateWebServer) registerTopicRoutes(r *mux.Router) {
 	topicsRouter := r.Path(topicsBaseRoute).Subrouter().StrictSlash(strictSlash)
 	topicsRouter.HandleFunc("", ws.checkAcceptType(ws.getTopics)).Methods(http.MethodGet)
 	topicsRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.createTopic))).Methods(http.MethodPost)
-	topicsRouter.HandleFunc("", nil).Methods(http.MethodOptions)
+	topicsRouter.HandleFunc("", ws.optionHandler(topicsRouter)).Methods(http.MethodOptions)
 	topicsRouter.Use(newCorsHandler(topicsRouter))
+	topicsRouter.Use(ws.authentication())
 	topicsRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(topicsRouter)
 
 	topicRouter := r.Path(topicRoute).Subrouter().StrictSlash(strictSlash)
 	topicRouter.HandleFunc("", ws.checkAcceptType(ws.getTopic)).Methods(http.MethodGet)
 	topicRouter.HandleFunc("", ws.checkAcceptType(ws.deleteTopic)).Methods(http.MethodDelete)
 	topicRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.updateTopic))).Methods(http.MethodPut)
-	topicRouter.HandleFunc("", nil).Methods(http.MethodOptions)
+	topicRouter.HandleFunc("", ws.optionHandler(topicRouter)).Methods(http.MethodOptions)
 	topicRouter.Use(newCorsHandler(topicRouter))
+	topicRouter.Use(ws.authentication())
 	topicRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(topicRouter)
 }
 
@@ -99,9 +101,8 @@ func findTopic(w http.ResponseWriter, r *http.Request) (model.Topic, bool) {
 	if !ok {
 		return model.Topic{}, false
 	}
-	subExists := model.SubscriptionExists(sID)
-	if !subExists {
-		writeHTTPResponse(model.NewError("Could not find subscription."), http.StatusNotFound, w, r)
+	_, ok = findSubscription(w, r)
+	if !ok {
 		return model.Topic{}, false
 	}
 	tID, ok := parseTopicId(w, r)
@@ -137,6 +138,7 @@ func (ws *Covid19UpdateWebServer) createTopic(w http.ResponseWriter, r *http.Req
 	if err != nil {
 		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not create topic: %v.", err)), http.StatusInternalServerError, w, r)
 	}
+	r.URL.Path = fmt.Sprintf("%s/%d", r.URL, t.ID)
 	writeHTTPResponse(t, http.StatusCreated, w, r)
 }
 

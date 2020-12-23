@@ -15,13 +15,15 @@ type Subscription struct {
 	Email          null.String     `json:"email"`
 	TelegramChatID null.String     `json:"telegramChatId"`
 	Topics         TopicCollection `json:"-"`
+	ClientID       string          `json:"-"`
 }
 
-func NewSubscription(email, telegram *string) (Subscription, error) {
+func NewSubscription(email, telegram *string, clientID string, topics TopicCollection) (Subscription, error) {
 	s := Subscription{
 		Email:          null.StringFromPtr(email),
 		TelegramChatID: null.StringFromPtr(telegram),
-		Topics:         TopicCollection{},
+		Topics:         topics,
+		ClientID:       clientID,
 	}
 	err := s.Store()
 	return s, err
@@ -43,18 +45,9 @@ func GetSubscription(id uint) (*Subscription, error) {
 	return s, nil
 }
 
-func SubscriptionExists(id uint) bool {
-	s := &Subscription{}
-	err := db.First(s, id).Error
-	if err != nil {
-		return false
-	}
-	return true
-}
-
-func GetSubscriptions() (SubscriptionCollection, error) {
+func GetSubscriptions(owner string) (SubscriptionCollection, error) {
 	var subs SubscriptionCollection
-	err := db.Find(&subs).Preload("Topics").Error
+	err := db.Where("client_id=?", owner).Find(&subs).Error
 	return subs, err
 }
 
@@ -73,6 +66,7 @@ func (s Subscription) ToHAL(path string) hal.Resource {
 
 	// Add email and telegram manually, because HAL JSON encoder does not can handle null.String
 	data := root.Data()
+	data["id"] = s.ID
 	data["email"] = s.Email.Ptr()
 	data["telegramChatId"] = s.TelegramChatID.Ptr()
 	root.AddData(data)
@@ -110,6 +104,7 @@ func (sc SubscriptionCollection) ToHAL(path string) hal.Resource {
 		embeddedSub := hal.NewResourceObject()
 		embeddedSub.AddLink(eSelfRel)
 		data := embeddedSub.Data()
+		data["id"] = s.ID
 		data["email"] = s.Email.Ptr()
 		data["telegramChatId"] = s.TelegramChatID.Ptr()
 		embeddedSub.AddData(data)
