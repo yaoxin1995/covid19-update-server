@@ -57,7 +57,11 @@ func main() {
 	if !ok {
 		log.Fatalf("AUTH0_REALM missing")
 	}
-	respAPI, err := server.SetupServer(host, port, iss, aud, realm)
+	corsOrigins, ok := os.LookupEnv("CORS_ORIGINS")
+	if !ok {
+		log.Fatalf("CORS_ORIGINS missing")
+	}
+	respAPI, err := server.SetupServer(host, port, iss, aud, realm, corsOrigins)
 	if err != nil {
 		log.Fatalf("Could not start web server: %v", err)
 	}

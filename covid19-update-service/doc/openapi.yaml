@@ -8,6 +8,8 @@ servers:
     description: Local Server
   - url: 185.128.119.135:9005
     description: Cloud'n'Heat Server
+security:   
+  - bearerAuth: []
 paths:
   /subscriptions:
     post:
@@ -22,13 +24,25 @@ paths:
         201:
           description: Subscription was created successfully
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Subscription'
         400:
           description: Request is malformed
           content:
-            application/json:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
     get:
@@ -38,7 +52,7 @@ paths:
         200:
           description: Subscriptions were loaded successfully
           content:
-            application/json:
+            application/hal+json:
               schema:
                 type: "object"
                 properties:
@@ -89,9 +103,18 @@ paths:
                                     href:
                                       type: "string"
                                       example: "/subscriptions/42"
-                              
-                  
-                    
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /subscriptions/{subscriptionId}:
     get:
       tags: ["Subscriptions"]
@@ -109,19 +132,31 @@ paths:
         200:
           description: Subscription was loaded successfully
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Subscription'
         400:
           description: Request is malformed
           content:
-            application/json:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: Subscription with given ID was not found
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
     put:
@@ -145,19 +180,31 @@ paths:
         200:
           description: Subscription was updated successfully
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Subscription'
         400:
           description: Request is malformed
           content:
-            application/json:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: Subscription with given ID was not found
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
     delete:
@@ -178,13 +225,25 @@ paths:
         400:
           description: Request is malformed
           content:
-            application/json:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: Subscription with given ID was not found
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
   /subscriptions/{subscriptionId}/topics:
@@ -209,25 +268,37 @@ paths:
         201:
           description: Topic was created successfully
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Topic'
         400:
           description: Request is malformed
           content:
-            application/json:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: Subscription with given ID was not found
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         422:
           description: Provided location is not supported
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
     get:
@@ -246,7 +317,7 @@ paths:
         200:
           description: Topics were loaded successfully
           content:
-            application/json:
+            application/hal+json:
               schema:
                 type: "object"
                 properties:
@@ -311,13 +382,25 @@ paths:
         400:
           description: Request is malformed
           content:
-            application/json:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: Subscription with given ID was not found
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
   /subscriptions/{subscriptionId}/topics/{topicId}:
@@ -345,19 +428,31 @@ paths:
         200:
           description: Topic was loaded successfully
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Topic'
         400:
           description: Request is malformed
           content:
-            application/json:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: Topic with given ID was not found for subscription
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
     put:
@@ -389,25 +484,37 @@ paths:
         200:
           description: Topic was updated successfully
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Topic'
         400:
           description: Request is malformed
           content:
-            application/json:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: Topic with given ID was not found for subscription
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         422:
           description: Provided location is not supported
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
     delete:
@@ -436,13 +543,25 @@ paths:
         400:
           description: Request is malformed
           content:
-            application/json:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: Subscription with given ID was not found
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
   /subscriptions/{subscriptionId}/topics/{topicId}/incidence:
@@ -470,19 +589,31 @@ paths:
         200:
           description: Incidence value was loaded successfully
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Incidence'
         400:
           description: Request is malformed
           content:
-            application/json:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: Topic with given ID was not found for subscription
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
   /subscriptions/{subscriptionId}/topics/{topicId}/events:
@@ -517,7 +648,7 @@ paths:
         200:
           description: Events were loaded successfully
           content:
-            application/json:
+            application/hal+json:
               schema:
                 type: "object"
                 properties:
@@ -566,13 +697,25 @@ paths:
         400:
           description: Request is malformed
           content:
-            application/json:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: Topic with given ID was not found for subscription
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
   /subscriptions/{subscriptionId}/topics/{topicId}/events/{eventId}:
@@ -608,22 +751,39 @@ paths:
         200:
           description: Event was loaded successfully
           content:
-            application/json:
+            application/hal+json:
               schema:
                $ref: '#/components/schemas/Event'
         400:
           description: Request is malformed
           content:
-            application/json:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
         404:
           description: Event with given ID was not found for topic
           content:
-            application/json:
+            application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
 components:
+  securitySchemes:
+    bearerAuth: 
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Subscription:
       type: "object"

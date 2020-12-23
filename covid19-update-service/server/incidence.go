@@ -29,8 +29,9 @@ func (i Incidence) ToHAL(path string) hal.Resource {
 func (ws *Covid19UpdateWebServer) registerIncidenceRoutes(r *mux.Router) {
 	incidenceRouter := r.Path(incidenceRoute).Subrouter().StrictSlash(strictSlash)
 	incidenceRouter.HandleFunc("", ws.checkAcceptType(ws.getIncidence)).Methods(http.MethodGet)
-	incidenceRouter.HandleFunc("", nil).Methods(http.MethodOptions)
+	incidenceRouter.HandleFunc("", ws.optionHandler(incidenceRouter)).Methods(http.MethodOptions)
 	incidenceRouter.Use(newCorsHandler(incidenceRouter))
+	incidenceRouter.Use(ws.authentication())
 	incidenceRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(incidenceRouter)
 }
 

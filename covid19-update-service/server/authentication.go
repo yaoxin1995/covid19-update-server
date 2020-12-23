@@ -108,9 +108,9 @@ func (a *AuthenticationHandler) createJWTMiddleWare() {
 		UserProperty:  tokenContext,
 		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err string) {
 			w.Header().Set("WWW-Authenticate", fmt.Sprintf("Bearer realm=\"%s\"", a.Realm))
-			writeHTTPResponse(model.NewError(fmt.Sprintf("could not perfrom authentcation: %v", err)), http.StatusUnauthorized, w, r)
+			writeHTTPResponse(model.NewError(fmt.Sprintf("could not perform authentcation: %v", err)), http.StatusUnauthorized, w, r)
 		},
-		EnableAuthOnOptions: true,
+		EnableAuthOnOptions: false,
 	})
 }
 

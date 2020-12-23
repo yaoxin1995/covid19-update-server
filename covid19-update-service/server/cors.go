@@ -5,31 +5,27 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
-
-	"github.com/gorilla/handlers"
+	"github.com/rs/cors"
 )
 
-var allowedHeaders = []string{"Accept", "Content-Type", "Content-Length", "Authorization"}
-
-type corsHandler struct {
-	allowedMethods []string
-	wrapper        http.Handler
-}
+var allowedHeaders = []string{"Accept", "Content-Type", "Content-Length", "Authorization", "Origin",
+	"X-Requested-With", "Access-Control-Allow-Headers"}
+var allowedOrigins []string
 
 func newCorsHandler(r *mux.Router) func(handlerFunc http.Handler) http.Handler {
 	allowedMethods := getAllMethodsForRouter(r)
 	return func(h http.Handler) http.Handler {
-		return &corsHandler{
-			allowedMethods: getAllMethodsForRouter(r),
-			wrapper: handlers.CORS(handlers.AllowedHeaders(allowedHeaders),
-				handlers.AllowedMethods(allowedMethods))(h),
-		}
+		return cors.New(cors.Options{
+			AllowedOrigins:     allowedOrigins,
+			AllowCredentials:   true,
+			AllowedMethods:     allowedMethods,
+			AllowedHeaders:     allowedHeaders,
+			OptionsPassthrough: true,
+			// Enable Debugging for testing, consider disabling in production
+			Debug: false}).Handler(h)
 	}
 }
 
-func (c *corsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		w.Header().Set("Allowed", strings.Join(c.allowedMethods, ", "))
-	}
-	c.wrapper.ServeHTTP(w, r)
+func setupOrigins(rawOrigins string) {
+	allowedOrigins = strings.Split(rawOrigins, ",")
 }

@@ -11,14 +11,16 @@ import (
 func (ws *Covid19UpdateWebServer) registerEventRoutes(r *mux.Router) {
 	eventsRouter := r.Path(eventsBaseRoute).Subrouter().StrictSlash(strictSlash)
 	eventsRouter.HandleFunc("", ws.checkAcceptType(ws.getEvents)).Methods(http.MethodGet)
-	eventsRouter.HandleFunc("", nil).Methods(http.MethodOptions)
+	eventsRouter.HandleFunc("", ws.optionHandler(eventsRouter)).Methods(http.MethodOptions)
 	eventsRouter.Use(newCorsHandler(eventsRouter))
+	eventsRouter.Use(ws.authentication())
 	eventsRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(eventsRouter)
 
 	eventRouter := r.Path(eventRoute).Subrouter().StrictSlash(strictSlash)
 	eventRouter.HandleFunc("", ws.checkAcceptType(ws.getEvent)).Methods(http.MethodGet)
-	eventRouter.HandleFunc("", nil).Methods(http.MethodOptions)
+	eventRouter.HandleFunc("", ws.optionHandler(eventRouter)).Methods(http.MethodOptions)
 	eventRouter.Use(newCorsHandler(eventRouter))
+	eventRouter.Use(ws.authentication())
 	eventRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(eventRouter)
 }
 

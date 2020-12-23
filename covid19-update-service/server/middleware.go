@@ -55,6 +55,10 @@ func (ws *Covid19UpdateWebServer) authentication() func(handlerFunc http.Handler
 		})
 
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == http.MethodOptions {
+				next.ServeHTTP(w, r)
+				return
+			}
 			ws.AuthHandler.Middleware.HandlerWithNext(w, r, addResourceOwner)
 		})
 	}

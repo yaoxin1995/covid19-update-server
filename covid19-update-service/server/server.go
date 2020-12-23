@@ -17,13 +17,15 @@ type Covid19UpdateWebServer struct {
 
 const timeout = 2 * time.Minute
 
-func SetupServer(host, port, iss, aud, realm string) (*Covid19UpdateWebServer, error) {
+func SetupServer(host, port, iss, aud, realm, rawCorsOrigins string) (*Covid19UpdateWebServer, error) {
 	addr := net.JoinHostPort(host, port)
 	server := &http.Server{
 		Addr:         addr,
 		ReadTimeout:  timeout,
 		WriteTimeout: timeout,
 	}
+
+	setupOrigins(rawCorsOrigins)
 
 	authHandler, err := NewAuthenticationHandler(iss, aud, realm)
 	if err != nil {
@@ -48,7 +50,6 @@ func (ws *Covid19UpdateWebServer) registerRoutes() {
 	router := mux.NewRouter().StrictSlash(strictSlash) // Default Router
 
 	router.NotFoundHandler = ws.defaultNotFoundHandler()
-	router.Use(ws.authentication())
 
 	ws.registerSubscriptionRoutes(router)
 	ws.registerTopicRoutes(router)

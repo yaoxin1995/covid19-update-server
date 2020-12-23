@@ -61,16 +61,18 @@ func (ws *Covid19UpdateWebServer) registerSubscriptionRoutes(r *mux.Router) {
 	subscriptionsRouter := r.Path(subscriptionsBaseRoute).Subrouter().StrictSlash(strictSlash)
 	subscriptionsRouter.HandleFunc("", ws.checkAcceptType(ws.getSubscriptions)).Methods(http.MethodGet)
 	subscriptionsRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.createSubscription))).Methods(http.MethodPost)
-	subscriptionsRouter.HandleFunc("", nil).Methods(http.MethodOptions)
+	subscriptionsRouter.HandleFunc("", ws.optionHandler(subscriptionsRouter)).Methods(http.MethodOptions)
 	subscriptionsRouter.Use(newCorsHandler(subscriptionsRouter))
+	subscriptionsRouter.Use(ws.authentication())
 	subscriptionsRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(subscriptionsRouter)
 
 	subscriptionRouter := r.Path(subscriptionRoute).Subrouter().StrictSlash(strictSlash)
 	subscriptionRouter.HandleFunc("", ws.checkAcceptType(ws.getSubscription)).Methods(http.MethodGet)
 	subscriptionRouter.HandleFunc("", ws.checkAcceptType(ws.deleteSubscription)).Methods(http.MethodDelete)
 	subscriptionRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.updateSubscription))).Methods(http.MethodPut)
-	subscriptionRouter.HandleFunc("", nil).Methods(http.MethodOptions)
+	subscriptionRouter.HandleFunc("", ws.optionHandler(subscriptionRouter)).Methods(http.MethodOptions)
 	subscriptionRouter.Use(newCorsHandler(subscriptionRouter))
+	subscriptionRouter.Use(ws.authentication())
 	subscriptionRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(subscriptionRouter)
 }
 

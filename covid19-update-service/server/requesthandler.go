@@ -31,3 +31,17 @@ func (ws *Covid19UpdateWebServer) createNotAllowedHandler(r *mux.Router) http.Ha
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	})
 }
+
+func (ws *Covid19UpdateWebServer) optionHandler(r *mux.Router) http.HandlerFunc {
+	allowedMethods := getAllMethodsForRouter(r)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Allowed", strings.Join(allowedMethods, ", "))
+		writeHTTPResponse(nil, http.StatusOK, w, r)
+	})
+}
+
+/*
+if r.Method == http.MethodOptions {
+		w.Header().Set("Allowed", strings.Join(c.allowedMethods, ", "))
+	}
+*/
