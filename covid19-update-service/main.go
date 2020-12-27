@@ -29,11 +29,16 @@ func init() {
 		log.Fatalf("TELEGRAM_CONTACT_URI missing")
 	}
 	notifier.TelegramApiURI = telegramAPIUri
-	sendGridAPIUri, ok := os.LookupEnv("SENDGRID_API_KEY")
+	sendGridAPIKey, ok := os.LookupEnv("SENDGRID_API_KEY")
 	if !ok {
 		log.Fatalf("SENDGRID_API_KEY missing")
 	}
-	notifier.SendGridAPIKey = sendGridAPIUri
+	notifier.SendGridAPIKey = sendGridAPIKey
+	sendGridEmail, ok := os.LookupEnv("SENDGRID_EMAIL")
+	if !ok {
+		log.Fatalf("SENDGRID_EMAIL missing")
+	}
+	notifier.SendGridEmail = sendGridEmail
 }
 
 func main() {
@@ -53,15 +58,11 @@ func main() {
 	if !ok {
 		log.Fatalf("AUTH0_ISS missing")
 	}
-	realm, ok := os.LookupEnv("AUTH0_REALM")
-	if !ok {
-		log.Fatalf("AUTH0_REALM missing")
-	}
 	corsOrigins, ok := os.LookupEnv("CORS_ORIGINS")
 	if !ok {
 		log.Fatalf("CORS_ORIGINS missing")
 	}
-	respAPI, err := server.SetupServer(host, port, iss, aud, realm, corsOrigins)
+	respAPI, err := server.SetupServer(host, port, iss, aud, corsOrigins)
 	if err != nil {
 		log.Fatalf("Could not start web server: %v", err)
 	}

@@ -22,6 +22,7 @@ type Publisher interface {
 
 var TelegramApiURI = ""
 var SendGridAPIKey = ""
+var SendGridEmail = ""
 
 type TelegramPublisher struct {
 	ChatID string
@@ -77,7 +78,7 @@ func NewEmailPublisher(email string) EmailPublisher {
 }
 
 func (ep *EmailPublisher) Publish(e model.Event) error {
-	from := mail.NewEmail("Covid 19 Updater", "ludwig_maximilian.leibl@mailbox.tu-dresden.de")
+	from := mail.NewEmail("Covid 19 Updater", SendGridEmail)
 	subject := "Covid19 Update"
 	to := mail.NewEmail(ep.Email, ep.Email)
 	message := mail.NewSingleEmail(from, subject, to, e.Message, e.Message)

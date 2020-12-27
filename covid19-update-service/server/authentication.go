@@ -28,22 +28,20 @@ type AuthenticationHandler struct {
 	JWKS       Jwks
 	ISS        string
 	AUD        string
-	Realm      string
 	Middleware *jwtmiddleware.JWTMiddleware
 }
 
 const tokenContext = "tokenContext"
 
-func NewAuthenticationHandler(iss, aud, realm string) (AuthenticationHandler, error) {
+func NewAuthenticationHandler(iss, aud string) (AuthenticationHandler, error) {
 	jwks, err := getJwks(iss)
 	if err != nil {
 		return AuthenticationHandler{}, err
 	}
 	handler := AuthenticationHandler{
-		JWKS:  jwks,
-		ISS:   iss,
-		AUD:   aud,
-		Realm: realm,
+		JWKS: jwks,
+		ISS:  iss,
+		AUD:  aud,
 	}
 	handler.createJWTMiddleWare()
 	return handler, nil
@@ -107,7 +105,7 @@ func (a *AuthenticationHandler) createJWTMiddleWare() {
 		SigningMethod: jwt.SigningMethodRS256,
 		UserProperty:  tokenContext,
 		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err string) {
-			w.Header().Set("WWW-Authenticate", fmt.Sprintf("Bearer realm=\"%s\"", a.Realm))
+			w.Header().Set("WWW-Authenticate", fmt.Sprintf("Bearer realm=\"%soauth/token\"", a.ISS))
 			writeHTTPResponse(model.NewError(fmt.Sprintf("could not perform authentcation: %v", err)), http.StatusUnauthorized, w, r)
 		},
 		EnableAuthOnOptions: false,

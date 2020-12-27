@@ -1,0 +1,16 @@
+version: '3.5'
+services:
+  covid19-update-service:
+    container_name: covid19-update-service
+    build:
+      context: ./covid19-update-service
+    environment:
+      - DB_TYPE=sqlite3
+      - DB_SOURCE=storage.db?_foreign_keys=on
+      - SERVER_PORT=9005
+      - POLL_INTERVAL_MINUTES=5
+      - TELEGRAM_CONTACT_URI=http://localhost:80/notification
+      - SENDGRID_API_KEY=
+      - SENDGRID_EMAIL=ludwig_maximilian.leibl@mailbox.tu-dresden.de
+      - AUTH0_ISS=
+      - AUTH0_AUD=

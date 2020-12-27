@@ -17,7 +17,7 @@ type Covid19UpdateWebServer struct {
 
 const timeout = 2 * time.Minute
 
-func SetupServer(host, port, iss, aud, realm, rawCorsOrigins string) (*Covid19UpdateWebServer, error) {
+func SetupServer(host, port, iss, aud, rawCorsOrigins string) (*Covid19UpdateWebServer, error) {
 	addr := net.JoinHostPort(host, port)
 	server := &http.Server{
 		Addr:         addr,
@@ -27,7 +27,7 @@ func SetupServer(host, port, iss, aud, realm, rawCorsOrigins string) (*Covid19Up
 
 	setupOrigins(rawCorsOrigins)
 
-	authHandler, err := NewAuthenticationHandler(iss, aud, realm)
+	authHandler, err := NewAuthenticationHandler(iss, aud)
 	if err != nil {
 		return nil, fmt.Errorf("could not create authentication handler: %v", err)
 	}
