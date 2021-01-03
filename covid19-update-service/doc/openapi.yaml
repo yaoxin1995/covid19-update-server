@@ -39,12 +39,6 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Error'
-        403:
-          description: Forbidden
-          content:
-            application/hal+json:
-              schema:
-                $ref: '#/components/schemas/Error'
     get:
       tags: ["Subscriptions"]
       summary: List all subscriptions
@@ -105,12 +99,6 @@ paths:
                                       example: "/subscriptions/42"
         401:
           description: Unauthorized
-          content:
-            application/hal+json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: Forbidden
           content:
             application/hal+json:
               schema:

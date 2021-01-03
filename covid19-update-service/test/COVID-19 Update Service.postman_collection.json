@@ -1,0 +1,380 @@
+{
+	"info": {
+		"_postman_id": "814a4764-b9d8-4458-a385-96fd8a5ef409",
+		"name": "COVID-19 Update Service",
+		"description": "E2E Test for COVID-19 Update Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Get Bearer Token",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Authentification is successfull\", function() {",
+									"    pm.response.to.have.status(200);",
+									"",
+									"    // Set Bearer Token",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    pm.environment.set(\"BEARER_TOKEN\", jsonData.access_token);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"client_id\": \"{{CLIENT_ID}}\",\n    \"client_secret\": \"{{CLIENT_SECRET}}\",\n    \"audience\": \"https://185.128.119.135\",\n    \"grant_type\": \"client_credentials\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://scc2020g8.eu.auth0.com/oauth/token",
+							"protocol": "https",
+							"host": [
+								"scc2020g8",
+								"eu",
+								"auth0",
+								"com"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Subscriptions",
+			"item": [
+				{
+					"name": "Create Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successfull\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response is well formed\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    var subId = jsonData.id;",
+									"",
+									"    pm.environment.set(\"SUBSCRIPTION_ID\", subId);",
+									"",
+									"    pm.expect(jsonData.email).equals(\"test@example.com\");",
+									"    pm.expect(jsonData.telegramChatId).equals(\"578989238\");",
+									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + subId);",
+									"    pm.expect(jsonData._links.topics.href).equals(\"/subscriptions/\" + subId + \"/topics\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"telegramChatId\": \"578989238\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Subscriptions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successfull\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is well formed\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"",
+									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions\");",
+									"",
+									"    var place = -1",
+									"    for (var i = 0; i < jsonData._embedded.subscriptions.length; i++) {",
+									"        if (jsonData._embedded.subscriptions[i].id == pm.environment.get(\"SUBSCRIPTION_ID\")) {",
+									"            place = i;",
+									"            break;",
+									"        }",
+									"    }",
+									"",
+									"    pm.expect(jsonData._embedded.subscriptions[place].id).equals(pm.environment.get(\"SUBSCRIPTION_ID\"));",
+									"    pm.expect(jsonData._embedded.subscriptions[place].email).equals(\"test@example.com\");",
+									"    pm.expect(jsonData._embedded.subscriptions[place].telegramChatId).equals(\"578989238\");",
+									"    pm.expect(jsonData._embedded.subscriptions[place]._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\"));",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successfull\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is well formed\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"",
+									"    pm.expect(jsonData.email).equals(\"test@example.com\");",
+									"    pm.expect(jsonData.telegramChatId).equals(\"578989238\");",
+									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\"));",
+									"    pm.expect(jsonData._links.topics.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Subscription Unauthorized",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request fails\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successfull\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is well formed\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"",
+									"    pm.expect(jsonData.email).equals(\"foo@bar.com\");",
+									"    pm.expect(jsonData.telegramChatId).equals(null);",
+									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\"));",
+									"    pm.expect(jsonData._links.topics.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"foo@bar.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successfull\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"foo@bar.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{BEARER_TOKEN}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
