@@ -31,7 +31,7 @@ func (cn *Covid19Notifier) run() error {
 func notify(cov19region model.Covid19Region) {
 	tops, err := model.GetTopicsWithThresholdAlert(cov19region)
 	if err != nil {
-		fmt.Printf("Could not load topics for notification region: %v", err)
+		log.Printf("Could not load topics for notification region: %v", err)
 	}
 	for _, t := range tops {
 		e, err := model.NewEvent(cov19region, t)
@@ -57,7 +57,7 @@ func shipEvent(e model.Event, sID uint) error {
 			tp := NewTelegramPublisher(s.TelegramChatID.String)
 			err = tp.Publish(e)
 			if err != nil {
-				fmt.Printf("Could not publish event %d via telegram: %v", e.ID, err)
+				log.Printf("Could not publish event %d via telegram: %v", e.ID, err)
 				return
 			}
 			log.Printf("Sending telegram notification finished successfully")
@@ -69,7 +69,7 @@ func shipEvent(e model.Event, sID uint) error {
 			ep := NewEmailPublisher(s.Email.String)
 			err = ep.Publish(e)
 			if err != nil {
-				fmt.Printf("Could not publish event %d via telegram: %v", e.ID, err)
+				log.Printf("Could not publish event %d via telegram: %v", e.ID, err)
 				return
 			}
 			log.Printf("Sending email notification finished successfully")
