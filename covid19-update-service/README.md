@@ -50,3 +50,10 @@ Use the docker-compose file to run the service locally.
 |SENDGRID_EMAIL| Email address used to send email notifications |
 | AUTH0_ISS | Auth0 issuer, e.g. `https://scc2020g8.eu.auth0.com/` (Trailing slash required!) |
 | AUTH0_AUD | Auth0 API ID, e.g. `https://185.128.119.135` |
+
+## Run Tests
+
+To execute the test collection in `/test` you have to install Postman: https://www.postman.com
+
+1. Import and select environment `/test/COVID-19 Update Service Test-Env.postman_environment.json`
+2. Import and execute test collection `/test/COVID-19 Update Service.postman_collection.json`

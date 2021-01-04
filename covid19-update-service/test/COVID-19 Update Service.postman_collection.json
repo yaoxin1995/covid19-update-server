@@ -304,6 +304,47 @@
 					"response": []
 				},
 				{
+					"name": "Get Updated Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successfull\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is well formed\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"",
+									"    pm.expect(jsonData.email).equals(\"foo@bar.com\");",
+									"    pm.expect(jsonData.telegramChatId).equals(null);",
+									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\"));",
+									"    pm.expect(jsonData._links.topics.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Delete Subscription",
 					"event": [
 						{
@@ -339,6 +380,613 @@
 							"path": [
 								"subscriptions",
 								"{{SUBSCRIPTION_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Deleted Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successfull\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Topics",
+			"item": [
+				{
+					"name": "Create Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successfull\", function () {",
+									"    pm.response.to.have.status(201);",
+									"",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    var subId = jsonData.id;",
+									"",
+									"    pm.environment.set(\"SUBSCRIPTION_ID\", subId);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"telegramChatId\": \"578989238\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Topic Invalid Treshold",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request fails\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"position\": {\n    \"latitude\": 51.031945,\n    \"longitude\": 13.712836\n  },\n  \"threshold\": -50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}/topics",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}",
+								"topics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Topic Invalid Position",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request fails\", function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"position\": {\n    \"latitude\": 51.031945,\n    \"longitude\": 15033.712836\n  },\n  \"threshold\": 50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}/topics",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}",
+								"topics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Topic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successful\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response is well formed\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    var topicId = jsonData.id;",
+									"",
+									"    pm.environment.set(\"TOPIC_ID\", topicId);",
+									"",
+									"    pm.expect(jsonData.position.latitude).equals(51.031945);",
+									"    pm.expect(jsonData.position.longitude).equals(13.712836);",
+									"    pm.expect(jsonData.threshold).equals(50);",
+									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId);",
+									"    pm.expect(jsonData._links.events.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/events\");",
+									"    pm.expect(jsonData._links.incidence.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/incidence\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"position\": {\n    \"latitude\": 51.031945,\n    \"longitude\": 13.712836\n  },\n  \"threshold\": 50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}/topics",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}",
+								"topics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Topics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successfull\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is well formed\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"",
+									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics\");",
+									"",
+									"    var place = -1",
+									"    for (var i = 0; i < jsonData._embedded.topics.length; i++) {",
+									"        if (jsonData._embedded.topics[i].id == pm.environment.get(\"TOPIC_ID\")) {",
+									"            place = i;",
+									"            break;",
+									"        }",
+									"    }",
+									"",
+									"    pm.expect(jsonData._embedded.topics[place].id).equals(pm.environment.get(\"TOPIC_ID\"));",
+									"    pm.expect(jsonData._embedded.topics[place].position.latitude).equals(51.031945);",
+									"    pm.expect(jsonData._embedded.topics[place].position.longitude).equals(13.712836);",
+									"    pm.expect(jsonData._embedded.topics[place].threshold).equals(50);",
+									"    pm.expect(jsonData._embedded.topics[place]._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + pm.environment.get(\"TOPIC_ID\"));",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}/topics",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}",
+								"topics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Topic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is well formed\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    var topicId = jsonData.id;",
+									"",
+									"    pm.environment.set(\"TOPIC_ID\", topicId);",
+									"",
+									"    pm.expect(jsonData.position.latitude).equals(51.031945);",
+									"    pm.expect(jsonData.position.longitude).equals(13.712836);",
+									"    pm.expect(jsonData.threshold).equals(50);",
+									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId);",
+									"    pm.expect(jsonData._links.events.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/events\");",
+									"    pm.expect(jsonData._links.incidence.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/incidence\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}/topics/{{TOPIC_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}",
+								"topics",
+								"{{TOPIC_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Topic Unauthorized",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successful\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}/topics/{{TOPIC_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}",
+								"topics",
+								"{{TOPIC_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is well formed\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    var topicId = jsonData.id;",
+									"",
+									"    pm.environment.set(\"TOPIC_ID\", topicId);",
+									"",
+									"    pm.expect(jsonData.position.latitude).equals(51.031946);",
+									"    pm.expect(jsonData.position.longitude).equals(13.712835);",
+									"    pm.expect(jsonData.threshold).equals(51);",
+									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId);",
+									"    pm.expect(jsonData._links.events.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/events\");",
+									"    pm.expect(jsonData._links.incidence.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/incidence\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"position\": {\n    \"latitude\": 51.031946,\n    \"longitude\": 13.712835\n  },\n  \"threshold\": 51\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}/topics/{{TOPIC_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}",
+								"topics",
+								"{{TOPIC_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Updated Topic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is well formed\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    var topicId = jsonData.id;",
+									"",
+									"    pm.environment.set(\"TOPIC_ID\", topicId);",
+									"",
+									"    pm.expect(jsonData.position.latitude).equals(51.031946);",
+									"    pm.expect(jsonData.position.longitude).equals(13.712835);",
+									"    pm.expect(jsonData.threshold).equals(51);",
+									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId);",
+									"    pm.expect(jsonData._links.events.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/events\");",
+									"    pm.expect(jsonData._links.incidence.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/incidence\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}/topics/{{TOPIC_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}",
+								"topics",
+								"{{TOPIC_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Events",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}/topics/{{TOPIC_ID}}/events",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}",
+								"topics",
+								"{{TOPIC_ID}}",
+								"events"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Incidence",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is well formed\", function () {",
+									"    var jsonData = JSON.parse(responseBody);",
+									"    var topicId = jsonData.id;",
+									"",
+									"    pm.expect(jsonData.incidence).is.gte(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}/topics/{{TOPIC_ID}}/incidence",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}",
+								"topics",
+								"{{TOPIC_ID}}",
+								"incidence"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Topic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successful\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}/topics/{{TOPIC_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}",
+								"topics",
+								"{{TOPIC_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Deleted Topic",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successful\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}/topics/{{TOPIC_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}",
+								"topics",
+								"{{TOPIC_ID}}"
 							]
 						}
 					},
