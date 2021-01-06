@@ -203,6 +203,7 @@ def update(request,id):
 				# return render(request,'blog/create_topic.html',context)
 				return redirect('blog-home')
 			else:
+
 				messages.warning(request, 'Failed to delete this topic, please try again')
 				return redirect('blog-home')
 
