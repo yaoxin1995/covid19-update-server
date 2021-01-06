@@ -58,13 +58,13 @@ def profile(request):
 			u_form.save()
 			p_form.save()
 
-			subscipted_form = p_form.cleaned_data.get('subscipted')
+			subscripted_form = p_form.cleaned_data.get('subscripted')
 
 			current_profile =  request.user.profile
 
-			if subscipted_form != current_profile.subscribtionStatus:
+			if subscripted_form != current_profile.subscribtionStatus:
 				#get a id from update server
-				if subscipted_form == True:
+				if subscripted_form == True:
 
 					headers={"content-type": "application/json","accept": "application/json"} #设置requist 中的传输格式
 					date ={ 'email':request.user.email}
@@ -83,9 +83,9 @@ def profile(request):
 					headers={"content-type": "application/json"}
 					id = current_profile.subscribtionId
 					url_delate_subribtion = url_subsribtion+"/"+str(id)
-					request= requests.delete(url_delate_subribtion,headers=headers)
+					respons= requests.delete(url_delate_subribtion,headers=headers)
 
-					if request.status_code == 204:
+					if respons.status_code == 204:
 						current_profile.subscribtionId=0
 						current_profile.subscribtionStatus=False
 						current_profile.save()  # 204==204
