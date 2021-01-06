@@ -205,11 +205,10 @@ def update(request,id):
 			else:
 
 
+
 				messages.warning(request, 'Failed to delete this topic, please try again')
 				return redirect('blog-home')
-# =======
-# 				messages.warning(request, 'update this topic failed,try again')
-# 				return redirect('detail', id=id)
+
 
 		else:
 			messages.warning(request, 'Incorrect format, please try again')
