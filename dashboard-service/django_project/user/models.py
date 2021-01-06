@@ -16,7 +16,7 @@ class Profile(models.Model):
 	# 每个user均有一个默认的图片，图片被存在 profile_pics文件夹下
 	#image = models.ImageField(default ='default.jpg',upload_to = 'profile_pics')
 
-	Subscripted = models.BooleanField(default=False)
+	subscipted = models.BooleanField(default=False)
 
 	subscribtionStatus = models.BooleanField(default=False)
 

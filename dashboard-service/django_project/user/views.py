@@ -69,38 +69,35 @@ def profile(request):
 					headers={"content-type": "application/json","accept": "application/json"} #设置requist 中的传输格式
 					date ={ 'email':request.user.email}
 					date= json.dumps(date) # 将dic变为json 格式
-					print(date)
 					respons = requests.post(url_subsribtion,date,headers=headers)
 					r_dic= respons.json() # 将json格式转化为dic
 					id= r_dic['id']
-					if respons.status_code<=300 and respons.status_code>=200:
-						current_profile.subscribtionStatus = True
-						current_profile.subscribtionId = id 
-						current_profile.save()
-					
-						messages.success(request,'Account and Subscription has been updated ')
-					else:
-						messages.warning(request,'Can\'t get a id from Server')
-						current_profile.subscipted = False
-
+					current_profile.subscribtionStatus = True
+					current_profile.subscribtionId = id 
+					current_profile.save()
+					# delate a id from update server
+					messages.success(request,'Account and Substribtion has been updated ')
 				else: 
 
-					# delate a id from update server
+
 					headers={"content-type": "application/json"}
 					id = current_profile.subscribtionId
 					url_delate_subribtion = url_subsribtion+"/"+str(id)
-					respons= requests.delete(url_delate_subribtion,headers=headers)
+					request= requests.delete(url_delate_subribtion,headers=headers)
 
-					#if request.status_code == 204:
-					if respons.status_code<=300 and respons.status_code>=200:
+					if request.status_code == 204:
 						current_profile.subscribtionId=0
 						current_profile.subscribtionStatus=False
 						current_profile.save()  # 204==204
-						messages.success(request,'Account and Substribtion has been updated ')
+						#messages.success(request,'Account and Substribtion has been updated ')
 					else:
-				
-						messages.warning(request, 'Subscription not deleted, please try again')
-						#messages.warning(request,f'Subscription deletion failed!')
+
+						messages.warning(request, 'subscription is not delated,try again')
+
+
+
+
+
 			return redirect('profile')
 
 	else:
