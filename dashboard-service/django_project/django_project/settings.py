@@ -136,3 +136,7 @@ CRISPY_TEMPLATE_PACK='bootstrap4'
 # login后返回主页
 
 LOGIN_REDIRECT_URL= 'blog-home'
+
+#User login session ends with browser closing
+#http://localhost:8000/profile/
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
