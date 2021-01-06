@@ -204,6 +204,7 @@ def update(request,id):
 				return redirect('blog-home')
 			else:
 
+
 				messages.warning(request, 'Failed to delete this topic, please try again')
 				return redirect('blog-home')
 # =======
