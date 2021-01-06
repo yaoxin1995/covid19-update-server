@@ -4,6 +4,9 @@ from django.contrib.auth.models import User
 
 from django.urls import reverse
 
+#python manage.py createsuperuser 
+
+
 # python manage.py makemigrations
 # python manage.py migrate
 #得到包含所有user 的QuerySet 

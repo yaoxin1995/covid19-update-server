@@ -39,14 +39,14 @@ url_subsribtion = 'http://localhost:9005/subscriptions'
 #show all the topic  in homep.html if user is login and subscribed the server
 def home(request):
 
-	current_user = request.user
 
-	current_profile=current_user.profile
 
-	if current_user.is_authenticated:
+	if request.user.is_authenticated:
+		current_user = request.user
+		current_profile=current_user.profile
 
 		if current_profile.subscribtionStatus == False:
-			messages.warning(request, 'you haven\'t subscribed yed ,please subscribe in profile')
+			messages.warning(request, 'You haven\'t subscribed yet ,please subscribe in profile')
 			return redirect('profile')
 		else:
 			# get all topic from update server
@@ -55,16 +55,17 @@ def home(request):
 			headers={"accept": "application/json"}
 			respons = requests.get(ulr_gettopic,headers=headers)
 			if respons.status_code == 200:
-				messages.success(request, 'successful get all topics from update server.')
+				messages.success(request, 'Successful get all topics from update server.')
 				r_list= respons.json() # 将json格式转化为list
 				context ={ 'topics':r_list}
 				return render(request,'blog/home.html',context)
 			else:
-				messages.warning(request, 'get topics from server failed')
+				messages.warning(request, 'Failed to get topic from server')
 				return render(request,'blog/home.html')
 
 
 	else:
+		messages.warning(request, 'Please login first')
 		return redirect('login')
 
 
@@ -84,7 +85,7 @@ def topicCreation(request):
 		# context ={ 'error_message':"you haven't subscribed yed ,please go to profile to subscribe it"}
 		# return render(request,'blog/create_topic.html',context)
 
-		messages.warning(request, 'you haven\'t subscribed yed ,please go to profile to subscribe it')
+		messages.warning(request, 'You haven\'t subscribed yet ,please subscribe in profile')
 		return redirect('profile')
 
 
@@ -146,12 +147,12 @@ def detail(request,id):
 	headers={"accept": "application/json"}
 	respons = requests.get(url_detail,headers=headers)
 	if respons.status_code == 200:
-		messages.success(request, 'successful get this topics from update server.')
+		messages.success(request, 'Successful get the topics from update server.')
 		r_dic= respons.json() # 将json格式转化为dic
 
 		return render(request,'blog/topic_detail.html',{'r_dic':r_dic})
 	else:
-		messages.warning(request, 'get this topic failed')
+		messages.warning(request, 'Failed get this topic ')
 		return redirect('blog-home')
 
 #{{BASE_URL}}/subscriptions/1/topics/1
@@ -161,10 +162,10 @@ def delate(request,id):
 	url_delate = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics/"+str(id)
 	r = requests.delete(url_delate)
 	if r.status_code == 204:
-		messages.success(request, 'successful delate this topic from update server.')
+		messages.success(request, 'Successful delate the topic from update server.')
 		return redirect('blog-home')
 	else:
-		messages.warning(request, 'delate this topic failed,try again ')
+		messages.warning(request, 'Failed to delete this topic, please try again ')
 		return redirect('detail', id=id) # This is the argument of a view
 
 
@@ -197,15 +198,15 @@ def update(request,id):
 					# topic created
 					# delate a id from update server
 				# context ={ 'successful_message':"successful creat a topic"}
-				messages.success(request, 'successful update this topic.')
+				messages.success(request, 'Successful update this topic.')
 
 				# return render(request,'blog/create_topic.html',context)
 				return redirect('blog-home')
 			else:
-				messages.warning(request, 'update this topic failed,try again')
+				messages.warning(request, 'Failed to delete this topic, please try again')
 				return redirect('blog-home')
 		else:
-			messages.warning(request, 'format not correct,try agian')
+			messages.warning(request, 'Incorrect format, please try again')
 
 	form = TopicUpdateForm()
 
