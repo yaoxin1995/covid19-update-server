@@ -1,12 +1,51 @@
-version: '3'
+version: '3.5'
 services:
   notification-service:
     container_name: notification-service
     build:
       context: .
     environment:
+      - FLASK_APP=app.py
       - TELEGRAM_BOT_TOKEN=1408066607:AAGngahMqS98-oJpxEWdbf0Q0ktKJ_ETiIo
-    command: ./startup.sh
+      # Define messages for each message type
+      - WELCOME_MESSAGE=Welcome, {{ USER_FULL_NAME }}! You are now able to configure {{ SERVICE_NAME }} via Telegram.
+        Go to your dashboard and add the Telegram notification provider by entering this ID {{ USER_CHAT_ID }}.
+      - UNKNOWN_MESSAGE=Sorry, {{ USER_FULL_NAME }}. I didn't understand you.
+      # Use template variables (prefix TEMPLATE_VAR_)
+      - TEMPLATE_VAR_SERVICE_NAME=COVID-19 incidence update notifications
+    volumes:
+      # Persist notification database
+      - notification-service-db:/opt/notification-service/db:rw
+    command: flask run --host=0.0.0.0 --port 80
+    restart: unless-stopped
+
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      # Include certificate dir needed for HTTPS support
+      - ./nginx/cert:/etc/nginx/cert:ro
     ports:
-      - 80:5000
-    restart: always
+      # Default port on which we want to access notification-service
+      - 443:443
+      # Should only be used by Swagger
+      - 127.0.0.1:80:80
+    restart: unless-stopped
+
+# Use Swagger.io editor for manual api tests
+# Comment in the following line if you want to start Swagger editor container.
+x-disabled:
+  swagger-editor:
+      container_name: swagger-editor
+      image: swaggerapi/swagger-editor
+      environment:
+        - SWAGGER_FILE=/tmp/swagger.yaml
+      volumes:
+        - ./swagger_api_docu.yaml:/tmp/swagger.yaml
+      ports:
+        - 8080:8080
+      restart: unless-stopped
+
+volumes:
+  notification-service-db:
