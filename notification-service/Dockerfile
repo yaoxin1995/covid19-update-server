@@ -25,7 +25,8 @@ RUN pip3 install APScheduler==3.6.3 \
     urllib3==1.26.2 \
     Werkzeug==1.0.1 \
     pyOpenSSL==20.0.0 \
-    flask-cors==3.0.9
+    flask-cors==3.0.9 \
+    Flask-HAL==1.0.4
 
 WORKDIR /opt/notification-service
 
