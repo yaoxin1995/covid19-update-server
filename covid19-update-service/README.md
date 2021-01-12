@@ -11,9 +11,12 @@ See `/doc` for the OpenAPI specification.
 
 ### Authentication
 
-To use the service an authentication has to be performed using the OAuth 2.0 Client Credential Flow (https://tools.ietf.org/html/rfc6749#section-4.4).
+To use the service, authentication has to be performed via OAuth 2.0 using Auth0 (https://auth0.com).
 
-Therefore a Bearer token has to be requested from Auth0, e.g. (https://auth0.com/docs/flows/call-your-api-using-the-client-credentials-flow):
+#### Client Credential Flow
+
+To use the client credential flow (https://tools.ietf.org/html/rfc6749#section-4.4) follow the instructions of Auth0 
+(https://auth0.com/docs/flows/call-your-api-using-the-client-credentials-flow), e.g.:
 
 ```
 curl --request POST \
