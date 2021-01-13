@@ -4,6 +4,7 @@ from app import Config
 from flask import Response
 from channel_telegram import ChannelTelegram
 from model import Notification, ModelDictJSONEncoder
+from json_hal import NotificationDocument, NotificationListDocument
 
 
 class NotificationResource:
@@ -48,9 +49,11 @@ class NotificationResource:
         notifications = n.fetch(**filter_params)
         if single_resource:
             if len(notifications) == 0:
+                # We don't want to return an empty list of resources
+                notifications = None
                 # If we want to access single resource which doesn't exist.
                 self.__status_code = 404
-            if len(notifications) == 1:
+            elif len(notifications) == 1:
                 # We don't want to return a list of resources, because we just have one.
                 notifications = notifications[0]
         # print("got", notifications)
@@ -69,7 +72,12 @@ class NotificationResource:
             self.__status_code = 406
 
     def __make_hal_response(self):
-        # TODO: convert to hal
+        data = self.__response_data
+        if type(data) is list:
+            data = NotificationListDocument(data).to_dict()
+        else:
+            data = NotificationDocument(data).to_dict()
+        self.__response_data = json.dumps(data, cls=ModelDictJSONEncoder)
         self.__response.content_type = Config.JSON_HAL_MIME_TYPE
 
     def __make_json_response(self):

@@ -1,4 +1,4 @@
 .idea
-db.sql
+db/
 architecture.pdf
 nginx/cert
