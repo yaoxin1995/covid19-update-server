@@ -31,7 +31,7 @@ func (ws *Covid19UpdateWebServer) registerIncidenceRoutes(r *mux.Router) {
 	incidenceRouter.HandleFunc("", ws.checkAcceptType(ws.getIncidence)).Methods(http.MethodGet)
 	incidenceRouter.HandleFunc("", ws.optionHandler(incidenceRouter)).Methods(http.MethodOptions)
 	incidenceRouter.Use(newCorsHandler(incidenceRouter))
-	incidenceRouter.Use(ws.authentication())
+	incidenceRouter.Use(ws.authorizationAndIdentification())
 	incidenceRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(incidenceRouter)
 }
 

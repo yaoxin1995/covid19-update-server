@@ -57,7 +57,7 @@ func (ws *Covid19UpdateWebServer) registerTopicRoutes(r *mux.Router) {
 	topicsRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.createTopic))).Methods(http.MethodPost)
 	topicsRouter.HandleFunc("", ws.optionHandler(topicsRouter)).Methods(http.MethodOptions)
 	topicsRouter.Use(newCorsHandler(topicsRouter))
-	topicsRouter.Use(ws.authentication())
+	topicsRouter.Use(ws.authorizationAndIdentification())
 	topicsRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(topicsRouter)
 
 	topicRouter := r.Path(topicRoute).Subrouter().StrictSlash(strictSlash)
@@ -66,7 +66,7 @@ func (ws *Covid19UpdateWebServer) registerTopicRoutes(r *mux.Router) {
 	topicRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.updateTopic))).Methods(http.MethodPut)
 	topicRouter.HandleFunc("", ws.optionHandler(topicRouter)).Methods(http.MethodOptions)
 	topicRouter.Use(newCorsHandler(topicRouter))
-	topicRouter.Use(ws.authentication())
+	topicRouter.Use(ws.authorizationAndIdentification())
 	topicRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(topicRouter)
 }
 
