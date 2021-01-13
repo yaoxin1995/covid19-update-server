@@ -35,7 +35,7 @@ class NotificationResource:
             error_msg_human_readable=human_readable_error_msg
         )
         n.save()
-        self.__response_data = n.as_dict
+        self.__response_data = n
         self.__make_response_by_content_type()
 
     def resource_fetch(self, filter_params=None, single_resource=False):
@@ -59,7 +59,7 @@ class NotificationResource:
 
     def __make_response_by_content_type(self):
         accept_header_list = str(self.__request.headers.get('accept')).split(',')
-        print(accept_header_list)
+        # print(accept_header_list)
         if Config.JSON_HAL_MIME_TYPE in accept_header_list:
             self.__make_hal_response()
         elif Config.JSON_MIME_TYPE in accept_header_list:

@@ -1,4 +1,3 @@
-from flask import Flask, g
 from sqlalchemy import inspect
 from json import JSONEncoder
 from datetime import datetime
@@ -13,10 +12,15 @@ Text = db.Text
 class ModelDictJSONEncoder(JSONEncoder):
     """
     This JSON encoder is capable to convert all data types
-    which are used in notification model to json.
+    to json which are used in notification model.
     """
     def default(self, o):
-        if isinstance(o, datetime):
+        _dict = {}
+        if isinstance(o, Notification):
+            for column_name in o.column_names:
+                _dict[column_name] = getattr(o, column_name)
+            return _dict
+        elif isinstance(o, datetime):
             return f'{o}'
         return JSONEncoder.default(self, o)
 
@@ -33,7 +37,7 @@ class Notification(db.Model):
         query_result = self.query.filter_by(**filter_attr).all()
         notifications = []
         for query in query_result:
-            notifications.append(query.as_dict)
+            notifications.append(query)
         return notifications
 
     def save(self):
@@ -44,6 +48,10 @@ class Notification(db.Model):
     def as_dict(self):
         return {c.key: getattr(self, c.key)
                 for c in inspect(self).mapper.column_attrs}
+
+    @property
+    def column_names(self):
+        return self.__table__.columns.keys()
 
     def __str__(self):
         return f'Notification {self.id}: {self.creation_date} - {self.recipient} - {self.msg}'
