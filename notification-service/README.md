@@ -34,10 +34,10 @@ You are able to generate a bot token after you created the bot.
 
 ## How to run the web service
 
- * *optional:* If you want to manually test (and watch) the api endpoint (documentation) you can enable the Swagger.io
-   editor container by commenting in  `x-disabled:` in [docker-compose.yml](docker-compose.yml) file. The service will
-   be available on port `8080`.
- * Enter `docker-compose up -d` to create and start the container.
+By default, three containers are created: the web service itself, Swagger Editor, and Nginx which is used as a reverse
+proxy. To prevent trouble with CORS, Swagger is also behind the reverse proxy.
+
+ * Enter `docker-compose up -d` to create and start the containers.
 
 ## How to stop the web service
 
