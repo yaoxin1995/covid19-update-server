@@ -11,10 +11,12 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 import requests , json
+from blog.authorization import getAuthorization
 
 
 
-url_subsribtion = 'http://localhost:9005/subscriptions'
+#url_subsribtion = 'http://localhost:9005/subscriptions'
+url_subsribtion = 'http://185.128.119.135/subscriptions'
 
 
 def register(request):
@@ -66,8 +68,9 @@ def profile(request):
 				#get a id from update server
 				if subscripted_form == True:
 
+					auth_key = "Bearer "
 					headers={"content-type": "application/json","accept": "application/json"} #设置requist 中的传输格式
-					date ={ 'email':request.user.email}
+					date ={ 'email':request.user.email,'telegramChatId':request.user.telegram}
 					date= json.dumps(date) # 将dic变为json 格式
 					respons = requests.post(url_subsribtion,date,headers=headers)
 					r_dic= respons.json() # 将json格式转化为dic
@@ -116,3 +119,5 @@ def profile(request):
 # message.seccess
 # message.warning
 # message.error
+
+#def sendSubscribtion(request):

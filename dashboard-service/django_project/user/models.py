@@ -32,6 +32,9 @@ class Profile(models.Model):
 	def save(self, *args, **kwargs):
 		super().save(*args, **kwargs)
 
+class Authorization(models.Model):
+	authorizationKey = models.CharField(max_length=500,default='0000000')
+
 # #重新定义 该model中的save方法
 # 	def save(self,*args, **kwargs):
 # 		super().save(*args, **kwargs)
