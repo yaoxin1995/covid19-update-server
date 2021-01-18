@@ -1,0 +1,946 @@
+openapi: "3.0.0"
+info:
+  description: "SCC WS2020 Group8"
+  version: "1.0.0"
+  title: "COVID-19 Update Service"
+servers:
+  - url: http://0.0.0.0:9005
+    description: Local Server
+  - url: 185.128.119.135:9005
+    description: Cloud'n'Heat Server
+security:   
+  - bearerAuth: []
+paths:
+  /subscriptions:
+    post:
+      tags: ["Subscriptions"]
+      summary: Create a new subscription
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subscription'
+      responses:
+        201:
+          description: Subscription was created successfully
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        400:
+          description: Request is malformed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags: ["Subscriptions"]
+      summary: List all subscriptions
+      responses:
+        200:
+          description: Subscriptions were loaded successfully
+          content:
+            application/hal+json:
+              schema:
+                type: "object"
+                properties:
+                  _links:
+                    type: "object"
+                    description: "Link relations following the HAL schema"
+                    properties:
+                      self:
+                        type: "object"
+                        properties:
+                          href:
+                            type: "string"
+                            example: "/subscriptions"
+                  _embedded:
+                    type: "object"
+                    description: "Embedded resources following the HAL schema"
+                    properties:
+                      subscriptions:
+                        description: "Available subscriptions"
+                        type: "array"
+                        items:
+                          type: "object"
+                          properties:
+                            id:
+                              type: "integer"
+                              format: "int64"
+                              minimum: 0
+                              description: "ID of the subscription"
+                              readOnly: true
+                            email:
+                              type: "string"
+                              format: "email"
+                              x-nullable: true
+                              description: "Email address to which event notifications are sent. If no email notification should be received the parameter is set to `null`."
+                            telegramChatId:
+                              type: "string"
+                              x-nullable: true
+                              description: "Telegram chat ID, which is provided by the Telegram Bot, to which event notifications are sent. If no Telegram notification should be received the parameter is set to `null`.."
+                              example: "578989238"
+                            _links:
+                              type: "object"
+                              readOnly: true
+                              description: Link relations following the HAL schema
+                              properties:
+                                self:
+                                  type: "object"
+                                  properties:
+                                    href:
+                                      type: "string"
+                                      example: "/subscriptions/42"
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /subscriptions/{subscriptionId}:
+    get:
+      tags: ["Subscriptions"]
+      summary: Get a subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        200:
+          description: Subscription was loaded successfully
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        400:
+          description: Request is malformed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Subscription with given ID was not found
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: ["Subscriptions"]
+      summary: Update a subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subscription'
+      responses:
+        200:
+          description: Subscription was updated successfully
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+        400:
+          description: Request is malformed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Subscription with given ID was not found
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: ["Subscriptions"]
+      summary: Delete subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        204:
+          description: Subscription was deleted successfully
+        400:
+          description: Request is malformed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Subscription with given ID was not found
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /subscriptions/{subscriptionId}/topics:
+    post:
+      tags: ["Topics", "Subscriptions"]
+      summary: "Create a new topic for a subscription"
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Topic'
+      responses:
+        201:
+          description: Topic was created successfully
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Topic'
+        400:
+          description: Request is malformed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Subscription with given ID was not found
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: Provided location is not supported
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags: ["Topics", "Subscriptions"]
+      summary: "List all topics of a subscription"
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        200:
+          description: Topics were loaded successfully
+          content:
+            application/hal+json:
+              schema:
+                type: "object"
+                properties:
+                  _links:
+                    type: "object"
+                    description: "Link relations following the HAL schema"
+                    properties:
+                      self:
+                        type: "object"
+                        properties:
+                          href:
+                            type: "string"
+                            example: "/subscriptions/42/topics/1337"
+                  _embedded:
+                    type: "object"
+                    description: "Embedded resources following the HAL schema"
+                    properties:
+                      topics:
+                        description: "Topics of subscription"
+                        type: "array"
+                        items:
+                          type: "object"
+                          properties:
+                            id:
+                              type: "integer"
+                              format: "int64"
+                              minimum: 0
+                              description: "ID of topic"
+                              readOnly: true
+                            position:
+                              required: 
+                                - longitude
+                                - latitude
+                              type: "object"
+                              description: "Position for which the Covid incidence value is monitored"
+                              properties:
+                                latitude:
+                                  type: "number"
+                                  format: "double"
+                                  example: 51.031945
+                                longitude:
+                                  type: "number"
+                                  format: "double"
+                                  example: 13.712836
+                            threshold:
+                              type: "integer"
+                              format: "int64"
+                              minimum: 0
+                              example: 50
+                              description: "Threshold value of COVID-19 cases per 100k people in the last 7 days above which an event is generated and shipped to the configured output channels of the subscription."
+                            _links:
+                              type: "object"
+                              readOnly: true
+                              description: Link relations following the HAL schema
+                              properties:
+                                self:
+                                  type: "object"
+                                  properties:
+                                    href:
+                                      type: "string"
+                                      example: "/subscriptions/42/topics/1337"
+        400:
+          description: Request is malformed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Subscription with given ID was not found
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /subscriptions/{subscriptionId}/topics/{topicId}:
+    get:
+      tags: ["Topics"]
+      summary: Get a topic of a subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: topicId
+          in: path
+          description: Topic ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        200:
+          description: Topic was loaded successfully
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Topic'
+        400:
+          description: Request is malformed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Topic with given ID was not found for subscription
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: ["Topics"]
+      summary: Update a topic of a subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: topicId
+          in: path
+          description: Topic ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Topic'
+      responses:
+        200:
+          description: Topic was updated successfully
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Topic'
+        400:
+          description: Request is malformed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Topic with given ID was not found for subscription
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: Provided location is not supported
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: ["Topics"]
+      summary: Delete topic of subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: topicId
+          in: path
+          description: Topic ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        204:
+          description: Subscription was deleted successfully
+        400:
+          description: Request is malformed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Subscription with given ID was not found
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /subscriptions/{subscriptionId}/topics/{topicId}/incidence:
+    get:
+      tags: ["Topics", "Incidences"]
+      summary: Get current incidence of topic of a subscription by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: topicId
+          in: path
+          description: Topic ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        200:
+          description: Incidence value was loaded successfully
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Incidence'
+        400:
+          description: Request is malformed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Topic with given ID was not found for subscription
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /subscriptions/{subscriptionId}/topics/{topicId}/events:
+    get:
+      tags: ["Topics", "Events"]
+      summary: List all events of a topic by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: topicId
+          in: path
+          description: Topic ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+          description: Amount of events that should be loaded
+      responses:
+        200:
+          description: Events were loaded successfully
+          content:
+            application/hal+json:
+              schema:
+                type: "object"
+                properties:
+                  _links:
+                    type: "object"
+                    description: "Link relations following the HAL schema"
+                    properties:
+                      self:
+                        type: "object"
+                        properties:
+                          href:
+                            type: "string"
+                            example: "/subscriptions/42/topics/1337"
+                  _embedded:
+                    type: "object"
+                    description: "Embedded resources following the HAL schema"
+                    properties:
+                      events:
+                        description: Events of topic in descending order of their creation time
+                        type: "array"
+                        items:
+                          type: "object"
+                          properties:
+                            id:
+                              type: "integer"
+                              format: "int64"
+                              minimum: 0
+                              description: "ID of event"
+                              readOnly: true
+                            message:
+                              type: "string"
+                              format: "int64"
+                              description: "Message of event"
+                              example: "The COVID-19 7-day-incidence value at your location (13.712836, 51.031945) currently is 192.715256. You receive this message, because you set the alert threshold to 50."
+                            _links:
+                              type: "object"
+                              readOnly: true
+                              description: Link relations following the HAL schema
+                              properties:
+                                self:
+                                  type: "object"
+                                  properties:
+                                    href:
+                                      type: "string"
+                                      example: "/subscriptions/42/topics/1337/events/20"
+        400:
+          description: Request is malformed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Topic with given ID was not found for subscription
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /subscriptions/{subscriptionId}/topics/{topicId}/events/{eventId}:
+    get:
+      tags: ["Events"]
+      summary: Get event of a topic by its ID
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: topicId
+          in: path
+          description: Topic ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - name: eventId
+          in: path
+          description: Event ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+      responses:
+        200:
+          description: Event was loaded successfully
+          content:
+            application/hal+json:
+              schema:
+               $ref: '#/components/schemas/Event'
+        400:
+          description: Request is malformed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        401:
+          description: Unauthorized
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: Forbidden
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Event with given ID was not found for topic
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    bearerAuth: 
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Subscription:
+      type: "object"
+      description: "Configuration of output channels for COVID-19 incidence events."
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          minimum: 0
+          description: "ID of the subscription"
+          readOnly: true
+        email:
+          type: "string"
+          format: "email"
+          x-nullable: true
+          description: "Email address to which event notifications are sent. If no email notification should be received the parameter is set to `null`."
+        telegramChatId:
+          type: "string"
+          x-nullable: true
+          description: "Telegram chat ID, which is provided by the Telegram Bot, to which event notifications are sent. If no Telegram notification should be received the parameter is set to `null`.."
+          example: "578989238"
+        _links:
+          type: "object"
+          readOnly: true
+          description: Link relations following the HAL schema
+          properties:
+            self:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42"
+            topics:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42/topics"
+                  description: "Link relation to the topics value that are associated to the subscription"
+              
+      xml:
+        name: "Subscription"
+    Topic:
+      type: "object"
+      description: "Configuration of location that should be monitored for COVID-19 cases."
+      required:
+        - position
+        - threshold
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          minimum: 0
+          description: "ID of topic"
+          readOnly: true
+        position:
+          required: 
+            - longitude
+            - latitude
+          type: "object"
+          description: "Position for which the Covid incidence value is monitored"
+          properties:
+            latitude:
+              type: "number"
+              format: "double"
+              example: 51.031945
+            longitude:
+              type: "number"
+              format: "double"
+              example: 13.712836
+        threshold:
+          type: "integer"
+          format: "int64"
+          minimum: 0
+          example: 50
+          description: "Threshold value of COVID-19 cases per 100k people in the last 7 days above which an event is generated and shipped to the configured output channels of the subscription."
+        _links:
+          type: "object"
+          readOnly: true
+          description: Link relations following the HAL schema
+          properties:
+            self:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42/topics/1337"
+            events:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42/topics/1337/events"
+                  description: "Link relation to events that are associated to the topic"
+            incidence:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42/topics/1337/incidence"
+                  description: "Link relation to the current incidence value that is associated to the topic"
+      xml:
+        name: "Topic"
+    Event:
+      type: "object"
+      description: "Event that is created each time the COVID-19 cases per 100k people in the last 7 days exceed the threshold."
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          minimum: 0
+          description: "ID of event"
+          readOnly: true
+        message:
+          type: "string"
+          format: "int64"
+          description: "Message of event"
+          example: "The COVID-19 7-day-incidence value at your location (13.712836, 51.031945) currently is 192.715256. You receive this message, because you set the alert threshold to 50."
+        _links:
+          type: "object"
+          readOnly: true
+          description: Link relations following the HAL schema
+          properties:
+            self:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42/topics/1337/events/20"
+      xml:
+        name: "Event"
+    Incidence:
+      type: "object"
+      properties:
+        incidence:
+          type: "number"
+          format: "double"
+          description: "COVID-19 cases per 100k people in the last 7 days at the topic's location"
+          example: 192.715256
+        _links:
+          type: "object"
+          readOnly: true
+          description: Link relations following the HAL schema
+          properties:
+            self:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: "/subscriptions/42/topics/1337/incidence"
+      xml:
+        name: "Incidence"
+    Error:
+      type: "object"
+      properties:
+        error:
+          type: "string"
+          description: "Error descriptions"
+          example: "An error occured"
+        _links:
+          type: "object"
+          readOnly: true
+          description: Link relations following the HAL schema
+          properties:
+            self:
+              type: "object"
+              properties:
+                href:
+                  type: "string"
+                  example: ""
+      xml:
+        name: "Error"

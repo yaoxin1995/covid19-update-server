@@ -1,0 +1,28 @@
+version: '3'
+services:
+  covid19-update-service:
+    container_name: covid19-update-service
+    build:
+      context: ../covid19-update-service
+    environment:
+      - DB_TYPE=sqlite3
+      - DB_SOURCE=storage.db?_foreign_keys=on
+      - SERVER_PORT=9005
+      - POLL_INTERVAL_MINUTES=5
+      - TELEGRAM_CONTACT_URI=http://localhost:80/notification
+      - SENDGRID_API_KEY=
+    expose:
+       - 9005
+    ports:
+    - 9005:9005
+  notification-service:
+    container_name: notification-service
+    build:
+      context: ../notification-service
+    environment:
+      - TELEGRAM_BOT_TOKEN=
+    command: ./startup.sh
+    ports:
+      - 80:5000
+    restart: always
+  

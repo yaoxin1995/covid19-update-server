@@ -1,0 +1,39 @@
+
+
+<!-- 声明集成一个父html -->
+{% extends "blog/base.html" %}
+
+<!-- 改写 父类中 content block 中的内容 -->
+{% block content %}
+
+
+	{% if user.is_authenticated %}
+		{% for topic in topics %}
+
+		<article class="media content-section">
+		  		<div class="media-body">
+
+<!-- 		对应于url.py 中的该 url :    post/<int:pk>/' -->
+		   			 <h2><a class="article-title" href="{%url 'post-detail' topic.id %}">Detail of this topic </a></h2>
+		   			 <p class="article-content">id: {{ topic.id }}</p>
+		    		<p class="article-content">longitude:{{ topic.position.longitude }}</p>
+		   			 <p class="article-content">latitude:{{ topic.position.latitude }}</p>
+		   			 <p class="article-content">threshold:{{ topic.threshold }}</p>
+
+		 		 </div>
+			</article>
+	 	{% endfor %}
+	
+	{% endif%}
+		
+
+
+{% endblock content %}
+
+
+{% block subscription_content %}
+
+
+
+
+{% endblock %}
