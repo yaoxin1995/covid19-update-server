@@ -5,6 +5,8 @@ info:
   title: "Notification service api documentation"
 servers:
   - url: http://127.0.0.1
+security:
+  - bearerAuth: []
 paths:
   /notification:
     get:
@@ -92,6 +94,12 @@ paths:
                                  - Unknown error
                                 description: "Contains human readable error message if something went
                                 wrong during sending message to Telegram API."
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         404:
           description: "Couldn't find notifications of specified recipient."
     post:
@@ -115,7 +123,7 @@ paths:
                - recipient
                - msg
       responses:
-        "201":
+        201:
           description: "Notification was created. Nevertheless, this doesn't necessarily mean that the message was successfully sent to Telegram."
           content:
             application/json:
@@ -176,8 +184,14 @@ paths:
                      - Unknown error
                     description: "Contains human readable error message if something went
                     wrong during sending message to Telegram API."
-        "400":
+        400:
           description: "A required argument is missing."
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /notification/{notification_id}:
     get:
       tags:
@@ -192,7 +206,7 @@ paths:
           type: integer
           minimum: 0
       responses:
-        "200":
+        200:
           description: "Found notification with specified id."
           content:
             application/json:
@@ -253,9 +267,20 @@ paths:
                      - Unknown error
                     description: "Contains human readable error message if something went
                     wrong during sending message to Telegram API."
-        "404":
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
           description: "Couldn't find notifications with specified id."
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Notification:
       type: "object"
@@ -300,3 +325,14 @@ components:
            - Unknown error
           description: "Contains human readable error message if something went
           wrong during sending message to Telegram API."
+    Error:
+      type: "object"
+      properties:
+        code:
+          type: "string"
+          description: "Error message"
+          example: "authorization_header_missing"
+        description:
+          type: "string"
+          description: "More concrete error description"
+          example: "Authorization header is expected"

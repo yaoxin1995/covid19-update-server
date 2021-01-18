@@ -1,10 +1,12 @@
 from app import app, Config
 from flask import request
+from auth import requires_auth
 from resources import NotificationResource
 from helpers import get_params_if_in_query, get_params_if_in_form
 
 
 @app.route(Config.NOTIFICATION_BASE_ROUTE, methods=['GET', 'POST'])
+@requires_auth
 def notification():
     """
     On a GET request:
@@ -24,6 +26,7 @@ def notification():
 
 
 @app.route(f"{Config.NOTIFICATION_BASE_ROUTE}/<notification_id>", methods=['GET'])
+@requires_auth
 def get_notification(notification_id):
     """
     Return a notification by id using JSON format.

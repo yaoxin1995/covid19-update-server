@@ -22,7 +22,8 @@ Have a look at the API documentation for more details.
 Read [this](https://core.telegram.org/bots) introduction to get in touch with the Telegram bot platform.
 You are able to generate a bot token after you created the bot.
 2) Open [docker-compose.yml](docker-compose.yml) file and set `TELEGRAM_BOT_TOKEN` environment variable to be able to
-   communicate with your bot via the Telegram bot API.
+   communicate with your bot via the Telegram bot API. It is also required to set `AUTH0_ISS` and `AUTH0_AUD`.
+   For example `AUTH0_ISS=scc2020g8.eu.auth0.com/` and `AUTH0_AUD=https://185.128.119.135/notification`.
 3) By default, this web service uses HTTPS. Therefore, you need to create a certificate and corresponding private key.
    This can be done by this command (if you don't own a certificate already):
    `mkdir -p ./nginx/cert && openssl req -x509 -newkey rsa:4096 -nodes -out ./nginx/cert/cert.pem -keyout ./nginx/cert/key.pem -days 365`.
@@ -31,6 +32,33 @@ You are able to generate a bot token after you created the bot.
 4) *optional:* Set your own messages (`WELCOME_MESSAGE` and `UNKNOWN_MESSAGE`) via environment variables in
    [docker-compose.yml](docker-compose.yml) file.
 5) Run `docker-compose build` to create the container image.
+
+## Authorization
+
+This web service uses [OAuth 2.0](https://tools.ietf.org/html/rfc6749) authorization via [Auth0](https://auth0.com).
+Therefore, you have to set an `Authorization` header containing a bearer token in your requests. 
+The token can be obtained and saved into the variable `AUTH_TOKEN` by executing the following request:
+(Make sure you have both packages `curl` and the json parser `jq` installed on your system.)
+
+```bash
+$ CLIENT_SECRET=your-secret CLIENT_ID=your-client-id AUDIENCE=https://185.128.119.135/notification
+$ AUTH_TOKEN=$(curl --request POST --url https://scc2020g8.eu.auth0.com/oauth/token
+                    --header 'content-type: application/json'
+                    --data "{\"client_id\":\"${CLIENT_ID}\", \
+                             \"client_secret\":\"${CLIENT_SECRET}\", \
+                             \"audience\":\"${AUDIENCE}\",
+                             \"grant_type\":\"client_credentials\"}" | jq -r .access_token)
+```
+
+Now you should be able to do requests:
+
+```bash
+$ curl localhost/notification -H "Accept: application/hal+json" -H "Authorization: Bearer ${AUTH_TOKEN}"
+```
+
+Detailed information about client credentials flow can be found
+[here](https://auth0.com/docs/flows/call-your-api-using-the-client-credentials-flow).
+
 
 ## How to run the web service
 
@@ -41,4 +69,4 @@ proxy. To prevent trouble with CORS, Swagger is also behind the reverse proxy.
 
 ## How to stop the web service
 
- * Enter `docker-compose down` to stop and destroy the container.
+ * Enter `docker-compose down` to stop and destroy the containers.
