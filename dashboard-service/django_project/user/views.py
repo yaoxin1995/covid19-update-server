@@ -31,8 +31,8 @@ def subscribtion(request):
 	auth_key = "Bearer "+key
 
 	headers={"content-type": "application/json","accept": "application/hal+json","Authorization":auth_key}
-	#payload ={ 'email':request.user.email,'telegramChatId':request.user.profile.telegram}
-	payload={'email':'yaoxinjing517@gmail.com','telegramChatId':'123'}
+	payload ={ 'email':request.user.email,'telegramChatId':request.user.profile.telegram}
+	#payload={'email':'yaoxinjing517@gmail.com','telegramChatId':'123'}
 	payload_json= json.dumps(payload) # 将dic变为json 格式
 	conn = http.client.HTTPSConnection(server_url,context = ssl._create_unverified_context())
 	conn.request("POST", "/subscriptions", payload_json, headers)
