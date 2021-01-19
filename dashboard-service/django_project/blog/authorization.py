@@ -1,5 +1,6 @@
 import http.client
 import ast
+from user.models import Authorization
 # conn = http.client.HTTPSConnection("scc2020g8.eu.auth0.com")
 
 # payload = "{\"client_id\":\"9QDP784vncoXslIJ5H0pFWuQcvxySxxx\",\"client_secret\":\"ANA3qovFC2UfdOkdzxtowaAXiO_oPBO1RCJelEXsy6WJjUwJQSVpr3mPMNM9JcBi\",\"audience\":\"https://185.128.119.135\",\"grant_type\":\"client_credentials\"}"
@@ -25,8 +26,18 @@ def getAuthorization():
     data = res.read()
     key = data.decode("utf-8")
     key_dic = ast.literal_eval(key)
-    return key_dic["access_token"]
-   # type : string   key_dic = ast.literal_eval(key)
+
+    # keep auto_token in db
+    if Authorization.objects.all().exists():
+        auth_db= Authorization.objects.get(pk=1)
+        auth_db.authorizationKey=key_dic["access_token"]
+        auth_db.save()
+    else:
+         auth_db = Authorization(authorizationKey=key_dic["access_token"])
+         auth_db.save()
+
+    conn.close()
+    return key_dic["access_token"]  # type : string   key_dic = ast.literal_eval(key)
 
 
     #conn1 = http.client.HTTPSConnection("scc2020g8.eu.auth0.com")
