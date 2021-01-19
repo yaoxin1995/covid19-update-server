@@ -16,7 +16,7 @@ from blog.authorization import getAuthorization
 
 
 #url_subsribtion = 'http://localhost:9005/subscriptions'
-url_subsribtion = 'http://185.128.119.135/subscriptions'
+url_subsribtion = "185.128.119.135"
 
 
 def register(request):
@@ -66,13 +66,16 @@ def profile(request):
 
 			if subscripted_form != current_profile.subscribtionStatus:
 				#get a id from update server
-				if subscripted_form == True:
+				#conn1 = http.client.HTTPSConnection("185.128.119.135")
+				#conn1.request("POST", "/subscriptions", payload, headers)
+				#{'email':'yaoxinjing517@gmail.com','telegramChatId':'123'}
 
-					auth_key = "Bearer "
-					headers={"content-type": "application/json","accept": "application/json"} #设置requist 中的传输格式
+				if subscripted_form == True:
+					auth_key = "Bearer "+key
+					header={"content-type": "application/json","accept": "application/hal+json","Authorization":auth_key} #设置requist 中的传输格式
 					date ={ 'email':request.user.email,'telegramChatId':request.user.telegram}
 					date= json.dumps(date) # 将dic变为json 格式
-					respons = requests.post(url_subsribtion,date,headers=headers)
+					respons = requests.post(url_subsribtion,date,headers=header)
 					r_dic= respons.json() # 将json格式转化为dic
 					id= r_dic['id']
 					current_profile.subscribtionStatus = True

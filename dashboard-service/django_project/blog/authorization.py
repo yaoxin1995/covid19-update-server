@@ -1,5 +1,5 @@
 import http.client
-
+import ast
 # conn = http.client.HTTPSConnection("scc2020g8.eu.auth0.com")
 
 # payload = "{\"client_id\":\"9QDP784vncoXslIJ5H0pFWuQcvxySxxx\",\"client_secret\":\"ANA3qovFC2UfdOkdzxtowaAXiO_oPBO1RCJelEXsy6WJjUwJQSVpr3mPMNM9JcBi\",\"audience\":\"https://185.128.119.135\",\"grant_type\":\"client_credentials\"}"
@@ -19,8 +19,14 @@ import http.client
 def getAuthorization():
     conn = http.client.HTTPSConnection("scc2020g8.eu.auth0.com")
     payload = "{\"client_id\":\"9QDP784vncoXslIJ5H0pFWuQcvxySxxx\",\"client_secret\":\"ANA3qovFC2UfdOkdzxtowaAXiO_oPBO1RCJelEXsy6WJjUwJQSVpr3mPMNM9JcBi\",\"audience\":\"https://185.128.119.135\",\"grant_type\":\"client_credentials\"}"
-    headers = { 'content-type': "application/json" }
+    headers = { 'content-type': "application/json" ,"accept": "application/json"}
     conn.request("POST", "/oauth/token", payload, headers)
     res = conn.getresponse()
     data = res.read()
-    return data.decode("utf-8")
+    key = data.decode("utf-8")
+    key_dic = ast.literal_eval(key)
+    return key_dic["access_token"]
+   # type : string   key_dic = ast.literal_eval(key)
+
+
+    #conn1 = http.client.HTTPSConnection("scc2020g8.eu.auth0.com")
