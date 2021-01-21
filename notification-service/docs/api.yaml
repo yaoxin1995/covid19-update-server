@@ -186,6 +186,10 @@ paths:
                     wrong during sending message to Telegram API."
         400:
           description: "A required argument is missing."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         401:
           description: Unauthorized
           content:

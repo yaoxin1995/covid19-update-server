@@ -23,8 +23,13 @@ class NotificationResource:
             recipient = params['recipient']
             msg = params['msg']
         except KeyError:
-            self.__response_data = 'Required arguments: recipient, msg!'
+            self.__response_data = {
+                "code": "Required parameters: recipient, msg!",
+                "description": "It is required to send both parameters recipient and msg via"
+                               " application/x-www-form-urlencoded!"
+            }
             self.__status_code = 400
+            self.__make_response_by_content_type()
             return
         telegram = ChannelTelegram()
         telegram_response, human_readable_error_msg = telegram.send_message(chat_id=recipient, msg=msg)
