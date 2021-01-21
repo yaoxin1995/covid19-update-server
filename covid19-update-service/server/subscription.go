@@ -57,8 +57,8 @@ func findSubscription(w http.ResponseWriter, r *http.Request) (model.Subscriptio
 		writeHTTPResponse(model.NewError("Could not find subscription."), http.StatusNotFound, w, r)
 		return model.Subscription{}, false
 	}
-	if s.ClientID != r.Context().Value(clientContext).(string) {
-		writeHTTPResponse(model.NewError("Access not allowed."), http.StatusForbidden, w, r)
+	if s.OwnerID != r.Context().Value(ownerClaimContext).(string) {
+		writeHTTPResponse(model.NewError("Access to subscription not allowed."), http.StatusForbidden, w, r)
 		return model.Subscription{}, false
 	}
 
@@ -71,7 +71,7 @@ func (ws *Covid19UpdateWebServer) registerSubscriptionRoutes(r *mux.Router) {
 	subscriptionsRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.createSubscription))).Methods(http.MethodPost)
 	subscriptionsRouter.HandleFunc("", ws.optionHandler(subscriptionsRouter)).Methods(http.MethodOptions)
 	subscriptionsRouter.Use(newCorsHandler(subscriptionsRouter))
-	subscriptionsRouter.Use(ws.authentication())
+	subscriptionsRouter.Use(ws.authorizationAndIdentification())
 	subscriptionsRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(subscriptionsRouter)
 
 	subscriptionRouter := r.Path(subscriptionRoute).Subrouter().StrictSlash(strictSlash)
@@ -80,12 +80,12 @@ func (ws *Covid19UpdateWebServer) registerSubscriptionRoutes(r *mux.Router) {
 	subscriptionRouter.HandleFunc("", ws.checkAcceptType(ws.checkContentType(ws.updateSubscription))).Methods(http.MethodPut)
 	subscriptionRouter.HandleFunc("", ws.optionHandler(subscriptionRouter)).Methods(http.MethodOptions)
 	subscriptionRouter.Use(newCorsHandler(subscriptionRouter))
-	subscriptionRouter.Use(ws.authentication())
+	subscriptionRouter.Use(ws.authorizationAndIdentification())
 	subscriptionRouter.MethodNotAllowedHandler = ws.createNotAllowedHandler(subscriptionRouter)
 }
 
 func (ws *Covid19UpdateWebServer) getSubscriptions(w http.ResponseWriter, r *http.Request) {
-	subs, err := model.GetSubscriptions(r.Context().Value(clientContext).(string))
+	subs, err := model.GetSubscriptions(r.Context().Value(ownerClaimContext).(string))
 	if err != nil {
 		writeHTTPResponse(model.NewError("Could not load subscriptions."), http.StatusInternalServerError, w, r)
 		return
@@ -106,7 +106,7 @@ func (ws *Covid19UpdateWebServer) createSubscription(w http.ResponseWriter, r *h
 	if !ok {
 		return
 	}
-	s, err := model.NewSubscription(createSubReq.Email, createSubReq.TelegramChatID, r.Context().Value(clientContext).(string),
+	s, err := model.NewSubscription(createSubReq.Email, createSubReq.TelegramChatID, r.Context().Value(ownerClaimContext).(string),
 		model.TopicCollection{})
 	if err != nil {
 		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not create subscription: %v.", err)), http.StatusInternalServerError, w, r)

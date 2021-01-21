@@ -12,7 +12,7 @@ import (
 
 type Covid19UpdateWebServer struct {
 	*http.Server
-	AuthHandler *AuthenticationHandler
+	AuthHandler *AuthorizationHandler
 }
 
 const timeout = 2 * time.Minute
@@ -29,7 +29,7 @@ func SetupServer(host, port, iss, aud, rawCorsOrigins string) (*Covid19UpdateWeb
 
 	authHandler, err := NewAuthenticationHandler(iss, aud)
 	if err != nil {
-		return nil, fmt.Errorf("could not create authentication handler: %v", err)
+		return nil, fmt.Errorf("could not create authorizationAndIdentification handler: %v", err)
 	}
 
 	ws := &Covid19UpdateWebServer{

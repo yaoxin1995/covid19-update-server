@@ -10,7 +10,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-const clientContext = "clientContext"
+const ownerClaimContext = "ownerClaimContext"
 
 func (ws *Covid19UpdateWebServer) checkAcceptType(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -35,9 +35,10 @@ func (ws *Covid19UpdateWebServer) checkContentType(next http.HandlerFunc) http.H
 	})
 }
 
-func (ws *Covid19UpdateWebServer) authentication() func(handlerFunc http.Handler) http.Handler {
+func (ws *Covid19UpdateWebServer) authorizationAndIdentification() func(handlerFunc http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
-		addResourceOwner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Identification
+		addOwnerClaim := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token, ok := r.Context().Value(tokenContext).(*jwt.Token)
 			if !ok {
 				writeHTTPResponse(model.NewError("could not get token"), http.StatusInternalServerError, w, r)
@@ -50,7 +51,7 @@ func (ws *Covid19UpdateWebServer) authentication() func(handlerFunc http.Handler
 				return
 			}
 
-			r = r.WithContext(context.WithValue(r.Context(), clientContext, subject))
+			r = r.WithContext(context.WithValue(r.Context(), ownerClaimContext, subject))
 			next.ServeHTTP(w, r)
 		})
 
@@ -59,7 +60,8 @@ func (ws *Covid19UpdateWebServer) authentication() func(handlerFunc http.Handler
 				next.ServeHTTP(w, r)
 				return
 			}
-			ws.AuthHandler.Middleware.HandlerWithNext(w, r, addResourceOwner)
+			// Authorization
+			ws.AuthHandler.Middleware.HandlerWithNext(w, r, addOwnerClaim)
 		})
 	}
 }

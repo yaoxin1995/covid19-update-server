@@ -24,7 +24,7 @@ type JSONWebKeys struct {
 	X5c []string `json:"x5c"`
 }
 
-type AuthenticationHandler struct {
+type AuthorizationHandler struct {
 	JWKS       Jwks
 	ISS        string
 	AUD        string
@@ -33,12 +33,12 @@ type AuthenticationHandler struct {
 
 const tokenContext = "tokenContext"
 
-func NewAuthenticationHandler(iss, aud string) (AuthenticationHandler, error) {
+func NewAuthenticationHandler(iss, aud string) (AuthorizationHandler, error) {
 	jwks, err := getJwks(iss)
 	if err != nil {
-		return AuthenticationHandler{}, err
+		return AuthorizationHandler{}, err
 	}
-	handler := AuthenticationHandler{
+	handler := AuthorizationHandler{
 		JWKS: jwks,
 		ISS:  iss,
 		AUD:  aud,
@@ -64,7 +64,7 @@ func getJwks(iss string) (Jwks, error) {
 	return jwks, nil
 }
 
-func (a *AuthenticationHandler) getPemCert(token *jwt.Token) (string, error) {
+func (a *AuthorizationHandler) getPemCert(token *jwt.Token) (string, error) {
 	cert := ""
 	for k := range a.JWKS.Keys {
 		if token.Header["kid"] == a.JWKS.Keys[k].Kid {
@@ -80,7 +80,7 @@ func (a *AuthenticationHandler) getPemCert(token *jwt.Token) (string, error) {
 	return cert, nil
 }
 
-func (a *AuthenticationHandler) createJWTMiddleWare() {
+func (a *AuthorizationHandler) createJWTMiddleWare() {
 	a.Middleware = jwtmiddleware.New(jwtmiddleware.Options{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 			// Verify 'aud' claim
@@ -112,7 +112,7 @@ func (a *AuthenticationHandler) createJWTMiddleWare() {
 	})
 }
 
-func (a *AuthenticationHandler) getSubject(tokenString string) (string, error) {
+func (a *AuthorizationHandler) getSubject(tokenString string) (string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		cert, err := a.getPemCert(token)
 		if err != nil {

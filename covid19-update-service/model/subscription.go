@@ -15,15 +15,15 @@ type Subscription struct {
 	Email          null.String     `json:"email"`
 	TelegramChatID null.String     `json:"telegramChatId"`
 	Topics         TopicCollection `json:"-"`
-	ClientID       string          `json:"-"`
+	OwnerID        string          `json:"-"`
 }
 
-func NewSubscription(email, telegram *string, clientID string, topics TopicCollection) (Subscription, error) {
+func NewSubscription(email, telegram *string, ownerID string, topics TopicCollection) (Subscription, error) {
 	s := Subscription{
 		Email:          null.StringFromPtr(email),
 		TelegramChatID: null.StringFromPtr(telegram),
 		Topics:         topics,
-		ClientID:       clientID,
+		OwnerID:        ownerID,
 	}
 	err := s.Store()
 	return s, err
@@ -45,9 +45,9 @@ func GetSubscription(id uint) (*Subscription, error) {
 	return s, nil
 }
 
-func GetSubscriptions(owner string) (SubscriptionCollection, error) {
+func GetSubscriptions(ownerID string) (SubscriptionCollection, error) {
 	var subs SubscriptionCollection
-	err := db.Where("client_id=?", owner).Find(&subs).Error
+	err := db.Where("owner_id=?", ownerID).Find(&subs).Error
 	return subs, err
 }
 
