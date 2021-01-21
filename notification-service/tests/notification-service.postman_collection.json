@@ -1,0 +1,669 @@
+{
+	"info": {
+		"_postman_id": "77aa47c2-88ca-442f-ab9e-cb248b48eccd",
+		"name": "notification-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create notification without parameters (JSON)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\", \"application/json\");",
+							"});",
+							"pm.test(\"Your test name\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.code).is.eq(\"Required parameters: recipient, msg!\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost/notification",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"notification"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add notification (JSON)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"pm.test(\"Content-Type\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\", \"application/json\");",
+							"});",
+							"",
+							"pm.test(\"Content of response\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.id).to.be.property;",
+							"    pm.expect(jsonData.creation_date).to.be.property;",
+							"    pm.expect(jsonData.recipient).is.eq(pm.collectionVariables.get(\"notification_recipient\"));",
+							"    pm.expect(jsonData.msg).is.eq(pm.collectionVariables.get(\"notification_msg\"));",
+							"    pm.expect(jsonData.error_msg).to.be.property;",
+							"    pm.expect(jsonData.error_msg_human_readable).to.be.an(\"string\");",
+							"    // Save notification obj to access it in other tests again",
+							"    pm.collectionVariables.set(\"notification\", jsonData);",
+							"    pm.collectionVariables.set(\"notification_id\", jsonData.id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "recipient",
+							"value": "{{notification_recipient}}",
+							"type": "text"
+						},
+						{
+							"key": "msg",
+							"value": "{{notification_msg}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost/notification",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"notification"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add notification (JSON HAL)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"pm.test(\"Content-Type\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\", \"application/hal+json\");",
+							"});",
+							"pm.test(\"Content of response\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.id).to.be.property;",
+							"    pm.expect(jsonData.creation_date).to.be.property;",
+							"    pm.expect(jsonData.recipient).is.eq(\"123456\");",
+							"    pm.expect(jsonData.msg).is.eq(\"This is a message!\");",
+							"    pm.expect(jsonData.error_msg).to.be.property;",
+							"    pm.expect(jsonData.error_msg_human_readable).to.be.an(\"string\");",
+							"    pm.expect(jsonData._links.self.href).is.eq(`/notification/${jsonData.id}`);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/hal+json"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "recipient",
+							"value": "123456",
+							"type": "text"
+						},
+						{
+							"key": "msg",
+							"value": "This is a message!",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost/notification",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"notification"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all notifications (JSON)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Content-Type\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\", \"application/json\");",
+							"});",
+							"pm.test(\"Content of response\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"array\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost/notification",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"notification"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all notifications (JSON HAL)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Content-Type\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\", \"application/hal+json\");",
+							"});",
+							"pm.test(\"Content of response\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"object\");",
+							"    pm.expect(jsonData._links.self.href).is.eq(`/notification`);",
+							"    pm.expect(jsonData._embedded.notification).to.be.an(\"array\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/hal+json"
+					}
+				],
+				"url": {
+					"raw": "localhost/notification",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"notification"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all notifications by (not available) recipient (JSON)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Content-Type\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\", \"application/json\");",
+							"});",
+							"pm.test(\"Content of response\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"array\");",
+							"    pm.expect(jsonData.length).to.eql(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "localhost/notification?recipient=i-am-not-a-recipient",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"notification"
+					],
+					"query": [
+						{
+							"key": "recipient",
+							"value": "i-am-not-a-recipient"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all notifications by recipient (JSON)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Content-Type\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\", \"application/json\");",
+							"});",
+							"",
+							"pm.test(\"Content of response\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"array\");",
+							"    for(var i = 0; i < jsonData.length; i++) {",
+							"        notification = jsonData[i]",
+							"        pm.expect(notification.recipient).to.eql('123456')",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "localhost/notification?recipient=123456",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"notification"
+					],
+					"query": [
+						{
+							"key": "recipient",
+							"value": "123456"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get specific (not available) notification (JSON)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"pm.test(\"Content-Type\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\", \"application/json\");",
+							"});",
+							"pm.test(\"Content of response\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.a(\"null\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "localhost/notification/10000000",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"notification",
+						"10000000"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get specific (not available) notification (JSON HAL)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"pm.test(\"Content-Type\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\", \"application/hal+json\");",
+							"});",
+							"pm.test(\"Content of response\", function () {",
+							"    var jsonData = pm.response.json();",
+							"     pm.response.to.have.body(\"{}\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/hal+json"
+					}
+				],
+				"url": {
+					"raw": "localhost/notification/10000000",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"notification",
+						"10000000"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get specific notification (JSON)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Content-Type\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\", \"application/json\");",
+							"});",
+							"",
+							"// load formerly set notification obj",
+							"notification = pm.collectionVariables.get(\"notification\");",
+							"",
+							"pm.test(\"Content of response\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.id).to.eq(notification.id);",
+							"    pm.expect(jsonData.creation_date).to.eql(notification.creation_date);",
+							"    pm.expect(jsonData.recipient).to.eql(notification.recipient);",
+							"    pm.expect(jsonData.msg).to.eql(notification.msg);",
+							"    pm.expect(jsonData.error_msg).to.eql(notification.error_msg);",
+							"    pm.expect(jsonData.error_msg_human_readable).to.eql(notification.error_msg_human_readable);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "localhost/notification/{{notification_id}}",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"notification",
+						"{{notification_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get specific notification (JSON HAL)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Content-Type\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\", \"application/hal+json\");",
+							"});",
+							"",
+							"// load formerly set notification obj",
+							"notification = pm.collectionVariables.get(\"notification\");",
+							"",
+							"pm.test(\"Content of response\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.id).to.eq(notification.id);",
+							"    pm.expect(jsonData.creation_date).to.eql(notification.creation_date);",
+							"    pm.expect(jsonData.recipient).to.eql(notification.recipient);",
+							"    pm.expect(jsonData.msg).to.eql(notification.msg);",
+							"    pm.expect(jsonData.error_msg).to.eql(notification.error_msg);",
+							"    pm.expect(jsonData.error_msg_human_readable).to.eql(notification.error_msg_human_readable);",
+							"    pm.expect(jsonData._links.self.href).is.eq(`/notification/${notification.id}`);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"type": "text",
+						"value": "application/hal+json"
+					}
+				],
+				"url": {
+					"raw": "localhost/notification/{{notification_id}}",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"notification",
+						"{{notification_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik5ZTUxXWGJHV3VOMjJnOGx4djB0QiJ9.eyJpc3MiOiJodHRwczovL3NjYzIwMjBnOC5ldS5hdXRoMC5jb20vIiwic3ViIjoiTm5YVXlsMkduZjJXRzJSd0sxMzdhVTRFc005M3FtNFVAY2xpZW50cyIsImF1ZCI6Imh0dHBzOi8vMTg1LjEyOC4xMTkuMTM1L25vdGlmaWNhdGlvbiIsImlhdCI6MTYxMTE4NjI2NSwiZXhwIjoxNjExMjcyNjY1LCJhenAiOiJOblhVeWwyR25mMldHMlJ3SzEzN2FVNEVzTTkzcW00VSIsImd0eSI6ImNsaWVudC1jcmVkZW50aWFscyJ9.kYMGCcgq3rJSOiUNAAVOmnT7IFwWH3bDwz9RzKBn9OWOtTFrQOhr7TUCX96Uiq3A4Wf8gdbxYx-pOCIKr8Wesya8C-t2s5N3X51WsakzjSEfX-XdFaYFFwWlwv4pAUu5KwDj3PUcvozM85JSaOrSyvTtLu9LMcosJuN5wrlTxpiKk6B-LRc8onkBpxOxIjL7kFDbperA84vVNUog2szYv2IcaMI8P3bSwDT5WafNKg-4o2v4pidNeqvY2M3vdeFIFhY9egvkccGlAnSNaVOk-pO54ECNnxnycFPPx5fYZAPpMD34Bc7AFkUbE2BH1u9jcVxFjWTTrMlTkrjRrSvtRw",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "notification_msg",
+			"value": "This is a message!"
+		},
+		{
+			"key": "notification_recipient",
+			"value": "I-am-a-recipient"
+		},
+		{
+			"key": "notification",
+			"value": "",
+			"disabled": true
+		},
+		{
+			"key": "notification",
+			"value": "",
+			"disabled": true
+		},
+		{
+			"key": "notification",
+			"value": "",
+			"disabled": true
+		},
+		{
+			"key": "notification_id",
+			"value": "",
+			"disabled": true
+		},
+		{
+			"key": "notification",
+			"value": "",
+			"disabled": true
+		},
+		{
+			"key": "notification",
+			"value": ""
+		},
+		{
+			"key": "notification_id",
+			"value": ""
+		}
+	]
+}
