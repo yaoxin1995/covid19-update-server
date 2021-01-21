@@ -64,11 +64,9 @@ def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = get_token_auth_header()
-        request = requests.get(f"https://{AUTH0_DOMAIN}.well-known/jwks.json")
-        jwks = request.json()
         unverified_header = jwt.get_unverified_header(token)
         rsa_key = {}
-        for key in jwks["keys"]:
+        for key in Config.JWKS["keys"]:
             if key["kid"] == unverified_header["kid"]:
                 rsa_key = {
                     "kty": key["kty"],

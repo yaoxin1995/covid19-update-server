@@ -2,7 +2,7 @@ import os
 from flask import Flask, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_hal import HAL, HALResponse
+import requests
 from telegram_responder import TelegramResponder
 
 
@@ -13,11 +13,17 @@ class Config:
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///./db/db.sql'
     TELEGRAM_BOT_TOKEN = os.environ['TELEGRAM_BOT_TOKEN']
-    AUTH0_ISS = os.environ['AUTH0_ISS']
-    AUTH0_AUD = os.environ['AUTH0_AUD']
     NOTIFICATION_BASE_ROUTE = '/notification'
     JSON_HAL_MIME_TYPE = 'application/hal+json'
     JSON_MIME_TYPE = 'application/json'
+    AUTH0_ISS = os.environ['AUTH0_ISS']
+    AUTH0_AUD = os.environ['AUTH0_AUD']
+    try:
+        request = requests.get(f"https://{AUTH0_ISS}.well-known/jwks.json", timeout=5)
+        JWKS = request.json()
+    except requests.exceptions.ConnectionError:
+        raise Exception("Can't fetch jwks token! Please check network connectivity.")
+
 
 
 app = Flask(__name__)
