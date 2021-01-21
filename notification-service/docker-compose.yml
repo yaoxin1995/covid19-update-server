@@ -7,6 +7,8 @@ services:
     environment:
       - FLASK_APP=app.py
       - TELEGRAM_BOT_TOKEN=
+      - AUTH0_ISS=
+      - AUTH0_AUD=
       # Define messages for each message type
       - WELCOME_MESSAGE=Welcome, {{ USER_FULL_NAME }}! You are now able to configure {{ SERVICE_NAME }} via Telegram.
         Go to your dashboard and add the Telegram notification provider by entering this ID {{ USER_CHAT_ID }}.
@@ -33,18 +35,13 @@ services:
       - 127.0.0.1:80:80
     restart: unless-stopped
 
-# Use Swagger.io editor for manual api tests
-# Comment in the following line if you want to start Swagger editor container.
-x-disabled:
   swagger-editor:
       container_name: swagger-editor
       image: swaggerapi/swagger-editor
       environment:
         - SWAGGER_FILE=/tmp/swagger.yaml
       volumes:
-        - ./swagger_api_docu.yaml:/tmp/swagger.yaml
-      ports:
-        - 8080:8080
+        - ./docs/api.yaml:/tmp/swagger.yaml
       restart: unless-stopped
 
 volumes:
