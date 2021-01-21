@@ -41,12 +41,12 @@ The token can be obtained and saved into the variable `AUTH_TOKEN` by executing 
 (Make sure you have both packages `curl` and the json parser `jq` installed on your system.)
 
 ```bash
-$ CLIENT_SECRET=your-secret CLIENT_ID=your-client-id AUDIENCE=https://185.128.119.135/notification
-$ AUTH_TOKEN=$(curl --request POST --url https://scc2020g8.eu.auth0.com/oauth/token
-                    --header 'content-type: application/json'
+$ CLIENT_SECRET=your-secret CLIENT_ID=your-client-id AUDIENCE=your-audience
+$ AUTH_TOKEN=$(curl --request POST --url https://scc2020g8.eu.auth0.com/oauth/token \
+                    --header 'content-type: application/json' \
                     --data "{\"client_id\":\"${CLIENT_ID}\", \
                              \"client_secret\":\"${CLIENT_SECRET}\", \
-                             \"audience\":\"${AUDIENCE}\",
+                             \"audience\":\"${AUDIENCE}\", \
                              \"grant_type\":\"client_credentials\"}" | jq -r .access_token)
 ```
 

@@ -598,7 +598,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik5ZTUxXWGJHV3VOMjJnOGx4djB0QiJ9.eyJpc3MiOiJodHRwczovL3NjYzIwMjBnOC5ldS5hdXRoMC5jb20vIiwic3ViIjoiTm5YVXlsMkduZjJXRzJSd0sxMzdhVTRFc005M3FtNFVAY2xpZW50cyIsImF1ZCI6Imh0dHBzOi8vMTg1LjEyOC4xMTkuMTM1L25vdGlmaWNhdGlvbiIsImlhdCI6MTYxMTE4NjI2NSwiZXhwIjoxNjExMjcyNjY1LCJhenAiOiJOblhVeWwyR25mMldHMlJ3SzEzN2FVNEVzTTkzcW00VSIsImd0eSI6ImNsaWVudC1jcmVkZW50aWFscyJ9.kYMGCcgq3rJSOiUNAAVOmnT7IFwWH3bDwz9RzKBn9OWOtTFrQOhr7TUCX96Uiq3A4Wf8gdbxYx-pOCIKr8Wesya8C-t2s5N3X51WsakzjSEfX-XdFaYFFwWlwv4pAUu5KwDj3PUcvozM85JSaOrSyvTtLu9LMcosJuN5wrlTxpiKk6B-LRc8onkBpxOxIjL7kFDbperA84vVNUog2szYv2IcaMI8P3bSwDT5WafNKg-4o2v4pidNeqvY2M3vdeFIFhY9egvkccGlAnSNaVOk-pO54ECNnxnycFPPx5fYZAPpMD34Bc7AFkUbE2BH1u9jcVxFjWTTrMlTkrjRrSvtRw",
+				"value": "",
 				"type": "string"
 			}
 		]
