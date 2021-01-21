@@ -12,7 +12,7 @@ import (
 
 var db *gorm.DB
 
-type CommonModelFields struct {
+type PersistentModel struct {
 	ID        uint       `gorm:"primary_key" json:"id"`
 	CreatedAt time.Time  `json:"-"`
 	UpdatedAt time.Time  `json:"-"`

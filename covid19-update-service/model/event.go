@@ -11,7 +11,7 @@ import (
 type EventCollection []Event
 
 type Event struct {
-	CommonModelFields
+	PersistentModel
 	Message string `json:"message"`
 	TopicID uint   `sql:"type:bigint REFERENCES topics(id) ON DELETE CASCADE" json:"-"`
 }

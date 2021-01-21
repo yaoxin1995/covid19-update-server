@@ -15,7 +15,7 @@ const topics = "topics"
 const topicsBaseRoute = subscriptionRoute + "/" + topics
 const topicRoute = topicsBaseRoute + "/{" + topicId + "}"
 
-// Incidence
+// IncidenceResponse
 const incidence = "incidence"
 const incidenceRoute = topicRoute + "/" + incidence
 

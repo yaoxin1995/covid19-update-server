@@ -10,16 +10,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type SubscriptionRequest struct {
-	Email          *string `json:"email"`
-	TelegramChatID *string `json:"telegramChatId"`
-}
-
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
-func parseSubscriptionRequest(w http.ResponseWriter, r *http.Request) (SubscriptionRequest, bool) {
+func parseSubscriptionRequest(w http.ResponseWriter, r *http.Request) (model.SubscriptionRequestDTO, bool) {
 	decoder := json.NewDecoder(r.Body)
-	var subReq SubscriptionRequest
+	var subReq model.SubscriptionRequestDTO
 	err := decoder.Decode(&subReq)
 	if err != nil {
 		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not decode request body: %v.", err)), http.StatusBadRequest, w, r)

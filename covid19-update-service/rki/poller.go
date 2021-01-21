@@ -39,7 +39,7 @@ func (cp *Covid19RegionUpdater) run() error {
 }
 
 func updateRegions() (*[]model.Covid19Region, error) {
-	rsp, err := GetAllRegions()
+	rsp, err := getAllRegions()
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func updateRegions() (*[]model.Covid19Region, error) {
 	return &updatedRegionsIDs, err
 }
 
-func updateIfNew(f *Feature) (*model.Covid19Region, error) {
+func updateIfNew(f *feature) (*model.Covid19Region, error) {
 	i, err := model.GetCovid19Region(f.Attributes.ObjectID)
 	if err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func updateIfNew(f *Feature) (*model.Covid19Region, error) {
 	}
 
 	// Entry does exist
-	newTime, err := f.Attributes.LastUpdate()
+	newTime, err := f.Attributes.lastUpdate()
 	if err != nil {
 		return nil, nil
 	}

@@ -5,14 +5,14 @@ import (
 )
 
 type Covid19Region struct {
-	CommonModelFields
+	PersistentModel
 	Incidence float64 `json:"incidence"`
 }
 
 func NewCovid19Region(cID uint, incidence float64) (Covid19Region, error) {
 	i := Covid19Region{
-		CommonModelFields: CommonModelFields{ID: cID},
-		Incidence:         incidence,
+		PersistentModel: PersistentModel{ID: cID},
+		Incidence:       incidence,
 	}
 	err := i.Store()
 	return i, err
