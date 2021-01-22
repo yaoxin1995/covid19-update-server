@@ -745,7 +745,7 @@
 					"response": []
 				},
 				{
-					"name": "Update Subscription",
+					"name": "Update Topic",
 					"event": [
 						{
 							"listen": "test",
@@ -761,8 +761,8 @@
 									"",
 									"    pm.environment.set(\"TOPIC_ID\", topicId);",
 									"",
-									"    pm.expect(jsonData.position.latitude).equals(51.031946);",
-									"    pm.expect(jsonData.position.longitude).equals(13.712835);",
+									"    pm.expect(jsonData.position.latitude).equals(48.777071);",
+									"    pm.expect(jsonData.position.longitude).equals(11.417128);",
 									"    pm.expect(jsonData.threshold).equals(51);",
 									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId);",
 									"    pm.expect(jsonData._links.events.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/events\");",
@@ -779,7 +779,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"position\": {\n    \"latitude\": 51.031946,\n    \"longitude\": 13.712835\n  },\n  \"threshold\": 51\n}",
+							"raw": "{\n  \"position\": {\n    \"latitude\": 48.777071,\n    \"longitude\": 11.417128\n  },\n  \"threshold\": 51\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -818,8 +818,8 @@
 									"",
 									"    pm.environment.set(\"TOPIC_ID\", topicId);",
 									"",
-									"    pm.expect(jsonData.position.latitude).equals(51.031946);",
-									"    pm.expect(jsonData.position.longitude).equals(13.712835);",
+									"    pm.expect(jsonData.position.latitude).equals(48.777071);",
+									"    pm.expect(jsonData.position.longitude).equals(11.417128);",
 									"    pm.expect(jsonData.threshold).equals(51);",
 									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId);",
 									"    pm.expect(jsonData._links.events.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/events\");",
@@ -987,6 +987,47 @@
 								"{{SUBSCRIPTION_ID}}",
 								"topics",
 								"{{TOPIC_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Request is successfull\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"foo@bar.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/subscriptions/{{SUBSCRIPTION_ID}}",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"subscriptions",
+								"{{SUBSCRIPTION_ID}}"
 							]
 						}
 					},
