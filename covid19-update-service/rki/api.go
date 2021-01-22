@@ -14,21 +14,21 @@ import (
 const rkiBaseUrl = "https://services7.arcgis.com/mOBPykOjAyBO2ZKk/arcgis/rest/services/RKI_Landkreisdaten/FeatureServer/0/query?where=1%3D1&outFields=OBJECTID,cases7_per_100k,last_update&returnGeometry=false&f=json"
 const rkiGeoParams = "&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelWithin"
 
-type Response struct {
-	Features []Feature `json:"features"`
+type response struct {
+	Features []feature `json:"features"`
 }
 
-type Feature struct {
-	Attributes Attributes `json:"attributes"`
+type feature struct {
+	Attributes attributes `json:"attributes"`
 }
 
-type Attributes struct {
+type attributes struct {
 	ObjectID      uint    `json:"OBJECTID"`
 	Cases7Per100k float64 `json:"cases7_per_100k"`
 	RawLastUpdate string  `json:"last_update"`
 }
 
-func (a *Attributes) LastUpdate() (time.Time, error) {
+func (a *attributes) lastUpdate() (time.Time, error) {
 	// RKI API returns timestamp in dd:mm:yyyy HH:mm, but Go does not support 24h time format with leading zeros
 	rkiHourRegExp := regexp.MustCompile(`\d{2}:`)
 
@@ -53,8 +53,8 @@ func (e *LocationNotFoundError) Error() string {
 	return "The provided location is not supported."
 }
 
-func requestRKI(url string) (Response, error) {
-	rkiResponse := Response{}
+func requestRKI(url string) (response, error) {
+	rkiResponse := response{}
 	rawResponse, err := http.Get(url)
 	if err != nil {
 		return rkiResponse, fmt.Errorf("could not load data fron RKI: %v", err)
@@ -72,7 +72,7 @@ func requestRKI(url string) (Response, error) {
 	return rkiResponse, nil
 }
 
-func GetAllRegions() (Response, error) {
+func getAllRegions() (response, error) {
 	return requestRKI(rkiBaseUrl)
 }
 

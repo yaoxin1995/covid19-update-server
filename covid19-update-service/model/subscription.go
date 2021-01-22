@@ -11,7 +11,7 @@ import (
 type SubscriptionCollection []Subscription
 
 type Subscription struct {
-	CommonModelFields
+	PersistentModel
 	Email          null.String     `json:"email"`
 	TelegramChatID null.String     `json:"telegramChatId"`
 	Topics         TopicCollection `json:"-"`

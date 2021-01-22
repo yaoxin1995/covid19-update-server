@@ -5,26 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/pmoule/go2hal/hal"
-
 	"github.com/gorilla/mux"
 )
-
-type Incidence struct {
-	Incidence float64 `json:"incidence"`
-}
-
-func (i Incidence) ToHAL(path string) hal.Resource {
-	root := hal.NewResourceObject()
-	root.AddData(i)
-
-	selfRel := hal.NewSelfLinkRelation()
-	selfLink := &hal.LinkObject{Href: path}
-	selfRel.SetLink(selfLink)
-	root.AddLink(selfRel)
-
-	return root
-}
 
 func (ws *Covid19UpdateWebServer) registerIncidenceRoutes(r *mux.Router) {
 	incidenceRouter := r.Path(incidenceRoute).Subrouter().StrictSlash(strictSlash)
@@ -49,6 +31,6 @@ func (ws *Covid19UpdateWebServer) getIncidence(w http.ResponseWriter, r *http.Re
 		writeHTTPResponse(model.NewError("No incidence available"), http.StatusInternalServerError, w, r)
 		return
 	}
-	rsp := Incidence{c.Incidence}
+	rsp := model.IncidenceDTO{Incidence: c.Incidence}
 	writeHTTPResponse(rsp, http.StatusOK, w, r)
 }

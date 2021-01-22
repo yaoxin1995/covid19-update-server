@@ -54,6 +54,10 @@ Use the docker-compose file to run the service locally.
 | CORS_ORIGINS| Comma separated list of allowed origins for CORS |
 | POLL_INTERVAL_MINUTES | Interval (in minutes) in which the data is retrieved from the RKI API |
 | TELEGRAM_CONTACT_URI | URL of Telegram notification REST API |
+| TELEGRAM_AUTH0_AUD | Auth0 API ID for Telegram Notification Service |
+| TELEGRAM_AUTH0_CLIENT_ID | Auth0 Client ID of COVID-19 Update Service for Telegram Notification Service |
+| TELEGRAM_AUTH0_CLIENT_SECRET | Auth0 Client Secret of COVID-19 Update Service for Telegram Notification Service |
+| TELEGRAM_AUTH0_TOKEN_URL | Auth0 Access Token URL for Telegram Notification Service |
 | SENDGRID_API_KEY | API Key for SendGrid |
 |SENDGRID_EMAIL| Email address used to send email notifications |
 | AUTH0_ISS | Auth0 issuer, e.g. `https://scc2020g8.eu.auth0.com/` (Trailing slash required!) |

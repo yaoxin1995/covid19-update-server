@@ -11,42 +11,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type TopicRequest struct {
-	Position  model.GPSPosition `json:"position"`
-	Threshold uint              `json:"threshold"`
-}
-
-func (t *TopicRequest) UnmarshalJSON(data []byte) (err error) {
-	required := struct {
-		Position  *model.GPSPosition `json:"position"`
-		Threshold *uint              `json:"threshold"`
-	}{}
-	all := struct {
-		Position  model.GPSPosition `json:"position"`
-		Threshold uint              `json:"threshold"`
-	}{}
-	err = json.Unmarshal(data, &required)
-	if err != nil {
-		return err
-	} else if required.Threshold == nil {
-		err = fmt.Errorf("threshold is missing")
-	} else if required.Position == nil {
-		err = fmt.Errorf("position is missing")
-	} else {
-		err = json.Unmarshal(data, &all)
-		t.Position = all.Position
-		t.Threshold = all.Threshold
-	}
-	return err
-}
-
-func parseTopicRequest(w http.ResponseWriter, r *http.Request) (TopicRequest, bool) {
+func parseTopicRequest(w http.ResponseWriter, r *http.Request) (model.TopicRequestDTO, bool) {
 	decoder := json.NewDecoder(r.Body)
-	var topReq TopicRequest
+	var topReq model.TopicRequestDTO
 	err := decoder.Decode(&topReq)
 	if err != nil {
 		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not decode request body: %v.", err)), http.StatusBadRequest, w, r)
-		return TopicRequest{}, false
+		return model.TopicRequestDTO{}, false
 	}
 	return topReq, true
 }

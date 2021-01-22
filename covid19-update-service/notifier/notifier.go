@@ -7,12 +7,16 @@ import (
 )
 
 type Covid19Notifier struct {
-	c <-chan model.Covid19Region
+	c  <-chan model.Covid19Region
+	tp TelegramPublisher
+	ep EmailPublisher
 }
 
-func NewCovid19Notifier(c <-chan model.Covid19Region) *Covid19Notifier {
+func NewCovid19Notifier(c <-chan model.Covid19Region, tPub TelegramPublisher, ePub EmailPublisher) *Covid19Notifier {
 	cn := &Covid19Notifier{
-		c: c,
+		c:  c,
+		tp: tPub,
+		ep: ePub,
 	}
 	go cn.run()
 	return cn
@@ -23,12 +27,12 @@ func (cn *Covid19Notifier) run() error {
 		select {
 		case cov19region := <-cn.c:
 			// log.Printf("Creating notifications for region %d...", cov19region.ID)
-			notify(cov19region)
+			cn.notify(cov19region)
 		}
 	}
 }
 
-func notify(cov19region model.Covid19Region) {
+func (cn *Covid19Notifier) notify(cov19region model.Covid19Region) {
 	tops, err := model.GetTopicsWithThresholdAlert(cov19region)
 	if err != nil {
 		log.Printf("Could not load topics for notification region: %v", err)
@@ -39,14 +43,14 @@ func notify(cov19region model.Covid19Region) {
 			log.Printf("Could not create event: %v", err)
 			continue
 		}
-		err = shipEvent(e, t.SubscriptionID)
+		err = cn.shipEvent(e, t.SubscriptionID)
 		if err != nil {
 			log.Printf("Could not ship event: %v", err)
 		}
 	}
 }
 
-func shipEvent(e model.Event, sID uint) error {
+func (cn *Covid19Notifier) shipEvent(e model.Event, sID uint) error {
 	s, err := model.GetSubscription(sID)
 	if err != nil {
 		return fmt.Errorf("could not load subscription: %v", err)
@@ -54,8 +58,7 @@ func shipEvent(e model.Event, sID uint) error {
 	if s.TelegramChatID.Ptr() != nil {
 		go func() {
 			log.Printf("Sending telegram notification...")
-			tp := NewTelegramPublisher(s.TelegramChatID.String)
-			err = tp.Publish(e)
+			err = cn.tp.Publish(s.TelegramChatID.String, e)
 			if err != nil {
 				log.Printf("Could not publish event %d via telegram: %v", e.ID, err)
 				return
@@ -66,8 +69,7 @@ func shipEvent(e model.Event, sID uint) error {
 	if s.Email.Ptr() != nil {
 		go func() {
 			log.Printf("Sending email notification...")
-			ep := NewEmailPublisher(s.Email.String)
-			err = ep.Publish(e)
+			err = cn.ep.Publish(s.Email.String, e)
 			if err != nil {
 				log.Printf("Could not publish event %d via telegram: %v", e.ID, err)
 				return
