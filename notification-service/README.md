@@ -75,5 +75,6 @@ proxy. To prevent trouble with CORS, Swagger is also behind the reverse proxy.
 
 In `tests` dir there is a number of API endpoint tests which can be performed by using
 [Postman](https://www.postman.com/). After Postman is installed the test collection can be imported by using `File` and
-`Import...` ** Since some tests depend on each other (by setting Postman collection wide  variables) the tests should
-run in the predefined order. **
+`Import...` ** Since some tests depend on each other (by setting Postman collection wide variables) the tests should
+run in the predefined order. In addition, it is also required to set a valid bearer token in the config section of the
+collection. **

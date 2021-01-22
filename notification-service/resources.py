@@ -15,8 +15,17 @@ class NotificationResource:
         self.__status_code = 500
         self.__response_data = None
         self.__response.content_type = 'text/plain'
+        # Error happened while processing request. Cancel further processing.
+        self.__cancel_request = False
+
+        if not self.__decide_for_content_type():
+            self.__response_data = 'No supported content type was found!'
+            self.__status_code = 406
+            self.__cancel_request = True
 
     def resource_create(self, params):
+        if self.__cancel_request:
+            return
         # Prepare for case that resource will be successfully created
         self.__status_code = 201
         try:
@@ -45,6 +54,8 @@ class NotificationResource:
         self.__make_response_by_content_type()
 
     def resource_fetch(self, filter_params=None, single_resource=False):
+        if self.__cancel_request:
+            return
         if not filter_params:
             filter_params = {}
         # Prepare for case that a list of resources is requested
@@ -66,15 +77,21 @@ class NotificationResource:
         self.__make_response_by_content_type()
 
     def __make_response_by_content_type(self):
-        accept_header_list = str(self.__request.headers.get('accept')).split(',')
-        # print(accept_header_list)
-        if Config.JSON_HAL_MIME_TYPE in accept_header_list:
+        content_type = self.__decide_for_content_type()
+        if content_type == Config.JSON_HAL_MIME_TYPE:
             self.__make_hal_response()
-        elif Config.JSON_MIME_TYPE in accept_header_list:
+        elif content_type == Config.JSON_MIME_TYPE:
             self.__make_json_response()
-        else:
-            self.__response_data = 'No supported content type was found!'
-            self.__status_code = 406
+
+    def __decide_for_content_type(self):
+        accept_header_list = str(self.__request.headers.get('accept')).split(',')
+        if Config.JSON_HAL_MIME_TYPE in accept_header_list:
+            # If client support both json and json hal we will decide to use json hal
+            return Config.JSON_HAL_MIME_TYPE
+        elif Config.JSON_MIME_TYPE in accept_header_list:
+            return Config.JSON_MIME_TYPE
+        # No supported content type found in accept header
+        return None
 
     def __make_hal_response(self):
         data = self.__response_data
