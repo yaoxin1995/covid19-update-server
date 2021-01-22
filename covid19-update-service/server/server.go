@@ -42,7 +42,7 @@ func SetupServer(host, port, iss, aud, rawCorsOrigins string) (*Covid19UpdateWeb
 }
 
 func (ws *Covid19UpdateWebServer) Start() error {
-	log.Printf("Starting Covid19 Update Service server at: %s", ws.Addr)
+	log.Printf("Starting COVID-19 Update Service at: %s", ws.Addr)
 	return ws.ListenAndServe()
 }
 

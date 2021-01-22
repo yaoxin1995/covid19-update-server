@@ -1,15 +1,15 @@
 package notifier
 
 import (
-	"bytes"
 	"covid19-update-service/model"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
-	"mime/multipart"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -82,29 +82,23 @@ func (tp *TelegramPublisher) getAccessToken() error {
 }
 
 func (tp *TelegramPublisher) Publish(chatID string, e model.Event) error {
-	values := map[string]io.Reader{
-		"recipient": strings.NewReader(chatID),
-		"msg":       strings.NewReader(e.Message),
-	}
-	var b bytes.Buffer
-	w := multipart.NewWriter(&b)
-	for key, r := range values {
-		var fw io.Writer
-		if x, ok := r.(io.Closer); ok {
-			defer x.Close()
-		}
-		fw, _ = w.CreateFormField(key)
-		_, _ = io.Copy(fw, r)
-	}
-	_ = w.Close()
-	req, err := http.NewRequest("POST", tp.TelegramServiceURI, &b)
+	data := url.Values{}
+	data.Set("recipient", chatID)
+	data.Set("msg", e.Message)
+
+	req, err := http.NewRequest("POST", tp.TelegramServiceURI, strings.NewReader(data.Encode()))
 	if err != nil {
 		return fmt.Errorf("could not create telegram request: %v", err)
 	}
-	req.Header.Set("Content-Type", w.FormDataContentType())
-	req.Header.Add("authorization", fmt.Sprintf("Bearer %s", tp.accessToken))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Accept", "application/json")
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tp.accessToken))
+	req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("could not send telegram request: %v", err)
