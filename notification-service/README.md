@@ -41,12 +41,12 @@ The token can be obtained and saved into the variable `AUTH_TOKEN` by executing 
 (Make sure you have both packages `curl` and the json parser `jq` installed on your system.)
 
 ```bash
-$ CLIENT_SECRET=your-secret CLIENT_ID=your-client-id AUDIENCE=https://185.128.119.135/notification
-$ AUTH_TOKEN=$(curl --request POST --url https://scc2020g8.eu.auth0.com/oauth/token
-                    --header 'content-type: application/json'
+$ CLIENT_SECRET=your-secret CLIENT_ID=your-client-id AUDIENCE=your-audience
+$ AUTH_TOKEN=$(curl --request POST --url https://scc2020g8.eu.auth0.com/oauth/token \
+                    --header 'content-type: application/json' \
                     --data "{\"client_id\":\"${CLIENT_ID}\", \
                              \"client_secret\":\"${CLIENT_SECRET}\", \
-                             \"audience\":\"${AUDIENCE}\",
+                             \"audience\":\"${AUDIENCE}\", \
                              \"grant_type\":\"client_credentials\"}" | jq -r .access_token)
 ```
 
@@ -75,5 +75,6 @@ proxy. To prevent trouble with CORS, Swagger is also behind the reverse proxy.
 
 In `tests` dir there is a number of API endpoint tests which can be performed by using
 [Postman](https://www.postman.com/). After Postman is installed the test collection can be imported by using `File` and
-`Import...` ** Since some tests depend on each other (by setting Postman collection wide  variables) the tests should
-run in the predefined order. **
+`Import...` ** Since some tests depend on each other (by setting Postman collection wide variables) the tests should
+run in the predefined order. In addition, it is also required to set a valid bearer token in the config section of the
+collection. **
