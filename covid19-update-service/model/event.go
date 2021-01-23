@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pmoule/go2hal/hal"
 
@@ -16,10 +17,11 @@ type Event struct {
 	TopicID uint   `sql:"type:bigint REFERENCES topics(id) ON DELETE CASCADE" json:"-"`
 }
 
-const messagePattern = "The Covid 19 7-day-incidence value at your location (%f, %f) currently is %.2f. You receive this message, because you set the alert threshold to %d."
+const messagePattern = "The Covid 19 7-day-incidence value at your location (%f, %f) currently is %.2f. You receive this message, because you set the alert threshold to %d. (Update: %s)"
 
 func NewEvent(c Covid19Region, t Topic) (Event, error) {
-	message := fmt.Sprintf(messagePattern, t.Position.Longitude, t.Position.Latitude, c.Incidence, t.Threshold)
+	timestamp := time.Now()
+	message := fmt.Sprintf(messagePattern, t.Position.Longitude, t.Position.Latitude, c.Incidence, t.Threshold, timestamp.Format("02.01.2006 15:04"))
 	e := Event{
 		Message: message,
 		TopicID: t.ID,
