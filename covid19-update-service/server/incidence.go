@@ -31,6 +31,6 @@ func (ws *Covid19UpdateWebServer) getIncidence(w http.ResponseWriter, r *http.Re
 		writeHTTPResponse(model.NewError("No incidence available"), http.StatusInternalServerError, w, r)
 		return
 	}
-	rsp := model.IncidenceDTO{Incidence: c.Incidence}
+	rsp := c.GetIncidence()
 	writeHTTPResponse(rsp, http.StatusOK, w, r)
 }

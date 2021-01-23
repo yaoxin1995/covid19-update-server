@@ -11,11 +11,11 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-type Jwks struct {
-	Keys []JSONWebKeys `json:"keys"`
+type jwkCollection struct {
+	Keys []jsonWebKeys `json:"keys"`
 }
 
-type JSONWebKeys struct {
+type jsonWebKeys struct {
 	Kty string   `json:"kty"`
 	Kid string   `json:"kid"`
 	Use string   `json:"use"`
@@ -24,8 +24,8 @@ type JSONWebKeys struct {
 	X5c []string `json:"x5c"`
 }
 
-type AuthorizationHandler struct {
-	JWKS       Jwks
+type authorizationHandler struct {
+	JWKS       jwkCollection
 	ISS        string
 	AUD        string
 	Middleware *jwtmiddleware.JWTMiddleware
@@ -33,12 +33,12 @@ type AuthorizationHandler struct {
 
 const tokenContext = "tokenContext"
 
-func NewAuthenticationHandler(iss, aud string) (AuthorizationHandler, error) {
+func newAuthenticationHandler(iss, aud string) (authorizationHandler, error) {
 	jwks, err := getJwks(iss)
 	if err != nil {
-		return AuthorizationHandler{}, err
+		return authorizationHandler{}, err
 	}
-	handler := AuthorizationHandler{
+	handler := authorizationHandler{
 		JWKS: jwks,
 		ISS:  iss,
 		AUD:  aud,
@@ -47,24 +47,24 @@ func NewAuthenticationHandler(iss, aud string) (AuthorizationHandler, error) {
 	return handler, nil
 }
 
-func getJwks(iss string) (Jwks, error) {
-	var jwks = Jwks{}
+func getJwks(iss string) (jwkCollection, error) {
+	var jwks = jwkCollection{}
 	resp, err := http.Get(fmt.Sprintf("%s.well-known/jwks.json", iss))
 
 	if err != nil {
-		return jwks, fmt.Errorf("could not load Jwks: %v", err)
+		return jwks, fmt.Errorf("could not load jwkCollection: %v", err)
 	}
 	defer resp.Body.Close()
 
 	err = json.NewDecoder(resp.Body).Decode(&jwks)
 
 	if err != nil {
-		return Jwks{}, fmt.Errorf("could not decode Jwks: %v", err)
+		return jwkCollection{}, fmt.Errorf("could not decode jwkCollection: %v", err)
 	}
 	return jwks, nil
 }
 
-func (a *AuthorizationHandler) getPemCert(token *jwt.Token) (string, error) {
+func (a *authorizationHandler) getPemCert(token *jwt.Token) (string, error) {
 	cert := ""
 	for k := range a.JWKS.Keys {
 		if token.Header["kid"] == a.JWKS.Keys[k].Kid {
@@ -80,7 +80,7 @@ func (a *AuthorizationHandler) getPemCert(token *jwt.Token) (string, error) {
 	return cert, nil
 }
 
-func (a *AuthorizationHandler) createJWTMiddleWare() {
+func (a *authorizationHandler) createJWTMiddleWare() {
 	a.Middleware = jwtmiddleware.New(jwtmiddleware.Options{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 			// Verify 'aud' claim
@@ -112,7 +112,7 @@ func (a *AuthorizationHandler) createJWTMiddleWare() {
 	})
 }
 
-func (a *AuthorizationHandler) getSubject(tokenString string) (string, error) {
+func (a *authorizationHandler) getSubject(tokenString string) (string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		cert, err := a.getPemCert(token)
 		if err != nil {
