@@ -1,12 +1,11 @@
 @startuml
-scale 1024 width
-    scale 768 height
-    left to right direction
+left to right direction
 namespace model {
     class Covid19Region << (S,Aquamarine) >> {
         + Incidence float64
 
         + Store() error
+        + GetIncidence() Incidence
 
     }
     class ErrorT << (S,Aquamarine) >> {
@@ -38,7 +37,7 @@ namespace model {
         + ToHAL(path string) hal.Resource
 
     }
-    class IncidenceDTO << (S,Aquamarine) >> {
+    class Incidence << (S,Aquamarine) >> {
         + Incidence float64
 
         + ToHAL(path string) hal.Resource
@@ -67,17 +66,12 @@ namespace model {
         + ToHAL(path string) hal.Resource
 
     }
-    class SubscriptionRequestDTO << (S,Aquamarine) >> {
-        + Email *string
-        + TelegramChatID *string
-
-    }
     class Topic << (S,Aquamarine) >> {
         + Position GPSPosition
         + Threshold uint
         + SubscriptionID uint
         + Covid19RegionID uint
-        + Events []Event
+        + Events EventCollection
 
         + Store() error
         + Update(position GPSPosition, threshold uint, cov19RegID uint) error
@@ -89,13 +83,6 @@ namespace model {
         + ToHAL(path string) hal.Resource
 
     }
-    class TopicRequestDTO << (S,Aquamarine) >> {
-        + Position GPSPosition
-        + Threshold uint
-
-        + UnmarshalJSON(data []byte) error
-
-    }
     class model.EventCollection << (T, #FF7700) >>  {
     }
     class model.SubscriptionCollection << (T, #FF7700) >>  {
@@ -103,24 +90,23 @@ namespace model {
     class model.TopicCollection << (T, #FF7700) >>  {
     }
 }
-"model.PersistentModel" <- "model.Covid19Region"
-"model.PersistentModel" <- "model.Event"
-"model.PersistentModel" <- "model.Subscription"
-"model.PersistentModel" <- "model.Topic"
+"model.PersistentModel" *-- "model.Covid19Region"
+"model.PersistentModel" *-- "model.Event"
+"model.PersistentModel" *-- "model.Subscription"
+"model.PersistentModel" *-- "model.Topic"
 
 "model.HALCompatibleModel" <|-- "model.ErrorT"
 "model.HALCompatibleModel" <|-- "model.Event"
 "model.HALCompatibleModel" <|-- "model.EventCollection"
-"model.HALCompatibleModel" <|-- "model.IncidenceDTO"
+"model.HALCompatibleModel" <|-- "model.Incidence"
 "model.HALCompatibleModel" <|-- "model.Subscription"
 "model.HALCompatibleModel" <|-- "model.SubscriptionCollection"
 "model.HALCompatibleModel" <|-- "model.Topic"
 "model.HALCompatibleModel" <|-- "model.TopicCollection"
 
 "model.Subscription" o-- "model.TopicCollection"
-"model.Topic" o-- "model.Event"
+"model.Topic" o-- "model.EventCollection"
 "model.Topic" o-- "model.GPSPosition"
-"model.TopicRequestDTO" o-- "model.GPSPosition"
 
 namespace notifier {
     class Covid19Notifier << (S,Aquamarine) >> {
@@ -170,25 +156,18 @@ namespace rki {
         - run() error
 
     }
+    class LocationNotFoundError << (S,Aquamarine) >> {
+        + Error() string
+
+    }
 }
 
 
 "rki.Covid19RegionUpdater" o-- "model.Covid19Region"
 
 namespace server {
-    class AuthorizationHandler << (S,Aquamarine) >> {
-        + JWKS Jwks
-        + ISS string
-        + AUD string
-        + Middleware *go-jwt-middleware.JWTMiddleware
-
-        - getPemCert(token *jwt.Token) (string, error)
-        - createJWTMiddleWare() 
-        - getSubject(tokenString string) (string, error)
-
-    }
     class Covid19UpdateWebServer << (S,Aquamarine) >> {
-        + AuthHandler *AuthorizationHandler
+        - authHandler *authorizationHandler
 
         - registerEventRoutes(r *mux.Router) 
         - getEvents(w http.ResponseWriter, r *http.Request) 
@@ -218,10 +197,25 @@ namespace server {
         + Start() error
 
     }
+    class authorizationHandler << (S,Aquamarine) >> {
+        + JWKS jwkCollection
+        + ISS string
+        + AUD string
+        + Middleware *go-jwt-middleware.JWTMiddleware
+
+        - getPemCert(token *jwt.Token) (string, error)
+        - createJWTMiddleWare() 
+        - getSubject(tokenString string) (string, error)
+
+    }
 }
+"http.Server" *-- "server.Covid19UpdateWebServer"
 
-"server.Covid19UpdateWebServer" o-- "server.AuthorizationHandler"
-"server.Covid19UpdateWebServer" ..> "model": uses
+"model.EventCollection" .up.o "model.Event"
+"model.TopicCollection" .up.o "model.Topic"
+"model.SubscriptionCollection" .up.o "model.Subscription"
+"server.Covid19UpdateWebServer" o-- "server.authorizationHandler"
+"server.Covid19UpdateWebServer" .up.> "model": uses
+"rki.Covid19RegionUpdater" <..> "notifier.Covid19Notifier"
 
-"rki.Covid19RegionUpdater" <.. "notifier.Covid19Notifier": uses
 @enduml

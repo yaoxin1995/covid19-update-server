@@ -45,7 +45,7 @@ func (ws *Covid19UpdateWebServer) authorizationAndIdentification() func(handlerF
 				return
 			}
 
-			subject, err := ws.AuthHandler.getSubject(token.Raw)
+			subject, err := ws.authHandler.getSubject(token.Raw)
 			if err != nil {
 				writeHTTPResponse(model.NewError(fmt.Sprintf("could not get subject: %v", err)), http.StatusInternalServerError, w, r)
 				return
@@ -61,7 +61,7 @@ func (ws *Covid19UpdateWebServer) authorizationAndIdentification() func(handlerF
 				return
 			}
 			// Authorization
-			ws.AuthHandler.Middleware.HandlerWithNext(w, r, addOwnerClaim)
+			ws.authHandler.Middleware.HandlerWithNext(w, r, addOwnerClaim)
 		})
 	}
 }

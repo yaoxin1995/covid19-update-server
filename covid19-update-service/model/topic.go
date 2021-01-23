@@ -13,11 +13,11 @@ type TopicCollection []Topic
 
 type Topic struct {
 	PersistentModel
-	Position        GPSPosition `gorm:"embedded;embeddedPrefix:position_" json:"position"`
-	Threshold       uint        `json:"threshold"`
-	SubscriptionID  uint        `sql:"type:bigint REFERENCES subscriptions(id) ON DELETE CASCADE" json:"-"`
-	Covid19RegionID uint        `json:"-"`
-	Events          []Event     `json:"-"`
+	Position        GPSPosition     `gorm:"embedded;embeddedPrefix:position_" json:"position"`
+	Threshold       uint            `json:"threshold"`
+	SubscriptionID  uint            `sql:"type:bigint REFERENCES subscriptions(id) ON DELETE CASCADE" json:"-"`
+	Covid19RegionID uint            `json:"-"`
+	Events          EventCollection `json:"-"`
 }
 
 type GPSPosition struct {

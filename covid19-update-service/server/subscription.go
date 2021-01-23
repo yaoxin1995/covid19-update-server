@@ -12,9 +12,14 @@ import (
 
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
-func parseSubscriptionRequest(w http.ResponseWriter, r *http.Request) (model.SubscriptionRequestDTO, bool) {
+type subscriptionRequest struct {
+	Email          *string `json:"email"`
+	TelegramChatID *string `json:"telegramChatId"`
+}
+
+func parseSubscriptionRequest(w http.ResponseWriter, r *http.Request) (subscriptionRequest, bool) {
 	decoder := json.NewDecoder(r.Body)
-	var subReq model.SubscriptionRequestDTO
+	var subReq subscriptionRequest
 	err := decoder.Decode(&subReq)
 	if err != nil {
 		writeHTTPResponse(model.NewError(fmt.Sprintf("Could not decode request body: %v.", err)), http.StatusBadRequest, w, r)
