@@ -21,7 +21,7 @@ const messagePattern = "The Covid 19 7-day-incidence value at your location (%f,
 
 func NewEvent(c Covid19Region, t Topic) (Event, error) {
 	timestamp := time.Now()
-	message := fmt.Sprintf(messagePattern, t.Position.Longitude, t.Position.Latitude, c.Incidence, t.Threshold, timestamp.Format("02.01.2006 15:04"))
+	message := fmt.Sprintf(messagePattern, t.Position.Longitude, t.Position.Latitude, c.Incidence, t.Threshold, timestamp.Format("02.01.2006 15:04 MST"))
 	e := Event{
 		Message: message,
 		TopicID: t.ID,
