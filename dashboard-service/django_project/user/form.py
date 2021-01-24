@@ -27,7 +27,8 @@ class UserUpdateForm(forms.ModelForm):
 class ProfileUpdateForm(forms.ModelForm):
 	class Meta:
 		model =Profile 
-		fields =['subscripted','telegram','subscribtionId']
+		#fields =['subscripted','telegram','subscribtionId']
+		fields =['subscripted','telegram']
 
 
 			

@@ -17,7 +17,7 @@ import ast
 from user.models import Authorization
 from user.views import AuthorizationQuerysetIsNotNull
 from django.views.generic import ListView ,DetailView,CreateView,UpdateView,DeleteView
-
+from .authorization import getAuthorization
 url_subsribtion = 'http://localhost:9005/subscriptions'
 server_url = "185.128.119.135"
 
@@ -53,9 +53,9 @@ def home(request):
 
 			ulr_gettopic = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics"
 			#headers={"accept": "application/json"}
-			status,data = getAllSubscribtion(request,ulr_gettopic)
+			status,data = getAll(request,ulr_gettopic,'topics')
 			while(status == 401):
-				status,data = getAllSubscribtion(request,ulr_gettopic)
+				status,data = getAll(request,ulr_gettopic,'topics')
 			if status == 200:
 				messages.success(request, 'Successfully get all topics from update server.')
 				#r_list= respons.json() # 将json格式转化为list
@@ -146,6 +146,10 @@ def detail(request,id):
 	current_profile = current_user.profile 
 	url_detail = "/subscriptions/"+str(current_profile.subscribtionId)+"/topics/"+str(id)
 
+	#/subscriptions/42/topics/1337/incidence
+	url_incidences = "/subscriptions/"+str(current_profile.subscribtionId)+"/topics/"+str(id)+"/incidence"
+	#https://185.128.119.135/subscriptions/12/topics/12/events?limit=14
+	url_event = "/subscriptions/"+str(current_profile.subscribtionId)+"/topics/"+str(id)+"/events?limit=10"
 
 	#headers={"accept": "application/json"}
 	#respons = requests.get(url_detail,headers=headers)
@@ -154,10 +158,15 @@ def detail(request,id):
 		status,data = getTopic(url_detail)
 	
 	if status == 200:
+		#events
+		_,incidence = getTopic(url_incidences)
+		_,events_list = getAll(request,url_event,'events')
+
+
 		messages.success(request, 'Successfully get the topics from update server.')
 		#r_dic= respons.json() # 将json格式转化为dic
 
-		return render(request,'blog/topic_detail.html',{'r_dic':data})
+		return render(request,'blog/topic_detail.html',{'r_dic':data,'incidence':incidence,'events':events_list})
 	else:
 		messages.warning(request, 'Failed to get this topic ')
 		return redirect('blog-home')
@@ -250,7 +259,7 @@ def deleteTopic(url):
 		return 400
 
 
-def getAllSubscribtion(request,url):
+def getAll(request,url,dic_key):
 	if AuthorizationQuerysetIsNotNull() is False:
 		key = getAuthorization()
 	else:
@@ -265,9 +274,9 @@ def getAllSubscribtion(request,url):
 		data_str = data.decode("utf-8")
 		data_dic = ast.literal_eval(data_str)
 		embedded = data_dic['_embedded']
-		topics_list=embedded['topics']
+		data_list=embedded[dic_key]
 		conn.close()
-		return 200,topics_list
+		return 200,data_list
 	elif response.status== 401:
 		getAuthorization()
 		conn.close()
