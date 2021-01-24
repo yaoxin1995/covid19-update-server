@@ -13,17 +13,19 @@ from .form import UserRegistionForm ,UserUpdateForm, ProfileUpdateForm
 from django.contrib.auth.decorators import login_required
 # Create your views here.
 
-import requests , json
+import requests , json,os
 from blog.authorization import getAuthorization
 from .models import Authorization
 
 
-server_url = "185.128.119.135"
+
+#server_url = "185.128.119.135"
 #url_subsribtion = 'https://localhost:9005/subscriptions'
 #url_subsribtion = "185.128.119.135"
-url_subsribtion = 'https://185.128.119.135/subscriptions'
+#url_subsribtion = 'https://185.128.119.135/subscriptions'
 
 def subscribtion(request):
+	server_url = os.environ['server_address']
 	if AuthorizationQuerysetIsNotNull() is False:
 		key = getAuthorization()
 	else:
@@ -70,6 +72,7 @@ def AuthorizationQuerysetIsNotNull():
 	# respons= requests.delete(url_delate_subribtion,headers=headers)
 
 def deleteSubscribtion(request):
+	server_url = os.environ['server_address']
 	if AuthorizationQuerysetIsNotNull() is False:
 		key = getAuthorization()
 	else:

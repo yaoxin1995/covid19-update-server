@@ -18,8 +18,10 @@ from user.models import Authorization
 from user.views import AuthorizationQuerysetIsNotNull
 from django.views.generic import ListView ,DetailView,CreateView,UpdateView,DeleteView
 from .authorization import getAuthorization
-url_subsribtion = 'http://localhost:9005/subscriptions'
-server_url = "185.128.119.135"
+import os
+#print(os.environ['HOME'])
+#url_subsribtion = 'http://localhost:9005/subscriptions'
+#server_url = "185.128.119.135"
 
 # posts = [
 # 	{
@@ -41,6 +43,7 @@ server_url = "185.128.119.135"
 
 #show all the topic  in homep.html if user is login and subscribed the server
 def home(request):
+
 	if request.user.is_authenticated:
 		current_user = request.user
 		current_profile=current_user.profile
@@ -51,7 +54,7 @@ def home(request):
 		else:
 			# get all topic from update server
 
-			ulr_gettopic = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics"
+			ulr_gettopic = "/subscriptions/"+str(current_profile.subscribtionId)+"/topics"
 			#headers={"accept": "application/json"}
 			status,data = getAll(request,ulr_gettopic,'topics')
 			while(status == 401):
@@ -242,6 +245,7 @@ def deleteTopic(url):
 		key = getAuthorization()
 	else:
 		key = Authorization.objects.get(pk=1).authorizationKey
+	server_url = os.environ['server_address']
 	auth_key = "Bearer "+key
 	headers={"content-type": "application/json","accept": "application/hal+json","Authorization":auth_key}
 	conn = http.client.HTTPSConnection(server_url,context = ssl._create_unverified_context())
@@ -260,6 +264,7 @@ def deleteTopic(url):
 
 
 def getAll(request,url,dic_key):
+	server_url = os.environ['server_address']
 	if AuthorizationQuerysetIsNotNull() is False:
 		key = getAuthorization()
 	else:
@@ -286,6 +291,7 @@ def getAll(request,url,dic_key):
 		return 400,0
 
 def getTopic(url):
+	server_url = os.environ['server_address']
 	if AuthorizationQuerysetIsNotNull() is False:
 		key = getAuthorization()
 	else:
@@ -310,6 +316,7 @@ def getTopic(url):
 		return 400,0
 
 def sendTopic(method,request,date_dic,url):
+	server_url = os.environ['server_address']
 	if AuthorizationQuerysetIsNotNull() is False:
 		key = getAuthorization()
 	else:

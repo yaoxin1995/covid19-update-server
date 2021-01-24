@@ -26,8 +26,8 @@ SECRET_KEY = '84jsj0a=tifs8kuixq!p11b&8^uv@x(r3imxnh4yal-y+$-(mn'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
+#allows us to access the Django app from outside the container.
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
 
 # Application definition
