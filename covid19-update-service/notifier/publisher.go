@@ -3,15 +3,12 @@ package notifier
 import (
 	"covid19-update-service/model"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
@@ -21,64 +18,15 @@ import (
 
 type TelegramPublisher struct {
 	TelegramServiceURI string
-	OAuthTokenUrl      string
-	OAuthClientID      string
-	OAuthClientSecret  string
-	OAuthAudience      string
-	accessToken        string
+	accessTokenHelper  *Auth0AccessTokenHelper
 }
 
-func NewTelegramPublisher(tServiceUri, tokenUrl, cID, cSecret, aud string) (TelegramPublisher, error) {
-	tp := TelegramPublisher{
+func NewTelegramPublisher(tServiceUri string, auth0Helper *Auth0AccessTokenHelper) *TelegramPublisher {
+	tp := &TelegramPublisher{
 		TelegramServiceURI: tServiceUri,
-		OAuthTokenUrl:      tokenUrl,
-		OAuthClientID:      cID,
-		OAuthClientSecret:  cSecret,
-		OAuthAudience:      aud,
+		accessTokenHelper:  auth0Helper,
 	}
-	err := tp.getAccessToken()
-	if err != nil {
-		return TelegramPublisher{}, fmt.Errorf("could not get initial access token: %v", err)
-	}
-	return tp, nil
-}
-
-func (tp *TelegramPublisher) scheduleAccessTokenRefresh(d time.Duration) {
-	time.Sleep(d)
-	err := tp.getAccessToken()
-	log.Printf("could not refresh telegram access token: %v", err)
-}
-
-func (tp *TelegramPublisher) getAccessToken() error {
-	type Auth0TokenResponse struct {
-		AccessToken string `json:"access_token"`
-		TokenType   string `json:"token_type"`
-		ExpiresIn   int    `json:"expires_in"`
-	}
-
-	payload := strings.NewReader(fmt.Sprintf("grant_type=client_credentials&client_id=%s&client_secret=%s&audience=%s", tp.OAuthClientID, tp.OAuthClientSecret, tp.OAuthAudience))
-
-	req, err := http.NewRequest("POST", tp.OAuthTokenUrl, payload)
-	if err != nil {
-		return fmt.Errorf("could not create access token request: %v", err)
-	}
-
-	req.Header.Add("content-type", "application/x-www-form-urlencoded")
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("could not send access token request: %v", err)
-	}
-
-	var tokenResponse Auth0TokenResponse
-	err = json.NewDecoder(res.Body).Decode(&tokenResponse)
-	if err != nil {
-		return fmt.Errorf("could not decode access token response: %v", err)
-	}
-
-	tp.accessToken = tokenResponse.AccessToken
-	go tp.scheduleAccessTokenRefresh(time.Duration(tokenResponse.ExpiresIn)*time.Second - time.Hour)
-	return nil
+	return tp
 }
 
 func (tp *TelegramPublisher) Publish(chatID string, e model.Event) error {
@@ -92,7 +40,7 @@ func (tp *TelegramPublisher) Publish(chatID string, e model.Event) error {
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tp.accessToken))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tp.accessTokenHelper.getAccessToken()))
 	req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
 	tr := &http.Transport{
@@ -118,8 +66,8 @@ type EmailPublisher struct {
 	SendGridEmail  string
 }
 
-func NewEmailPublisher(sendGridApiKey, sendGridEmail string) EmailPublisher {
-	return EmailPublisher{SendGridAPIKey: sendGridApiKey, SendGridEmail: sendGridEmail}
+func NewEmailPublisher(sendGridApiKey, sendGridEmail string) *EmailPublisher {
+	return &EmailPublisher{SendGridAPIKey: sendGridApiKey, SendGridEmail: sendGridEmail}
 }
 
 func (ep *EmailPublisher) Publish(email string, e model.Event) error {
