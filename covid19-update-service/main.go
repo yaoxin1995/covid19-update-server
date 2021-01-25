@@ -80,16 +80,18 @@ func main() {
 	if !ok {
 		log.Fatalf("TELEGRAM_AUTH0_TOKEN_URL missing")
 	}
-	tp, err := notifier.NewTelegramPublisher(
-		telegramAPIUri,
-		telegramAuth0TokenUrl,
+	auth0Helper, err := notifier.NewAuth0AccessTokenHelper(telegramAuth0TokenUrl,
 		telegramAuth0ClientID,
 		telegramAuth0ClientSecret,
 		telegramAuth0Aud,
 	)
 	if err != nil {
-		log.Fatalf("Could not setup telegram publisher: %v", err)
+		log.Fatalf("Could not setup auth0 helper for telegram publisher: %v", err)
 	}
+	tp := notifier.NewTelegramPublisher(
+		telegramAPIUri,
+		auth0Helper,
+	)
 
 	sendGridAPIKey, ok := os.LookupEnv("SENDGRID_API_KEY")
 	if !ok {

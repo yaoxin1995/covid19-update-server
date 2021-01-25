@@ -8,11 +8,11 @@ import (
 
 type Covid19Notifier struct {
 	c  <-chan model.Covid19Region
-	tp TelegramPublisher
-	ep EmailPublisher
+	tp *TelegramPublisher
+	ep *EmailPublisher
 }
 
-func NewCovid19Notifier(c <-chan model.Covid19Region, tPub TelegramPublisher, ePub EmailPublisher) *Covid19Notifier {
+func NewCovid19Notifier(c <-chan model.Covid19Region, tPub *TelegramPublisher, ePub *EmailPublisher) *Covid19Notifier {
 	cn := &Covid19Notifier{
 		c:  c,
 		tp: tPub,

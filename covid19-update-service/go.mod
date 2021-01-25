@@ -9,7 +9,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gorilla/mux v1.8.0
 	github.com/jinzhu/gorm v1.9.16
-	github.com/kr/pretty v0.1.0 // indirect
+	github.com/kr/pretty v0.2.1 // indirect
 	github.com/mattn/go-sqlite3 v1.14.0
 	github.com/pmoule/go2hal v0.4.0
 	github.com/rs/cors v1.7.0
