@@ -6,9 +6,10 @@ services:
       context: .
     environment:
       - FLASK_APP=app.py
+      - DB_FILE_PATH=./db/db.sql
       - TELEGRAM_BOT_TOKEN=
-      - AUTH0_ISS=
-      - AUTH0_AUD=
+      - AUTH0_ISS=scc2020g8.eu.auth0.com/
+      - AUTH0_AUD=https://185.128.119.135/notification
       # Define messages for each message type
       - WELCOME_MESSAGE=Welcome, {{ USER_FULL_NAME }}! You are now able to configure {{ SERVICE_NAME }} via Telegram.
         Go to your dashboard and add the Telegram notification provider by entering this ID {{ USER_CHAT_ID }}.
