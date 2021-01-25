@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "f190a57e-66e3-4a73-80d7-6be3855d69db",
-		"name": "notification-service",
+		"name": "telegram-notification-service",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [

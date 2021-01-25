@@ -2,7 +2,7 @@ openapi: "3.0.0"
 info:
   description: "SCC WS2020 Group8"
   version: "1.1.0"
-  title: "Notification service api documentation"
+  title: "Telegram Notification Service API"
 servers:
   - url: http://127.0.0.1
 security:

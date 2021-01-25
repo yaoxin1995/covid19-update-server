@@ -1,4 +1,4 @@
-# Notification Service
+# Telegram Notification Service
 
 This web service is able to send notifications to users via the Telegram bot API.
 

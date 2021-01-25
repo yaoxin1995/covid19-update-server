@@ -1,7 +1,7 @@
 version: '3.5'
 services:
-  notification-service:
-    container_name: notification-service
+  telegram-notification-service:
+    container_name: telegram-notification-service
     build:
       context: .
     environment:
@@ -18,7 +18,7 @@ services:
       - TEMPLATE_VAR_SERVICE_NAME=COVID-19 incidence update notifications
     volumes:
       # Persist notification database
-      - notification-service-db:/opt/notification-service/db:rw
+      - telegram-notification-service-db:/opt/notification-service/db:rw
     command: flask run --host=0.0.0.0 --port 80
     restart: unless-stopped
 
@@ -46,4 +46,4 @@ services:
       restart: unless-stopped
 
 volumes:
-  notification-service-db:
+  telegram-notification-service-db:
