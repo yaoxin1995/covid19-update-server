@@ -40,7 +40,7 @@ func (tp *TelegramPublisher) Publish(chatID string, e model.Event) error {
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tp.accessTokenHelper.getAccessToken()))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tp.accessTokenHelper.GetAccessToken()))
 	req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
 	tr := &http.Transport{

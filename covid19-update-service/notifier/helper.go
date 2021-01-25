@@ -63,7 +63,7 @@ func (a *Auth0AccessTokenHelper) scheduleTokenRefresh() {
 	}
 }
 
-func (a *Auth0AccessTokenHelper) getAccessToken() string {
+func (a *Auth0AccessTokenHelper) GetAccessToken() string {
 	a.mu.RLock()
 	token := a.accessToken
 	defer a.mu.RUnlock()
