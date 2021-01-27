@@ -29,7 +29,7 @@ class ProfileUpdateForm(forms.ModelForm):
 		model =Profile 
 		
 		#fields =['subscripted','telegram','subscribtionId']
-		fields =['Activate_subscription','telegram']
+		fields =['telegram','Activate_subscription']
 
 
 			

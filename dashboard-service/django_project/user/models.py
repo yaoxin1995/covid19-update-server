@@ -21,7 +21,7 @@ class Profile(models.Model):
 
 	subscribtionStatus = models.BooleanField(default=False)
 
-	telegram=  models.CharField(max_length=300,default='0000000')
+	telegram=  models.CharField(max_length=300,default='00000',blank=True)
 
 	subscribtionId = models.IntegerField(default=0,validators=[MinValueValidator(0)])
 

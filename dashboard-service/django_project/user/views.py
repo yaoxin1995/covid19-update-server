@@ -2,6 +2,7 @@ from django.shortcuts import render ,redirect
 import http.client
 import ssl
 import ast
+import json
 
 # djago 提供一些 html 的class
 from django.contrib.auth.forms import UserCreationForm
@@ -32,8 +33,18 @@ def subscribtion(request):
 		key = Authorization.objects.get(pk=1).authorizationKey
 	auth_key = "Bearer "+key
 
+	if request.user.email != "" and request.user.profile.telegram != "":
+		payload ={ 'email':request.user.email,'telegramChatId':request.user.profile.telegram}
+	elif request.user.email != "":
+		payload ={ 'email':request.user.email}
+	elif request.user.profile.telegram != "":
+		payload ={ 'telegramChatId':request.user.profile.telegram}
+	else:
+		payload={}
+
+
 	headers={"content-type": "application/json","accept": "application/hal+json","Authorization":auth_key}
-	payload ={ 'email':request.user.email,'telegramChatId':request.user.profile.telegram}
+	#payload ={ 'email':request.user.email,'telegramChatId':request.user.profile.telegram}
 	#payload={'email':'yaoxinjing517@gmail.com','telegramChatId':'123'}
 	payload_json= json.dumps(payload) # 将dic变为json 格式
 	conn = http.client.HTTPSConnection(server_url,context = ssl._create_unverified_context())
@@ -42,7 +53,8 @@ def subscribtion(request):
 	if response.status == 201:
 		data = response.read()
 		data_str = data.decode("utf-8")
-		data_dic = ast.literal_eval(data_str)
+		data_dic=json.loads(data_str)
+		#data_dic = ast.literal_eval(data_str)
 		id = data_dic['id']
 		current_profile =  request.user.profile
 		current_profile.subscribtionId = id 
