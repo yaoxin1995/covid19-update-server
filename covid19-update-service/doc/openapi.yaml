@@ -1,6 +1,6 @@
 openapi: "3.0.0"
 info:
-  description: "SCC WS2020 Group8"
+  description: "The COVID-19 Update Service offers the user to select the locations for which the COVID-19 7-day-incidence should be monitored and the output channels he/she wants through which to receive notifications. As background process the service monitors the COVID-19 7-day-incidence values for the selected locations. Whenever the user-defined threshold for a location is exceeded, the COVID-19 Update Service generates an event and ships it to the user's output channels. Thereby a `Subscription` resource represents the output channels for notifications. Within a `Subscription` `Topics` can be created as sub-resources, which represents the locations that should be monitored by the COVID-19 Update Service. Whenever the threshold of a `Topic` is exceeded, an `Event` resource is created."
   version: "1.0.0"
   title: "COVID-19 Update Service"
 servers:
@@ -8,7 +8,7 @@ servers:
     description: Local Server
   - url: 185.128.119.135:9005
     description: Cloud'n'Heat Server
-security:   
+security:
   - bearerAuth: []
 paths:
   /subscriptions:
@@ -84,7 +84,7 @@ paths:
                             telegramChatId:
                               type: "string"
                               x-nullable: true
-                              description: "Telegram chat ID, which is provided by the Telegram Bot, to which event notifications are sent. If no Telegram notification should be received the parameter is set to `null`.."
+                              description: "Telegram chat ID, which is provided by the Telegram Bot, to which event notifications are sent. If no Telegram notification should be received the parameter is set to `null`."
                               example: "578989238"
                             _links:
                               type: "object"
@@ -336,11 +336,11 @@ paths:
                               description: "ID of topic"
                               readOnly: true
                             position:
-                              required: 
+                              required:
                                 - longitude
                                 - latitude
                               type: "object"
-                              description: "Position for which the Covid incidence value is monitored"
+                              description: "Position for which the COVID-19 incidence value is monitored"
                               properties:
                                 latitude:
                                   type: "number"
@@ -355,7 +355,7 @@ paths:
                               format: "int64"
                               minimum: 0
                               example: 50
-                              description: "Threshold value of COVID-19 cases per 100k people in the last 7 days above which an event is generated and shipped to the configured output channels of the subscription."
+                              description: "Threshold value of COVID-19 7-day-incidence value above which an event is generated and shipped to the configured output channels of the subscription."
                             _links:
                               type: "object"
                               readOnly: true
@@ -741,7 +741,7 @@ paths:
           content:
             application/hal+json:
               schema:
-               $ref: '#/components/schemas/Event'
+                $ref: '#/components/schemas/Event'
         400:
           description: Request is malformed
           content:
@@ -768,7 +768,7 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   securitySchemes:
-    bearerAuth: 
+    bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
@@ -791,7 +791,7 @@ components:
         telegramChatId:
           type: "string"
           x-nullable: true
-          description: "Telegram chat ID, which is provided by the Telegram Bot, to which event notifications are sent. If no Telegram notification should be received the parameter is set to `null`.."
+          description: "Telegram chat ID, which is provided by the Telegram Bot, to which event notifications are sent. If no Telegram notification should be received the parameter is set to `null`."
           example: "578989238"
         _links:
           type: "object"
@@ -811,7 +811,7 @@ components:
                   type: "string"
                   example: "/subscriptions/42/topics"
                   description: "Link relation to the topics value that are associated to the subscription"
-              
+
       xml:
         name: "Subscription"
     Topic:
@@ -828,11 +828,11 @@ components:
           description: "ID of topic"
           readOnly: true
         position:
-          required: 
+          required:
             - longitude
             - latitude
           type: "object"
-          description: "Position for which the Covid incidence value is monitored"
+          description: "Position for which the COVID-19 incidence value is monitored"
           properties:
             latitude:
               type: "number"
@@ -847,7 +847,7 @@ components:
           format: "int64"
           minimum: 0
           example: 50
-          description: "Threshold value of COVID-19 cases per 100k people in the last 7 days above which an event is generated and shipped to the configured output channels of the subscription."
+          description: "Threshold value of COVID-19 7-day-incidence value above which an event is generated and shipped to the configured output channels of the subscription."
         _links:
           type: "object"
           readOnly: true
@@ -877,7 +877,7 @@ components:
         name: "Topic"
     Event:
       type: "object"
-      description: "Event that is created each time the COVID-19 cases per 100k people in the last 7 days exceed the threshold."
+      description: "Event that is created each time the COVID-19 7-day-incidence value exceeds the Topic's threshold."
       properties:
         id:
           type: "integer"
@@ -909,7 +909,7 @@ components:
         incidence:
           type: "number"
           format: "double"
-          description: "COVID-19 cases per 100k people in the last 7 days at the topic's location"
+          description: "COVID-19 7-day-incidence value at the topic's location"
           example: 192.715256
         _links:
           type: "object"
@@ -930,7 +930,7 @@ components:
         error:
           type: "string"
           description: "Error descriptions"
-          example: "An error occured"
+          example: "An error occurred"
         _links:
           type: "object"
           readOnly: true

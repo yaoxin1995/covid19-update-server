@@ -21,6 +21,7 @@ type TelegramPublisher struct {
 	accessTokenHelper  *Auth0AccessTokenHelper
 }
 
+// Creates new TelegramPublisher for the Telegram Notification Service.
 func NewTelegramPublisher(tServiceUri string, auth0Helper *Auth0AccessTokenHelper) *TelegramPublisher {
 	tp := &TelegramPublisher{
 		TelegramServiceURI: tServiceUri,
@@ -29,6 +30,7 @@ func NewTelegramPublisher(tServiceUri string, auth0Helper *Auth0AccessTokenHelpe
 	return tp
 }
 
+// Publishes the Event e to the chat identified by chatID via the Telegram Notification Service.
 func (tp *TelegramPublisher) Publish(chatID string, e model.Event) error {
 	data := url.Values{}
 	data.Set("recipient", chatID)
@@ -66,10 +68,12 @@ type EmailPublisher struct {
 	SendGridEmail  string
 }
 
+// Creates new EmailPublisher the SendGrid credential and a valid email, that will be used as sender address.
 func NewEmailPublisher(sendGridApiKey, sendGridEmail string) *EmailPublisher {
 	return &EmailPublisher{SendGridAPIKey: sendGridApiKey, SendGridEmail: sendGridEmail}
 }
 
+// Publishes the Event e to the email address using the SendGrid Email Delivery Service.
 func (ep *EmailPublisher) Publish(email string, e model.Event) error {
 	from := mail.NewEmail("Covid 19 Updater", ep.SendGridEmail)
 	subject := "Covid19 Update"

@@ -76,6 +76,7 @@ func getAllRegions() (response, error) {
 	return requestRKI(rkiBaseUrl)
 }
 
+// Returns the OBJECTID region identifier for a given model.GPSPosition or an error if the position could not be matched.
 func GetRegionIDForPosition(position model.GPSPosition) (uint, error) {
 	location := fmt.Sprintf("&geometry=%f%%2C%f", position.Longitude, position.Latitude)
 	url := fmt.Sprintf("%s%s%s", rkiBaseUrl, rkiGeoParams, location)

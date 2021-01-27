@@ -6,12 +6,15 @@ import (
 	"log"
 )
 
+// The Covid19Notifier creates a model.Event for a model.Topic whenever the model.Covid19Region's incidence value exceeds the threshold.
 type Covid19Notifier struct {
 	c  <-chan model.Covid19Region
 	tp *TelegramPublisher
 	ep *EmailPublisher
 }
 
+// Creates new Covid19Notifier.
+//The updated model.Covid19Regions have to be provided via the buffered channel c.
 func NewCovid19Notifier(c <-chan model.Covid19Region, tPub *TelegramPublisher, ePub *EmailPublisher) *Covid19Notifier {
 	cn := &Covid19Notifier{
 		c:  c,

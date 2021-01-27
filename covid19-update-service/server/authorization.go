@@ -24,6 +24,7 @@ type jsonWebKeys struct {
 	X5c []string `json:"x5c"`
 }
 
+// Handles authorization via Auth0
 type authorizationHandler struct {
 	JWKS       jwkCollection
 	ISS        string
@@ -33,6 +34,7 @@ type authorizationHandler struct {
 
 const tokenContext = "tokenContext"
 
+// Iss is the issuer address (Auth0 authorization server URI) and aud is the API identifier used in Auth0.
 func newAuthenticationHandler(iss, aud string) (authorizationHandler, error) {
 	jwks, err := getJwks(iss)
 	if err != nil {

@@ -6,11 +6,13 @@ import (
 	"time"
 )
 
+// Regularly polls the current incidence values from the RKI Corona Landkreise REST API and updates the model.Covid19Region if necessary.
 type Covid19RegionUpdater struct {
 	ticker *time.Ticker
 	c      chan<- model.Covid19Region
 }
 
+// Creates new Covid19RegionUpdater which publishes the updated model.Covid19Region to the buffered channel c.
 func NewRegionUpdater(interval time.Duration, c chan<- model.Covid19Region) *Covid19RegionUpdater {
 	cp := &Covid19RegionUpdater{
 		ticker: time.NewTicker(interval),
