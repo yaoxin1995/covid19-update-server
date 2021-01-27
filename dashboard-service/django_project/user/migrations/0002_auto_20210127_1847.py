@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='profile',
-            name='active_subscribtion',
+            name='Activate_subscription',
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(

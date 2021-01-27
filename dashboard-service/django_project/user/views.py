@@ -145,7 +145,7 @@ def profile(request):
 			u_form.save()
 			p_form.save()
 
-			subscripted_form = p_form.cleaned_data.get('active_subscribtion')
+			subscripted_form = p_form.cleaned_data.get('Activate_subscription')
 
 			current_profile =  request.user.profile
 

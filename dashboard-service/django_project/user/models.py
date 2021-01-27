@@ -17,7 +17,7 @@ class Profile(models.Model):
 	#image = models.ImageField(default ='default.jpg',upload_to = 'profile_pics')
 
 
-	active_subscribtion = models.BooleanField(default=False)
+	Activate_subscription = models.BooleanField(default=False)
 
 	subscribtionStatus = models.BooleanField(default=False)
 
