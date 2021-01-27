@@ -16,6 +16,8 @@ chatting with the bot available. These are `USER_FIRST_NAME`, `USER_LAST_NAME`, 
 `USER_CHAT_ID`.
 These variables can be included into the `WELCOME_MESSAGE` and `UNKNOWN_MESSAGE` message strings to let the responses appear being more personalized to the user.
 
+If you want to get more insights check out the [documentation](docs/documentation.md).
+
 ## Environment Variables
 
 The behavior of the application can be determined by setting some environment variables.
@@ -65,8 +67,10 @@ proxy. To prevent trouble with CORS, Swagger is also behind the reverse proxy.
 
 This web service uses [OAuth 2.0](https://tools.ietf.org/html/rfc6749) authorization via [Auth0](https://auth0.com).
 Therefore, you have to set an `Authorization` header containing a bearer token in your requests. 
-The token can be obtained and saved into the variable `AUTH_TOKEN` by executing the following request:
-(Make sure you have both packages `curl` and the json parser `jq` installed on your system.)
+The token can be obtained and is saved into the variable `AUTH_TOKEN` by executing the following request:
+
+> **Note:**
+> Make sure you have both packages `curl` and the json parser `jq` installed on your system.
 
 ```bash
 $ CLIENT_SECRET=your-secret CLIENT_ID=your-client-id AUDIENCE=your-audience
