@@ -1,6 +1,7 @@
 import http.client
 import ast
 from user.models import Authorization
+import os
 # conn = http.client.HTTPSConnection("scc2020g8.eu.auth0.com")
 
 # payload = "{\"client_id\":\"9QDP784vncoXslIJ5H0pFWuQcvxySxxx\",\"client_secret\":\"ANA3qovFC2UfdOkdzxtowaAXiO_oPBO1RCJelEXsy6WJjUwJQSVpr3mPMNM9JcBi\",\"audience\":\"https://185.128.119.135\",\"grant_type\":\"client_credentials\"}"
@@ -16,9 +17,10 @@ from user.models import Authorization
 
 
 #print(data.decode("utf-8"))
-
+#os.environ['server_address']
 def getAuthorization():
-    conn = http.client.HTTPSConnection("scc2020g8.eu.auth0.com")
+    # conn = http.client.HTTPSConnection("scc2020g8.eu.auth0.com")
+    conn = http.client.HTTPSConnection(os.environ['auth-url'])
     payload = "{\"client_id\":\"9QDP784vncoXslIJ5H0pFWuQcvxySxxx\",\"client_secret\":\"ANA3qovFC2UfdOkdzxtowaAXiO_oPBO1RCJelEXsy6WJjUwJQSVpr3mPMNM9JcBi\",\"audience\":\"https://185.128.119.135\",\"grant_type\":\"client_credentials\"}"
     headers = { 'content-type': "application/json" ,"accept": "application/json"}
     conn.request("POST", "/oauth/token", payload, headers)
