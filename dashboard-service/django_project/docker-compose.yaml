@@ -9,6 +9,9 @@ services:
       # covid19-update-service:9005
       - server_address=185.128.119.135
       - auth-url=scc2020g8.eu.auth0.com
+      # Comma separated list of hostnames the webserver is allowed to service
+      # "localhost", "127.0.0.1", "0.0.0.0" are already included
+      - ALLOWED_HOSTS=
     ports:
       - 8000:8000
     volumes:
