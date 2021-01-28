@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  dashboard-service:
+    container_name: dashboard-service
+    #build: ./dashboard-service/django_project/
+    build: .
+    environment:
+      # covid19-update-service:9005
+      - server_address=185.128.119.135
+      - auth-url=scc2020g8.eu.auth0.com
+    ports:
+      - 8000:8000
+    volumes:
+    - dashboard-service-db:/code/db:rw
+    command: python manage.py runserver 0.0.0.0:8000
+    restart: unless-stopped
+
+volumes:
+  dashboard-service-db:

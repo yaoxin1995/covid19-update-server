@@ -1,4 +1,8 @@
 from django.shortcuts import render ,redirect
+import http.client
+import ssl
+import ast
+import json
 
 # djago 提供一些 html 的class
 from django.contrib.auth.forms import UserCreationForm
@@ -10,11 +14,106 @@ from .form import UserRegistionForm ,UserUpdateForm, ProfileUpdateForm
 from django.contrib.auth.decorators import login_required
 # Create your views here.
 
-import requests , json
+import requests , json,os
+from blog.authorization import getAuthorization
+from .models import Authorization
 
 
 
-url_subsribtion = 'http://localhost:9005/subscriptions'
+#server_url = "185.128.119.135"
+#url_subsribtion = 'https://localhost:9005/subscriptions'
+#url_subsribtion = "185.128.119.135"
+#url_subsribtion = 'https://185.128.119.135/subscriptions'
+
+def subscribtion(request):
+	server_url = os.environ['server_address']
+	if AuthorizationQuerysetIsNotNull() is False:
+		key = getAuthorization()
+	else:
+		key = Authorization.objects.get(pk=1).authorizationKey
+	auth_key = "Bearer "+key
+
+	if request.user.email != "" and request.user.profile.telegram != "":
+		payload ={ 'email':request.user.email,'telegramChatId':request.user.profile.telegram}
+	elif request.user.email != "":
+		payload ={ 'email':request.user.email}
+	elif request.user.profile.telegram != "":
+		payload ={ 'telegramChatId':request.user.profile.telegram}
+	else:
+		payload={}
+
+
+	headers={"content-type": "application/json","accept": "application/hal+json","Authorization":auth_key}
+	#payload ={ 'email':request.user.email,'telegramChatId':request.user.profile.telegram}
+	#payload={'email':'yaoxinjing517@gmail.com','telegramChatId':'123'}
+	payload_json= json.dumps(payload) # 将dic变为json 格式
+	conn = http.client.HTTPSConnection(server_url,context = ssl._create_unverified_context())
+	conn.request("POST", "/subscriptions", payload_json, headers)
+	response = conn.getresponse()
+	if response.status == 201:
+		data = response.read()
+		data_str = data.decode("utf-8")
+		data_dic=json.loads(data_str)
+		#data_dic = ast.literal_eval(data_str)
+		id = data_dic['id']
+		current_profile =  request.user.profile
+		current_profile.subscribtionId = id 
+		current_profile.subscribtionStatus = True
+		current_profile.save()
+		conn.close()
+		return 201
+	elif response.status == 401:
+		getAuthorization()
+		conn.close()
+		return 401
+	else:
+		conn.close()
+		return 400
+
+# true: query set is not null
+# falsh:query set is null
+def AuthorizationQuerysetIsNotNull():
+	if Authorization.objects.all().exists():
+		return True
+	else:
+		return False
+
+	# headers={"content-type": "application/json"}
+	# id = current_profile.subscribtionId
+	# url_delate_subribtion = url_subsribtion+"/"+str(id)
+	# respons= requests.delete(url_delate_subribtion,headers=headers)
+
+def deleteSubscribtion(request):
+	server_url = os.environ['server_address']
+	if AuthorizationQuerysetIsNotNull() is False:
+		key = getAuthorization()
+	else:
+		key = Authorization.objects.get(pk=1).authorizationKey
+	current_profile =  request.user.profile
+	id = current_profile.subscribtionId
+	url_delate_subribtion = "/subscriptions/"+str(id)
+	auth_key = "Bearer "+key
+	headers={"content-type": "application/json","accept": "application/hal+json","Authorization":auth_key}
+	#headers={"accept": "*/*","Authorization":auth_key}
+	conn = http.client.HTTPSConnection(server_url,context = ssl._create_unverified_context())
+	conn.request("DELETE",url=url_delate_subribtion,headers= headers)
+	response = conn.getresponse()
+	if response.status == 204:
+		conn.close()
+		return 204
+	elif response.status== 401:
+		getAuthorization()
+		conn.close()
+		return 401
+	else:
+		conn.close()
+		return 400
+
+#"/subscriptions/21" conn.request("DELETE","/subscriptions/21", headers)
+#b = bytes(url_delate_subribtion, 'utf-8')
+#conn.request("DELETE",url, headers)
+
+
 
 
 def register(request):
@@ -58,46 +157,54 @@ def profile(request):
 			u_form.save()
 			p_form.save()
 
-			subscripted_form = p_form.cleaned_data.get('subscripted')
+			subscripted_form = p_form.cleaned_data.get('Activate_subscription')
 
 			current_profile =  request.user.profile
 
 			if subscripted_form != current_profile.subscribtionStatus:
 				#get a id from update server
+				#conn1 = http.client.HTTPSConnection("185.128.119.135",context = ssl._create_unverified_context())
+				#conn1.request("POST", "/subscriptions", payload, headers)
+				#{'email':'yaoxinjing517@gmail.com','telegramChatId':'123'}
+
 				if subscripted_form == True:
+					# auth_key = "Bearer "+key
+					# header={"content-type": "application/json","accept": "application/hal+json","Authorization":auth_key} #设置requist 中的传输格式
 
-					headers={"content-type": "application/json","accept": "application/json"} #设置requist 中的传输格式
-					date ={ 'email':request.user.email}
-					date= json.dumps(date) # 将dic变为json 格式
-					respons = requests.post(url_subsribtion,date,headers=headers)
-					r_dic= respons.json() # 将json格式转化为dic
-					id= r_dic['id']
-					current_profile.subscribtionStatus = True
-					current_profile.subscribtionId = id 
-					current_profile.save()
+
+					# date ={ 'email':request.user.email,'telegramChatId':request.user.telegram}
+					# date= json.dumps(date) # 将dic变为json 格式
+					# respons = requests.post(url_subsribtion,date,headers=header)
+					# r_dic= respons.json() # 将json格式转化为dic
+					# id= r_dic['id']
+					# current_profile.subscribtionStatus = True
+
+					#current_profile.subscribtionId = id 
+					#current_profile.save()
 					# delate a id from update server
-					messages.success(request,'Account and Substribtion has been updated ')
+					respons_state = subscribtion(request)
+					while(respons_state == 401):
+						respons_state= subscribtion(request)
+					if respons_state == 400:
+						messages.warning(request,'Subscribtion was failed ')
+					else:
+						messages.success(request,'Account and Substribtion has been updated ')
+						
 				else: 
-
-
-					headers={"content-type": "application/json"}
-					id = current_profile.subscribtionId
-					url_delate_subribtion = url_subsribtion+"/"+str(id)
-					respons= requests.delete(url_delate_subribtion,headers=headers)
-
-					if respons.status_code == 204:
+					# headers={"content-type": "application/json"}
+					# id = current_profile.subscribtionId
+					# url_delate_subribtion = url_subsribtion+"/"+str(id)
+					# respons= requests.delete(url_delate_subribtion,headers=headers)
+					status_code = deleteSubscribtion(request)
+					while(status_code == 401):
+						status_code=deleteSubscribtion(request)
+					if status_code == 204:
 						current_profile.subscribtionId=0
 						current_profile.subscribtionStatus=False
 						current_profile.save()  # 204==204
-						#messages.success(request,'Account and Substribtion has been updated ')
+						messages.success(request,'Account and Substribtion has been updated ')
 					else:
-
 						messages.warning(request, 'subscription is not delated,try again')
-
-
-
-
-
 			return redirect('profile')
 
 	else:
@@ -116,3 +223,5 @@ def profile(request):
 # message.seccess
 # message.warning
 # message.error
+
+#def sendSubscribtion(request):

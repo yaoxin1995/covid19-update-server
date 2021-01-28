@@ -16,21 +16,23 @@ class Profile(models.Model):
 	# 每个user均有一个默认的图片，图片被存在 profile_pics文件夹下
 	#image = models.ImageField(default ='default.jpg',upload_to = 'profile_pics')
 
-	subscripted = models.BooleanField(default=False)
+
+	Activate_subscription = models.BooleanField(default=False)
 
 	subscribtionStatus = models.BooleanField(default=False)
 
-	telegram=  models.CharField(max_length=300,default='0000000')
+	telegram=  models.CharField(max_length=300,default='00000',blank=True)
 
 	subscribtionId = models.IntegerField(default=0,validators=[MinValueValidator(0)])
-
-
 
 	def __str__(self):
 		return f'{self.user.username} Profile'
 
 	def save(self, *args, **kwargs):
 		super().save(*args, **kwargs)
+
+class Authorization(models.Model):
+	authorizationKey = models.CharField(max_length=500,default='0000000')
 
 # #重新定义 该model中的save方法
 # 	def save(self,*args, **kwargs):

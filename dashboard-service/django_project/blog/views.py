@@ -11,12 +11,17 @@ import requests , json
 #当一个class继承了该UserPassesTestMixin可设置其中	def test_func(self)方法，为继承该class的类设置使用条件
 from django.contrib.auth.mixins import LoginRequiredMixin,UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
-
-
+import http.client
+import ssl
+import ast
+from user.models import Authorization
+from user.views import AuthorizationQuerysetIsNotNull
 from django.views.generic import ListView ,DetailView,CreateView,UpdateView,DeleteView
-
-url_subsribtion = 'http://localhost:9005/subscriptions'
-
+from .authorization import getAuthorization
+import os
+#print(os.environ['HOME'])
+#url_subsribtion = 'http://localhost:9005/subscriptions'
+#server_url = "185.128.119.135"
 
 # posts = [
 # 	{
@@ -39,8 +44,6 @@ url_subsribtion = 'http://localhost:9005/subscriptions'
 #show all the topic  in homep.html if user is login and subscribed the server
 def home(request):
 
-
-
 	if request.user.is_authenticated:
 		current_user = request.user
 		current_profile=current_user.profile
@@ -51,13 +54,15 @@ def home(request):
 		else:
 			# get all topic from update server
 
-			ulr_gettopic = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics"
-			headers={"accept": "application/json"}
-			respons = requests.get(ulr_gettopic,headers=headers)
-			if respons.status_code == 200:
-				messages.success(request, 'Successful get all topics from update server.')
-				r_list= respons.json() # 将json格式转化为list
-				context ={ 'topics':r_list}
+			ulr_gettopic = "/subscriptions/"+str(current_profile.subscribtionId)+"/topics"
+			#headers={"accept": "application/json"}
+			status,data = getAll(request,ulr_gettopic,'topics')
+			while(status == 401):
+				status,data = getAll(request,ulr_gettopic,'topics')
+			if status == 200:
+				messages.success(request, 'Successfully get all topics from update server.')
+				#r_list= respons.json() # 将json格式转化为list
+				context ={ 'topics':data}
 				return render(request,'blog/home.html',context)
 			else:
 				messages.warning(request, 'Failed to get topic from server')
@@ -103,17 +108,18 @@ def topicCreation(request):
 				'position' :{ 'latitude':latitude,'longitude':longitude}
 				}
 
-			url_topic_creation = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics"
-
-			headers={"content-type": "application/json","accept": "application/json"} #设置requist 中的传输格式
-				
-			date= json.dumps(date_dic) # 将dic变为json 格式
-			respons = requests.post(url_topic_creation,date,headers=headers)
-			if respons.status_code == 201:
+			url_topic_creation = "/subscriptions/"+str(current_profile.subscribtionId)+"/topics"
+			#headers={"content-type": "application/json","accept": "application/json"} #设置requist 中的传输格式	
+			#date= json.dumps(date_dic) # 将dic变为json 格式
+			#respons = requests.post(url_topic_creation,date,headers=headers)
+			status = sendTopic("POST",request,date_dic,url_topic_creation)
+			while(status== 401):
+				status = sendTopic("POST",request,date_dic,url_topic_creation)
+			if status == 200:
 					# topic created
 					# delate a id from update server
-				# context ={ 'successful_message':"successful creat a topic"}
-				messages.success(request, 'successful creat a topic.')
+				# context ={ 'successful_message':"successfully created a topic"}
+				messages.success(request, 'Successfully created a topic')
 
 				# return render(request,'blog/create_topic.html',context)
 				return redirect('post-create')
@@ -121,7 +127,7 @@ def topicCreation(request):
 			else:
 				# context ={ 'error_message':"creat a topic failed try again"}
 				# return render(request,'blog/create_topic.html',context)
-				messages.success(request, 'successful creat a topic.')
+				messages.warning(request, 'Topic creation failed')
 				return redirect('post-create')
 	else:
 		form = TopicForm()
@@ -141,32 +147,48 @@ def topicCreation(request):
 def detail(request,id):
 	current_user=request.user
 	current_profile = current_user.profile 
-	url_detail = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics/"+str(id)
+	url_detail = "/subscriptions/"+str(current_profile.subscribtionId)+"/topics/"+str(id)
+
+	#/subscriptions/42/topics/1337/incidence
+	url_incidences = "/subscriptions/"+str(current_profile.subscribtionId)+"/topics/"+str(id)+"/incidence"
+	#https://185.128.119.135/subscriptions/12/topics/12/events?limit=14
+	url_event = "/subscriptions/"+str(current_profile.subscribtionId)+"/topics/"+str(id)+"/events?limit=10"
+
+	#headers={"accept": "application/json"}
+	#respons = requests.get(url_detail,headers=headers)
+	status,data = getTopic(url_detail)
+	while(status==401):
+		status,data = getTopic(url_detail)
+	
+	if status == 200:
+		#events
+		_,incidence = getTopic(url_incidences)
+		_,events_list = getAll(request,url_event,'events')
 
 
-	headers={"accept": "application/json"}
-	respons = requests.get(url_detail,headers=headers)
-	if respons.status_code == 200:
-		messages.success(request, 'Successful get the topics from update server.')
-		r_dic= respons.json() # 将json格式转化为dic
+		messages.success(request, 'Successfully got the topics from update server.')
+		#r_dic= respons.json() # 将json格式转化为dic
 
-		return render(request,'blog/topic_detail.html',{'r_dic':r_dic})
+		return render(request,'blog/topic_detail.html',{'r_dic':data,'incidence':incidence,'events':events_list})
 	else:
-		messages.warning(request, 'Failed get this topic ')
+		messages.warning(request, 'Failed to get this topic ')
 		return redirect('blog-home')
 
 #{{BASE_URL}}/subscriptions/1/topics/1
 def delate(request,id):
 	current_user=request.user
 	current_profile = current_user.profile
-	url_delate = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics/"+str(id)
-	r = requests.delete(url_delate)
-	if r.status_code == 204:
-		messages.success(request, 'Successful delate the topic from update server.')
+	url_delate = "/subscriptions/"+str(current_profile.subscribtionId)+"/topics/"+str(id)
+	status = deleteTopic(url_delate)
+	while(status==401):
+		status = deleteTopic(url_delate)
+	if status == 204:
+		messages.success(request, 'Successful delete the topic from update server.')
 		return redirect('blog-home')
 	else:
 		messages.warning(request, 'Failed to delete this topic, please try again ')
-		return redirect('detail', id=id) # This is the argument of a view
+		return redirect('blog-home')
+		#return redirect('detail', id=id) # This is the argument of a view
 
 
 #{{BASE_URL}}/subscriptions/1/topics/1
@@ -174,7 +196,7 @@ def delate(request,id):
 def update(request,id): 
 	current_user=request.user
 	current_profile = current_user.profile
-	url_update = url_subsribtion+"/"+str(current_profile.subscribtionId)+"/topics/"+str(id)
+	url_update = "/subscriptions/"+str(current_profile.subscribtionId)+"/topics/"+str(id)
 
 	if request.method == 'POST':
 		form = TopicUpdateForm(request.POST)
@@ -185,26 +207,28 @@ def update(request,id):
 			latitude =form.cleaned_data['latitude']
 			longitude =form.cleaned_data['longitude']
 
-			date_dic = {
+			data_dic = {
 				'threshold':threshold,
 				'position' :{ 'latitude':latitude,'longitude':longitude}
 				}
 
-			headers={"content-type": "application/json","accept": "application/json"} #设置requist 中的传输格式
+			#headers={"content-type": "application/json","accept": "application/json"} #设置requist 中的传输格式
 				
-			date= json.dumps(date_dic) # 将dic变为json 格式
-			respons = requests.put(url_update,date,headers=headers)
-			if respons.status_code == 200:
+			#date= json.dumps(date_dic) # 将dic变为json 格式
+			status = sendTopic("PUT",request,data_dic,url_update)
+			while(status== 401):
+				status = sendTopic("PUT",request,data_dic,url_update)
+			if status == 200:
 					# topic created
 					# delate a id from update server
 				# context ={ 'successful_message':"successful creat a topic"}
-				messages.success(request, 'Successful update this topic.')
+				messages.success(request, 'Successfully update this topic.')
 
-				# return render(request,'blog/create_topic.html',context)
+				# return render(requeslyt,'blog/create_topic.html',context)
 				return redirect('blog-home')
 			else:
 
-				messages.warning(request, 'Failed to delete this topic, please try again')
+				messages.warning(request, 'Failed to update this topic, please try again')
 				return redirect('blog-home')
 
 
@@ -216,4 +240,100 @@ def update(request,id):
 	return render(request,'blog/topic_update.html',{'form': form})
 
 
+def deleteTopic(url):
+	if AuthorizationQuerysetIsNotNull() is False:
+		key = getAuthorization()
+	else:
+		key = Authorization.objects.get(pk=1).authorizationKey
+	server_url = os.environ['server_address']
+	auth_key = "Bearer "+key
+	headers={"content-type": "application/json","accept": "application/hal+json","Authorization":auth_key}
+	conn = http.client.HTTPSConnection(server_url,context = ssl._create_unverified_context())
+	conn.request("DELETE", url=url, headers=headers)
+	response = conn.getresponse()
+	if response.status == 204:
+		conn.close()
+		return 204
+	elif response.status == 401:
+		getAuthorization()
+		conn.close()
+		return 401
+	else:
+		conn.close()
+		return 400
 
+
+def getAll(request,url,dic_key):
+	server_url = os.environ['server_address']
+	if AuthorizationQuerysetIsNotNull() is False:
+		key = getAuthorization()
+	else:
+		key = Authorization.objects.get(pk=1).authorizationKey
+	auth_key = "Bearer "+key
+	headers={"content-type": "application/json","accept": "application/hal+json","Authorization":auth_key}
+	conn = http.client.HTTPSConnection(server_url,context = ssl._create_unverified_context())
+	conn.request("GET", url=url, headers=headers)
+	response = conn.getresponse()
+	if response.status==200:
+		data = response.read()
+		data_str = data.decode("utf-8")
+		data_dic = ast.literal_eval(data_str)
+		embedded = data_dic['_embedded']
+		data_list=embedded[dic_key]
+		conn.close()
+		return 200,data_list
+	elif response.status== 401:
+		getAuthorization()
+		conn.close()
+		return 401,0
+	else:
+		conn.close()
+		return 400,0
+
+def getTopic(url):
+	server_url = os.environ['server_address']
+	if AuthorizationQuerysetIsNotNull() is False:
+		key = getAuthorization()
+	else:
+		key = Authorization.objects.get(pk=1).authorizationKey	
+	auth_key = "Bearer "+key
+	headers={"content-type": "application/json","accept": "application/hal+json","Authorization":auth_key}
+	conn = http.client.HTTPSConnection(server_url,context = ssl._create_unverified_context())
+	conn.request("GET", url=url, headers=headers)
+	response = conn.getresponse()
+	if response.status == 200:
+		data = response.read()
+		data_str = data.decode("utf-8")
+		data_dic = ast.literal_eval(data_str)
+		conn.close()
+		return 200,data_dic
+	elif response.status== 401:
+		getAuthorization()
+		conn.close()
+		return 401,0
+	else:
+		conn.close()
+		return 400,0
+
+def sendTopic(method,request,date_dic,url):
+	server_url = os.environ['server_address']
+	if AuthorizationQuerysetIsNotNull() is False:
+		key = getAuthorization()
+	else:
+		key = Authorization.objects.get(pk=1).authorizationKey
+	auth_key = "Bearer "+key
+	headers={"content-type": "application/json","accept": "application/hal+json","Authorization":auth_key}
+	payload_json= json.dumps(date_dic) # 将dic变为json 格式
+	conn = http.client.HTTPSConnection(server_url,context = ssl._create_unverified_context())
+	conn.request(method=method, url=url, body=payload_json, headers=headers)
+	response = conn.getresponse()
+	if response.status == 201 or response.status == 200:
+		conn.close()
+		return 200
+	elif response.status== 401:
+		getAuthorization()
+		conn.close()
+		return 401
+	else:
+		conn.close()
+		return 400
