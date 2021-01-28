@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+
+namespace rki {
+    class Covid19RegionUpdater << (S,Aquamarine) >> {
+        - ticker *time.Ticker
+        - c <font color=blue>chan</font> model.Covid19Region
+
+        - run() error
+
+    }
+    class LocationNotFoundError << (S,Aquamarine) >> {
+        + Error() string
+
+    }
+}
+
+@enduml
