@@ -21,6 +21,8 @@ RUN pip install -r requirements.txt
 # Copy the rest of the code. 
 COPY . /code/
 
+RUN mkdir /code/db
+
 RUN python3 manage.py migrate && \
  export DJANGO_SUPERUSER_PASSWORD="admin" && \
  python3 manage.py createsuperuser --username admin --email admin@localhost --skip-checks --no-input

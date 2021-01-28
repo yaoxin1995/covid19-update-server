@@ -8,8 +8,12 @@ services:
       # covid19-update-service:9005
       - server_address=185.128.119.135
       - auth-url=scc2020g8.eu.auth0.com
-      - db_source=db.sqlite3  # dosen't work in setting.py to get this variable,so i just hard code it in setting.py 
     ports:
       - 8000:8000
+    volumes:
+    - dashboard-service-db:/code/db:rw
     command: python manage.py runserver 0.0.0.0:8000
     restart: unless-stopped
+
+volumes:
+  dashboard-service-db:
