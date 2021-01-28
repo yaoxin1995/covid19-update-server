@@ -1,8 +1,163 @@
+TODO: TOC
+
+## Telegram Notification Service
+
+This web service is able to send messages via the messenger [Telegram](https://telegram.org/).
+
+Telegram provides a [Bot API](https://core.telegram.org/bots/api) which is used to enable chatting with a regular Telegram user.
+
+For being able to receive messages from a bot in Telegram a user has to start the initial communication by searching for the bot's username and entering the `/start` command into the chat.
+
+Relevant API calls for sending messages are implemented by this service.
+
+Persistence of `notification` objects is realized by using a SQLite database file.
+
+### API
+
+A RESTful API is implemented which provides some endpoints and is responsible for managing `notification` resources.
+It was designed to be used by a rather non-human client. Therefore, supported response content types are "plain" JSON and [JSON Hypertext Application Language](https://tools.ietf.org/html/draft-kelly-json-hal-08).
+
+#### Endpoints
+
+Three endpoints are provided:
+
+* `GET /notification` is used to list all `notification` resources. Optionally a query parameter `recipient` can be issued to filter `notifications` of a specific recipient.
+* `POST /notification` is the endpoint for creating `notification` objects. Required parameters are `recipient` and the actual message (`msg`) to be sent. If no error happened, Telegram was able to deliver the message to the desired chat identified by `recipient`. 
+* `GET /notification/{id}` lists exactly one `notification` object. It requires the specification of an existing `notification` by its `id`.
+
+Please consult the [OpenAPI documentation deployed via Swagger](https://185.128.119.135/swagger/?urls.primaryName=Telegram%20Notification%20Service) to test it out and to get more information.
+The complete API documentation is also provided in the [appendix](TODO: add ref to appendix OpenAPI Documentation).
+
+#### Notification Resource
+
+`notifications` basically represent the state of a message which should have been sent via the Telegram bot api to a corresponding user who stays in contact with the Telegram bot.
+
+Attributes:
+
+* id is the unique identifier of notifications.
+* recipient represents a Telegram channel id.
+* message (`msg`) specifies the actual text which has to be sent to the recipient.
+* creation date (`creation_date`) defines the date and time of when a `notification` object was created (using UTC time zone). 
+* error message (`error_msg`) maintains a very concrete state about success or failure of sending a message. The field `request_error` defines possible error messages which could happen on communicating with the Telegram bot api servers. `status_code` is the http status code of such a request. The last field is the [`telegram_response` resource](https://core.telegram.org/bots/api#making-requests) which contains the exact response of the Telegram api servers.
+* human-readable error message (`error_msg_human_readable`) represents an error message if something went wrong in the process talking to the Telegram bot api servers. It has the nature that it contains some user-understandable error message. E.g., `chat not found` if the `recipient` field doesn't contain a valid Telegram channel identifier.
+
+### Application Insights
+
+The web service is written in Python 3 by using the [Flask](https://flask.palletsprojects.com/en/1.1.x/) web framework.
+In order to provide data persistence across application restarts the database toolkit [SQLAlchemy](https://docs.sqlalchemy.org/en/13/) was chosen.
+The database model has exactly the same fields as the `notification` resource.
+
+![Class diagram of general components](assets/class_diagram.png)
+
+The class diagram shows the relation of used classes. Colored boxes indicate external Python packages.
+The class `NotificationResource` is the center of attention. It glues everything together and is responsible for building the actual HTTP request data and orchestrates the flow of fetching or creating resources. The response content can be represented as either JSON or JSON HAL. This is decided by the content-types which are supported by the requesting HTTP client. If both JSON and JSON HAL are supported JSON HAL will be the preferred one to choose by the application.
+`flak_hal` is an external dependency used for creating such JSON HAL documents which are more self descriptive than plain JSON. One reason for that is the provided `_links` attribute pointing to the resource path itself.
+To the left there is the `notification` database model with its fields. Upon request of the HTTP clients using the web service `notifications` are either fetched from the database file or created and written into it.
+The `ChannelTelegram` class is needed to interact with the Telegram bot api. There is currently only one method implemented of this api which is called `sendMessage`. The name explains its responsibility.
+
+![Class diagram of TelegramResponder](assets/class_diagram_telegramresponder.png)
+
+Another external dependency is called `telegram`. It is an implementation of the Telegram bot api and capable of reacting to a message a Telegram user sends to the bot.
+The purpose of `TelegramResponder` is to answer of incoming messages a user sends to the bot. The most important one is the `/start` message. It is sent automatically after the user started to chat with the bot. The latter will respond with a `WELCOME_MESSAGE` message to inform the user about the unique chat id of the conversation. This id (which is set in the `recipient` field of `notifications`) is needed for being able to send messages to the user via this chat.
+The second and last type of messages the bot is able to answer to are all other messages a user sends. Since the bot doesn't expect input different from `/start` it will answer with a message indicating that (`UNKNOWN_MESSAGE`, e.g., `I was not able to understand you.`).
+
+In addition, there are some pre-defined templating variables available maintaining information about the current user who is
+chatting with the bot. These are `USER_FIRST_NAME`, `USER_LAST_NAME`, `USER_FULL_NAME`, `USER_USERNAME` and `USER_CHAT_ID`.
+They can be included into the `WELCOME_MESSAGE` and `UNKNOWN_MESSAGE` message environment variable strings to let the responses of the bot appear being more personalized to the user.
+And of course for including the chat id into messages.
+
+One last important dependency the `TelegramResponder` class has is `jinja2`. [Jinja2 templating engine](https://jinja2docs.readthedocs.io/en/stable/) is used for enabling the operator of the web service to define custom messages for these two kinds of messages a bot has to respond with (`WELCOME_MESSAGE` and `UNKNOWN_MESSAGE`). They can be set via environment variables passed to the application.
+
+## (TODO: move to global deployment section!!) Deployment
+
+The composition of web services is deployed using Docker and Docker Compose. Since the produced container images are in [OCI](https://opencontainers.org/)-compliant format, it should also be possible to use other container runtimes than Docker.
+However, it was not tested during the development process.
+
+In order to deploy all web services at once a unified Docker Compose file was created to simplify this process.
+
+Moreover, since the services are communicating with each other by using their container names as hostnames it was required to do so.
+This helps to make the setup more robust against configuration issues (like using wrong container ip addresses).
+Docker performs the dns resolution task to provide the actual internal ip addresses of the services.
+All web service containers are running in the same (Docker) network. Therefore, using plain HTTP communication between the services shouldn't be a security concern.
+
+In order to keep credentials out of the Docker Compose file a file named `.env` was created on the cloud server.
+It is responsible for defining some environment variables which are needed by the Docker Compose file to set environment information of the web service containers (e.g., like credentials to perform authorization or the Telegram bot token).
+
+The group made the decision to persist the database file of each service. This helps keeping the application working as expected after restarts of the cloud server. Moreover, persistence is realized via Docker by mounting a volume into each Docker container.
+
+Each service provides a unique endpoint. Therefore, the NGINX reverse proxy is able to distinguish to which web service a request has to be forwarded.
+To enforce a strict HTTPS-only policy each request reaching the reverse proxy via HTTP is redirected to HTTPS.
+
+The web services are only reachable via the NGINX reverse proxy.
+
+In addition to the self-developed web services a fourth service called [Swagger UI](https://swagger.io/tools/swagger-ui/) is deployed.
+Swagger is reachable behind the endpoint [/swagger/](https://185.128.119.135/swagger/) and provides OpenAPI definitions of the COVID-19 Update Service and the Telegram Notification Service.
+
+> **Please note:**
+> Only a self-signed certificate is used on the cloud server.
+> You have to configure your web browser to trust it.
+
+### Authorization
+
+The web service uses [OAuth 2.0](https://tools.ietf.org/html/rfc6749) authorization via the provider [Auth0](https://auth0.com).
+This helps to prevent the service for being misused by unauthorized parties.
+
+Detailed information about the client credentials flow can be found [here](https://auth0.com/docs/flows/call-your-api-using-the-client-credentials-flow).
+
+The token can be obtained and saved into the variable `AUTH_TOKEN` by executing the following request:
+> **Note:**
+> Make sure you have both packages `curl` and the json parser `jq` installed on your system.
+
+```bash
+$ CLIENT_SECRET=ePj-KKbucEzYGouQLcL2IEMhbDQdGdSHoqEMeeglkJnew1cQtf9R8RdtptslbFY-
+$ CLIENT_ID=NnXUyl2Gnf2WG2RwK137aU4EsM93qm4U
+$ AUDIENCE=https://185.128.119.135/notification
+
+$ AUTH_TOKEN=$(curl --request POST --url https://scc2020g8.eu.auth0.com/oauth/token \
+                    --header 'content-type: application/json' \
+                    --data "{\"client_id\":\"${CLIENT_ID}\", \
+                             \"client_secret\":\"${CLIENT_SECRET}\", \
+                             \"audience\":\"${AUDIENCE}\", \
+                             \"grant_type\":\"client_credentials\"}" | jq -r .access_token)
+```
+
+Now you should be able to do requests via [Swagger](https://185.128.119.135/swagger/?urls.primaryName=Telegram%20Notification%20Service) or the cli:
+
+```bash
+$ curl localhost/notification -H "Accept: application/hal+json" -H "Authorization: Bearer ${AUTH_TOKEN}"
+```
+
+### Testing
+
+[Postman](https://www.postman.com/) is used for performing endpoint tests. The source dir contains a Postman collection which can be imported by the application.
+
+All three endpoints are tested including checks for comparing HTTP response codes and of course also the content of the responses.
+
+There are four kinds of tests which are performed:
+
+* Since this web service supports both plain JSON and JSON HAL response content both are covered. For example, it is checked whether the `self` attribute of a resource matches its real url.
+* The authorization implementation is covered, too. This is done by comparing response code and content of requests where no (or a malformed) bearer token is set in `Authorization` header.
+* Single resources can be fetched by the endpoint `GET /notification/{id}`. It is asserted that the application responses accordingly with a `404` error code and doesn't show unexpected behaviour like a crash.
+* The last class of tests implements requests by not including required attributes (like `recipient` and `msg`).
+
+### Known Limitations of the Telegram Notification Service
+
+* The SQLite database driver doesn't support many requests at the same time and might slow down the entire application at peak loads.
+* The same applies to the integrated Flask development server.
+* Currently, it is not supported to delete `notifications`. Therefore, the database Docker volume has to be deleted from time to time.
+* The endpoint `GET /notification` doesn't support returning only a limited number of `notification` objects. This might result in big response content.
+* The application runs as root inside the Docker container. If an attacker is successful with performing remote code executions, she or he is able to gain root access inside the container.
+
+## Appendix
+### Telegram Notification Service
+#### OpenAPI Documentation
+
+```yaml
 openapi: "3.0.0"
 info:
   description: "SCC WS2020 Group8"
   version: "1.1.0"
-  title: "Notification service api documentation"
+  title: "Telegram Notification Service API"
 servers:
   - url: http://127.0.0.1
 security:
@@ -340,3 +495,4 @@ components:
           type: "string"
           description: "More concrete error description"
           example: "Authorization header is expected"
+```
