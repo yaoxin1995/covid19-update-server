@@ -118,8 +118,8 @@ def topicCreation(request):
 			if status == 200:
 					# topic created
 					# delate a id from update server
-				# context ={ 'successful_message':"successful creat a topic"}
-				messages.success(request, 'successfully creat a topic.')
+				# context ={ 'successful_message':"successfully created a topic"}
+				messages.success(request, 'Successfully created a topic')
 
 				# return render(request,'blog/create_topic.html',context)
 				return redirect('post-create')
@@ -127,7 +127,7 @@ def topicCreation(request):
 			else:
 				# context ={ 'error_message':"creat a topic failed try again"}
 				# return render(request,'blog/create_topic.html',context)
-				messages.warning(request, 'creat a topic failed.')
+				messages.warning(request, 'Topic creation failed')
 				return redirect('post-create')
 	else:
 		form = TopicForm()
@@ -166,7 +166,7 @@ def detail(request,id):
 		_,events_list = getAll(request,url_event,'events')
 
 
-		messages.success(request, 'Successfully get the topics from update server.')
+		messages.success(request, 'Successfully got the topics from update server.')
 		#r_dic= respons.json() # 将json格式转化为dic
 
 		return render(request,'blog/topic_detail.html',{'r_dic':data,'incidence':incidence,'events':events_list})
