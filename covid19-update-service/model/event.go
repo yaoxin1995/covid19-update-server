@@ -19,7 +19,7 @@ type Event struct {
 	TopicID uint   `sql:"type:bigint REFERENCES topics(id) ON DELETE CASCADE" json:"-"`
 }
 
-const messagePattern = "The COVID19 7-day incidence value at your location (%f, %f) currently is %.2f. You receive this message, because you set the alert threshold to %d. (Update: %s)"
+const messagePattern = "The COVID-19 7-day-incidence value at your location (%f, %f) currently is %.2f. You receive this message, because you set the alert threshold to %d. (Update: %s)"
 
 // Creates a new Event for a Topic t using the corresponding Covid19Region c.
 func NewEvent(c Covid19Region, t Topic) (Event, error) {

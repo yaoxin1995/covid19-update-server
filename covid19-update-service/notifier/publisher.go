@@ -75,8 +75,8 @@ func NewEmailPublisher(sendGridApiKey, sendGridEmail string) *EmailPublisher {
 
 // Publishes the Event e to the email address using the SendGrid Email Delivery Service.
 func (ep *EmailPublisher) Publish(email string, e model.Event) error {
-	from := mail.NewEmail("Covid 19 Updater", ep.SendGridEmail)
-	subject := "Covid19 Update"
+	from := mail.NewEmail("COVID-19 Update Service", ep.SendGridEmail)
+	subject := "COVID-19 Update"
 	to := mail.NewEmail(email, email)
 	message := mail.NewSingleEmail(from, subject, to, e.Message, e.Message)
 	client := sendgrid.NewSendClient(ep.SendGridAPIKey)
