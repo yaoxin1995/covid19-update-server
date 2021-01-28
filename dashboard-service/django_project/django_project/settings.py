@@ -26,8 +26,15 @@ SECRET_KEY = '84jsj0a=tifs8kuixq!p11b&8^uv@x(r3imxnh4yal-y+$-(mn'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-#allows us to access the Django app from outside the container.
+# allows us to access the Django app from outside the container.
+# Comma separated list of hostnames the webserver is allowed to service
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
+try:
+    ALLOWED_HOSTS += [x for x in str(os.environ['ALLOWED_HOSTS']).split(',') if len(x) > 0]
+except KeyError:
+    pass
+except ValueError:
+    pass
 
 
 # Application definition
