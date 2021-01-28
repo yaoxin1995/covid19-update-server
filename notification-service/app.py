@@ -11,7 +11,7 @@ class Config:
     Some additional Flask config parameters
     """
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///./db/db.sql'
+    SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.environ['DB_FILE_PATH']}"
     TELEGRAM_BOT_TOKEN = os.environ['TELEGRAM_BOT_TOKEN']
     NOTIFICATION_BASE_ROUTE = '/notification'
     JSON_HAL_MIME_TYPE = 'application/hal+json'
