@@ -1,26 +1,50 @@
-
-
-
 {% extends "blog/base.html" %}
+
 {% block content %}
-	<h1>About Page</h1>
+
+
+<article class="media content-section">
+	<div class="media-body">
+		<h1 class="article-title">About Page</h1>
+			<div class="article-content">
+					<h2>Introduction</h2>
+					<p > The aim of the COVID-19 Update Service is to inform a user about the current
+						COVID19 7-day incidence for, by the user selected, locations within Germany.
+						The user shall be notified if the incidence value exceeds a predefined threshold.
+						Notification channels to choose from are email and Telegram.
+					</p>
+					<h2>Usage of Client</h2>
+						<ul>
+						<li>First step: Registration
+							<ul>
+								<li>Please enter all required Information in order to create a user account</li>
+								<li>Please note:
+									<ul>
+										<li>Your password can’t be too similar to your other personal information.</li>
+										<li>Your password must contain at least 8 characters</li>
+										<li>Your password can’t be a commonly used password</li>
+										<li>Your password can’t be entirely numeric</li>
+									</ul>
+								</li>
+							</ul>
+						</li>
+						<li>Second Step: Login using your user name and password</li>
+						<li>Third Step: Click on Profile in the menu to edit the user information and activate/deactivate the user's subscription.
+							<ul>
+								<li>Notice:
+									<ul>
+										<li>you can't do anything, unless you have activated your subscription. Therefore the checkbox called "Activate subscription" located on `Profile` view has to be activated.</li>
+										<li>You can change user information in the profile view. </li>
+										<li>Please double check your email address as well as the Telegram chat ID, because the email address and Telegram chat ID will be used as the subscription's notification channels by the COVID-19 Update Service.</li>
+									</ul>
+								</li>
+							</ul>	
+						</li>
+						<li>Fourth step: Create a topic via the Create entry in the menu</li>
+						<li>Final step: Check your topics on via the entry Home in the menu</li>
+						</ul>
+					</div>
+		</div>
+</article>
+
 {% endblock content %}
-
-
-
-
-
-<!-- <!DOCTYPE html>
-<html>
-<head>
-	{% if title %}
-		<title> Django Blog - {{ title }}</title>
-	{% else %}
-		<title>Django Blog </title>
-	{% endif %}
-</head>
-<body>
-	<h1>About Page</h1>
-
-</body>
-</html> -->
