@@ -144,6 +144,8 @@ When a `Topic` is created or updated, the RKI Corona Landkreise API is used to m
 
 The `notifier` module contains the `Covid19Notifier`, which determines for every existing `Topic` whether or not an `Event` has to be created if the corresponding `Covid19Region` has updated and the current incidence value exceeds the configured threshold. The updates of the `Covid19Regions` are received asynchronously over the buffered channel `c` from the `Covid19Notifier` of the `rki` package.
 
+> According to our observations, the updates of the RKI happen mainly around 4 a.m. to 5 a.m., which means that the `Event` notifications are also sent during this period.
+
 The `Events` are sent via the output channels, that are defined in the `Topic`'s associated `Subscription`. The shipping is done via the `TelegramPublisher` and `EmailPublisher`, which encapsulate the communication with the Telegram Notification Service and the SendGrid Email Delivery Service.
 For the `TelegramPublisher` the `Auth0AccessTokenHelper` encapsulates the handling and refreshing of the OAuth 2.0 access token via Auth0.
 
