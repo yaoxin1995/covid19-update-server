@@ -16,6 +16,7 @@
     - [3.2.4. Testing](#324-testing)
     - [3.2.5. Known Limitations](#325-known-limitations)
   - [3.3. Client (Dashboard Service)](#33-client-dashboard-service)
+    - [3.3.1. Usage of Client](#331-usage-of-client)
 - [4. Deployment](#4-deployment)
 - [5. Appendix](#5-appendix)
   - [5.1. COVID-19 Update Service](#51-covid-19-update-service)
@@ -284,6 +285,68 @@ There are four kinds of tests which are performed:
 * The application runs as root inside the Docker container. If an attacker is successful with performing remote code executions, she or he is able to gain root access inside the container.
 
 ## 3.3. Client (Dashboard Service)
+
+The Client is a web applicaiton written in Python based on the [Django](https://www.djangoproject.com/) framework. 
+
+The client is available via [https://185.128.119.135](https://185.128.119.135).
+
+As main features the client provides:
+- User registration
+- User Login/Logout
+- Change Profile
+- Subscription of the COVID19 Update Service
+  - User must first subscripted.
+  - Each user can only have one subscription.
+  - Within a subscription multiple Topics can be created.
+- Create/Check/Delete a topic
+  - The user can create a topic by providing the GPS position and threshold of the location
+  - Whenever the threshold is exceeded an Event is created, User can checks the Event under Topic-Detail view .
+
+The client web applicaiton has its own user management. Persistence of data for user management is realized by using a SQLite database. Only the user's information is persisted on the client side, `Subscription` and `Topic` resource related information will be tracked by the COVID-19 Update Service.
+The user information include:
+  - User name
+  - User e-mail address
+  - User Telegram Chat ID
+  - User password
+  - The ID of the associated `Subscription` resource of the COVID-19 Update Service (if the user has activated a subscription)
+
+In order to use the COVID-19 Update Service, the client has to be authorized via the OAuth 2.0 client credentials flow. Therefore the client ID and client secret are stored on the web application server.
+The JWT access token will be  provided during the communication with the COVID-19 Update Service as Bearer token inside the `Authorization` header. In order to keep the access token up to date, the client will regularly poll a new token from [Auth0](https://auth0.com/) .
+
+### 3.3.1. Usage of Client
+
+1. Registration
+    ![Dashboard-service(Client)%20f7616c142cf74fcbbd80067f18d417e8/Capture.png](client_assets/Capture_0.png)
+    - Please enter all required information in order to create a user account
+    - Please note:
+        - Your password can’t be too similar to your other personal information.
+        - Your password must contain at least 8 characters.
+        - Your password can’t be a commonly used password.
+        - Your password can’t be entirely numeric.
+
+2. Login using your user name and password
+
+3. Click on `Profile` in the menu to edit the user information and activate/deactivate the user's subscription.
+
+    ![Dashboard-service(Client)%20f7616c142cf74fcbbd80067f18d417e8/Capture%201.png](client_assets/Capture_1.png)
+
+    - Please note
+      - You can't do anything, unless you have activated your subscription. Therefore the checkbox called "Activate subscription" located on `Profile` view has to be activated.
+      - If the checkbox is unchecked, the current subscription will be deleted at the COVID-19 Update Service
+      - You can change user information in the `Profile` view
+      - Please double check your email address as well as the Telegram chat ID, because the email address and Telegram chat ID will be used as the subscription's notification channels by the COVID-19 Update Service.
+
+      > In order for being able to receive COVID-19 incidence update notifications via Telegram, please open the Telegram App, search for the bot name SCC20G8Bot and add it. Start the communication by entering the /start command. The bot should respond with a unique ID. This ID has to be used as Telegram chat ID.
+
+4. Click on `Create` in the menu to create a topic
+   ![Dashboard-service(Client)%20f7616c142cf74fcbbd80067f18d417e8/Capture%201.png](client_assets/Capture_2.png)
+    - Therefore the user has to enter the GPS position (longitude, latitude) and threshold of the location that should be monitored by the COVID-19 Update Service.
+
+5. Check your created topics by clicking in `Home` in the menu.
+  ![Dashboard-service(Client)%20f7616c142cf74fcbbd80067f18d417e8/Capture%202.png](client_assets/Capture_4.png)
+
+6. Within the `Home` view you can click on a topic to go to the detail view of this topic. In the detail view, you can change/delete the topic. In the detail view the current incidence value for the topic as well as the events that were created for the topic are shown.
+  ![Dashboard-service(Client)%20f7616c142cf74fcbbd80067f18d417e8/Capture%203.png](client_assets/Capture_3.png)
 
 # 4. Deployment
 
