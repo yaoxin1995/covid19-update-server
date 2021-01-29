@@ -60,7 +60,7 @@ def home(request):
 			while(status == 401):
 				status,data = getAll(request,ulr_gettopic,'topics')
 			if status == 200:
-				messages.success(request, 'Successfully get all topics from update server.')
+				messages.success(request, 'Successfully got all topics from update server.')
 				#r_list= respons.json() # 将json格式转化为list
 				context ={ 'topics':data}
 				return render(request,'blog/home.html',context)
