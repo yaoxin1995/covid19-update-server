@@ -1,0 +1,232 @@
+@startuml
+left to right direction
+namespace model {
+    class Covid19Region << (S,Aquamarine) >> {
+        + Incidence float64
+
+        + Store() error
+        + GetIncidence() Incidence
+
+    }
+    class ErrorT << (S,Aquamarine) >> {
+        + Error string
+
+        + ToHAL(path string) hal.Resource
+
+    }
+    class Event << (S,Aquamarine) >> {
+        + Message string
+        + TopicID uint
+
+        + Store() error
+        + ToHAL(path string) hal.Resource
+
+    }
+    class EventCollection << (S,Aquamarine) >> {
+        + ToHAL(path string) hal.Resource
+
+    }
+    class GPSPosition << (S,Aquamarine) >> {
+        + Latitude float64
+        + Longitude float64
+
+        + UnmarshalJSON(data []byte) error
+
+    }
+    interface HALCompatibleModel  {
+        + ToHAL(path string) hal.Resource
+
+    }
+    class Incidence << (S,Aquamarine) >> {
+        + Incidence float64
+
+        + ToHAL(path string) hal.Resource
+
+    }
+    class PersistentModel << (S,Aquamarine) >> {
+        + ID uint
+        + CreatedAt time.Time
+        + UpdatedAt time.Time
+        + DeletedAt *time.Time
+
+    }
+    class Subscription << (S,Aquamarine) >> {
+        + Email null.String
+        + TelegramChatID null.String
+        + Topics TopicCollection
+        + OwnerID string
+
+        + Store() error
+        + Delete() error
+        + Update(email *string, telegram *string) error
+        + ToHAL(path string) hal.Resource
+
+    }
+    class SubscriptionCollection << (S,Aquamarine) >> {
+        + ToHAL(path string) hal.Resource
+
+    }
+    class Topic << (S,Aquamarine) >> {
+        + Position GPSPosition
+        + Threshold uint
+        + SubscriptionID uint
+        + Covid19RegionID uint
+        + Events EventCollection
+
+        + Store() error
+        + Update(position GPSPosition, threshold uint, cov19RegID uint) error
+        + Delete() error
+        + ToHAL(path string) hal.Resource
+
+    }
+    class TopicCollection << (S,Aquamarine) >> {
+        + ToHAL(path string) hal.Resource
+
+    }
+    class model.EventCollection << (T, #FF7700) >>  {
+    }
+    class model.SubscriptionCollection << (T, #FF7700) >>  {
+    }
+    class model.TopicCollection << (T, #FF7700) >>  {
+    }
+}
+"model.PersistentModel" <|-- "model.Covid19Region"
+"model.PersistentModel" <|-- "model.Event"
+"model.PersistentModel" <|-- "model.Subscription"
+"model.PersistentModel" <|-- "model.Topic"
+
+"model.HALCompatibleModel" <|-- "model.ErrorT"
+"model.HALCompatibleModel" <|-- "model.Event"
+"model.HALCompatibleModel" <|-- "model.EventCollection"
+"model.HALCompatibleModel" <|-- "model.Incidence"
+"model.HALCompatibleModel" <|-- "model.Subscription"
+"model.HALCompatibleModel" <|-- "model.SubscriptionCollection"
+"model.HALCompatibleModel" <|-- "model.Topic"
+"model.HALCompatibleModel" <|-- "model.TopicCollection"
+
+"model.Subscription" o-- "model.TopicCollection"
+"model.Topic" o-- "model.EventCollection"
+"model.Topic" o-- "model.GPSPosition"
+
+namespace notifier {
+    class Covid19Notifier << (S,Aquamarine) >> {
+        - c <font color=blue>chan</font> model.Covid19Region
+        - tp *TelegramPublisher
+        - ep *EmailPublisher
+
+        - run() error
+        - notify(cov19region model.Covid19Region) 
+        - shipEvent(e model.Event, sID uint) error
+
+    }
+    class EmailPublisher << (S,Aquamarine) >> {
+        + SendGridAPIKey string
+        + SendGridEmail string
+
+        + Publish(email string, e model.Event) error
+
+    }
+    class TelegramPublisher << (S,Aquamarine) >> {
+        + TelegramServiceURI string
+        - accessTokenHelper  *Auth0AccessTokenHelper
+
+        + Publish(chatID string, e model.Event) error
+
+    }
+
+    class Auth0AccessTokenHelper << (S,Aquamarine) >> {
+           - mu                sync.RWMutex
+           - 	ticker            *time.Ticker
+           - 	accessToken       string
+           + 	OAuthTokenUrl     string
+           + 	OAuthClientID     string
+           + 	OAuthClientSecret string
+           + 	OAuthAudience     string
+
+            + GetAccessToken() string
+            -requestAccessToken() (*auth0TokenResponse, error)
+            -scheduleTokenRefresh()
+        }
+}
+
+
+"notifier.Covid19Notifier" o-- "model.Covid19Region"
+"notifier.Covid19Notifier" o-- "notifier.EmailPublisher"
+"notifier.Covid19Notifier" o-- "notifier.TelegramPublisher"
+"notifier.TelegramPublisher" o-- "notifier.Auth0AccessTokenHelper"
+
+namespace rki {
+    class Covid19RegionUpdater << (S,Aquamarine) >> {
+        - ticker *time.Ticker
+        - c <font color=blue>chan</font> model.Covid19Region
+
+        - run() error
+
+    }
+    class LocationNotFoundError << (S,Aquamarine) >> {
+        + Error() string
+
+    }
+}
+
+
+"rki.Covid19RegionUpdater" o-- "model.Covid19Region"
+
+namespace server {
+    class Covid19UpdateWebServer << (S,Aquamarine) >> {
+        - authHandler *authorizationHandler
+
+        - registerEventRoutes(r *mux.Router) 
+        - getEvents(w http.ResponseWriter, r *http.Request) 
+        - getEvent(w http.ResponseWriter, r *http.Request) 
+        - registerIncidenceRoutes(r *mux.Router) 
+        - getIncidence(w http.ResponseWriter, r *http.Request) 
+        - checkAcceptType(next http.HandlerFunc) http.HandlerFunc
+        - checkContentType(next http.HandlerFunc) http.HandlerFunc
+        - authorizationAndIdentification() <font color=blue>func</font>(http.Handler) http.Handler
+        - defaultNotFoundHandler() http.HandlerFunc
+        - createNotAllowedHandler(r *mux.Router) http.HandlerFunc
+        - optionHandler(r *mux.Router) http.HandlerFunc
+        - registerRoutes() 
+        - registerSubscriptionRoutes(r *mux.Router) 
+        - getSubscriptions(w http.ResponseWriter, r *http.Request) 
+        - getSubscription(w http.ResponseWriter, r *http.Request) 
+        - createSubscription(w http.ResponseWriter, r *http.Request) 
+        - deleteSubscription(w http.ResponseWriter, r *http.Request) 
+        - updateSubscription(w http.ResponseWriter, r *http.Request) 
+        - registerTopicRoutes(r *mux.Router) 
+        - createTopic(w http.ResponseWriter, r *http.Request) 
+        - getTopics(w http.ResponseWriter, r *http.Request) 
+        - getTopic(w http.ResponseWriter, r *http.Request) 
+        - deleteTopic(w http.ResponseWriter, r *http.Request) 
+        - updateTopic(w http.ResponseWriter, r *http.Request) 
+
+        + Start() error
+
+    }
+    class authorizationHandler << (S,Aquamarine) >> {
+        + JWKS jwkCollection
+        + ISS string
+        + AUD string
+        + Middleware *go-jwt-middleware.JWTMiddleware
+
+        - getPemCert(token *jwt.Token) (string, error)
+        - createJWTMiddleWare() 
+        - getSubject(tokenString string) (string, error)
+
+    }
+}
+"http.Server" *-- "server.Covid19UpdateWebServer"
+
+"model.EventCollection" .up.o "model.Event"
+"model.TopicCollection" .up.o "model.Topic"
+"model.SubscriptionCollection" .up.o "model.Subscription"
+"server.Covid19UpdateWebServer" o-- "server.authorizationHandler"
+"server.Covid19UpdateWebServer" .up.> "model": uses
+"rki.Covid19RegionUpdater" <..> "notifier.Covid19Notifier"
+
+"model.[]Event" #.. "model.EventCollection"
+"model.[]Subscription" #.. "model.SubscriptionCollection"
+"model.[]Topic" #.. "model.TopicCollection"
+
+@enduml

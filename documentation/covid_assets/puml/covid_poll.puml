@@ -1,0 +1,22 @@
+@startuml
+
+loop Every POLL_INTERVAL_MINUTES
+
+    Covid19RegionUpdater -> "RKI Corona Landkreise API": GET OBJECTID, cases7_per_100k, last_update of all regions
+    Covid19RegionUpdater <- "RKI Corona Landkreise API": Array<OBJECTID, cases7_per_100k, last_update>
+
+    loop For each OBJECTID, cases7_per_100k, last_update interface in\nArray<OBJECTID, cases7_per_100k, last_update>
+        alt (Covid19Region c with c.ID = OBJECTID exits\nAND c.UpdatedAt is older than last_update)\nOR OBJECTID is unknown
+            Covid19RegionUpdater -> Covid19RegionUpdater: Update/Create Covid19Region c\nSet c.Incidence to cases7_per_100k
+        end
+    end
+    Covid19RegionUpdater --> Covid19Notifier: Updated/New Covid19Regions
+    loop For each Covid19Region c
+        loop For each Topic t with t.Covid19RegionID = c.ID\nAND t.Threshold >= c.Incidence
+            Covid19Notifier -> Covid19Notifier: Create Event e
+            Covid19Notifier -> Covid19Notifier: Send e.message to t's Subscription output channels
+        end
+    end
+
+end
+@enduml

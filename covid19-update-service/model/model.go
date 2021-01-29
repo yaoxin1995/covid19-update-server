@@ -12,6 +12,7 @@ import (
 
 var db *gorm.DB
 
+// General fields that are required to persist a model.
 type PersistentModel struct {
 	ID        uint       `gorm:"primary_key" json:"id"`
 	CreatedAt time.Time  `json:"-"`
@@ -19,10 +20,15 @@ type PersistentModel struct {
 	DeletedAt *time.Time `sql:"index" json:"-"`
 }
 
+// Interface for models that can be represented using the Hypertext Application Language.
+// https://tools.ietf.org/html/draft-kelly-json-hal-08
 type HALCompatibleModel interface {
 	ToHAL(path string) hal.Resource
 }
 
+// Connection setup for the database.
+// dbType is the type of the used database, e.g. sqlite3
+// dbSource is the source of the used database, e.g. the file path
 func SetupDB(dbType, dbSource string) error {
 	var err error
 	db, err = gorm.Open(dbType, dbSource)

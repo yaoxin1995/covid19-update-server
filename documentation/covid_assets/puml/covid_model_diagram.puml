@@ -1,0 +1,124 @@
+@startuml
+namespace model {
+    class Covid19Region << (S,Aquamarine) >> {
+        + Incidence float64
+
+        + Store() error
+        + GetIncidence() Incidence
+
+    }
+
+        class Topic << (S,Aquamarine) >> {
+            + Position GPSPosition
+            + Threshold uint
+            + SubscriptionID uint
+            + Covid19RegionID uint
+            + Events EventCollection
+
+            + Store() error
+            + Update(position GPSPosition, threshold uint, cov19RegID uint) error
+            + Delete() error
+            + ToHAL(path string) hal.Resource
+
+        }
+    class ErrorT << (S,Aquamarine) >> {
+        + Error string
+
+        + ToHAL(path string) hal.Resource
+
+    }
+    class Event << (S,Aquamarine) >> {
+        + Message string
+        + TopicID uint
+
+        + Store() error
+        + ToHAL(path string) hal.Resource
+
+    }
+
+    class Subscription << (S,Aquamarine) >> {
+        + Email null.String
+        + TelegramChatID null.String
+        + Topics TopicCollection
+        + OwnerID string
+
+        + Store() error
+        + Delete() error
+        + Update(email *string, telegram *string) error
+        + ToHAL(path string) hal.Resource
+
+    }
+
+    class SubscriptionCollection << (S,Aquamarine) >> {
+            + ToHAL(path string) hal.Resource
+
+        }
+    class EventCollection << (S,Aquamarine) >> {
+        + ToHAL(path string) hal.Resource
+
+    }
+    class GPSPosition << (S,Aquamarine) >> {
+        + Latitude float64
+        + Longitude float64
+
+        + UnmarshalJSON(data []byte) error
+
+    }
+    interface HALCompatibleModel  {
+        + ToHAL(path string) hal.Resource
+
+    }
+    class Incidence << (S,Aquamarine) >> {
+        + Incidence float64
+
+        + ToHAL(path string) hal.Resource
+
+    }
+    class PersistentModel << (S,Aquamarine) >> {
+        + ID uint
+        + CreatedAt time.Time
+        + UpdatedAt time.Time
+        + DeletedAt *time.Time
+
+    }
+
+    class TopicCollection << (S,Aquamarine) >> {
+        + ToHAL(path string) hal.Resource
+
+    }
+    class model.EventCollection << (T, #FF7700) >>  {
+    }
+    class model.SubscriptionCollection << (T, #FF7700) >>  {
+    }
+    class model.TopicCollection << (T, #FF7700) >>  {
+    }
+}
+
+
+"model.Subscription" o-- "model.TopicCollection"
+"model.Topic" o-- "model.EventCollection"
+"model.Topic" o-- "model.GPSPosition"
+
+"model.[]Event" #.. "model.EventCollection"
+"model.[]Subscription" #.. "model.SubscriptionCollection"
+"model.[]Topic" #.. "model.TopicCollection"
+
+"model.HALCompatibleModel" <|-up- "model.ErrorT"
+"model.HALCompatibleModel" <|-- "model.Event"
+"model.HALCompatibleModel" <|-- "model.EventCollection"
+"model.HALCompatibleModel" <|-- "model.Incidence"
+"model.HALCompatibleModel" <|-- "model.Subscription"
+"model.HALCompatibleModel" <|-- "model.SubscriptionCollection"
+"model.HALCompatibleModel" <|-- "model.Topic"
+"model.HALCompatibleModel" <|-- "model.TopicCollection"
+
+"model.PersistentModel" <|-- "model.Covid19Region"
+"model.PersistentModel" <|-- "model.Event"
+"model.PersistentModel" <|-- "model.Subscription"
+"model.PersistentModel" <|-- "model.Topic"
+
+
+
+
+
+@enduml

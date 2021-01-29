@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// Handles the OAuth 2.0 client credentials flow with https://auth0.com and automatically refreshes the access token.
 type Auth0AccessTokenHelper struct {
 	mu                sync.RWMutex
 	ticker            *time.Ticker
@@ -26,6 +27,7 @@ type auth0TokenResponse struct {
 	ExpiresIn   int    `json:"expires_in"`
 }
 
+// Creates new Auth0AccessTokenHelper given the Auth0 token URL, client ID, client secret and audience.
 func NewAuth0AccessTokenHelper(tokenUrl, cID, cSecret, aud string) (*Auth0AccessTokenHelper, error) {
 	a := &Auth0AccessTokenHelper{
 		mu:                sync.RWMutex{},
@@ -63,6 +65,7 @@ func (a *Auth0AccessTokenHelper) scheduleTokenRefresh() {
 	}
 }
 
+// Returns valid access token from Auth0.
 func (a *Auth0AccessTokenHelper) GetAccessToken() string {
 	a.mu.RLock()
 	token := a.accessToken

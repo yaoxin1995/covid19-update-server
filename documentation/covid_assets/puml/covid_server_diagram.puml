@@ -1,0 +1,52 @@
+@startuml
+left to right direction
+
+namespace server {
+    class Covid19UpdateWebServer << (S,Aquamarine) >> {
+        - authHandler *authorizationHandler
+
+        - registerEventRoutes(r *mux.Router) 
+        - getEvents(w http.ResponseWriter, r *http.Request) 
+        - getEvent(w http.ResponseWriter, r *http.Request) 
+        - registerIncidenceRoutes(r *mux.Router) 
+        - getIncidence(w http.ResponseWriter, r *http.Request) 
+        - checkAcceptType(next http.HandlerFunc) http.HandlerFunc
+        - checkContentType(next http.HandlerFunc) http.HandlerFunc
+        - authorizationAndIdentification() <font color=blue>func</font>(http.Handler) http.Handler
+        - defaultNotFoundHandler() http.HandlerFunc
+        - createNotAllowedHandler(r *mux.Router) http.HandlerFunc
+        - optionHandler(r *mux.Router) http.HandlerFunc
+        - registerRoutes() 
+        - registerSubscriptionRoutes(r *mux.Router) 
+        - getSubscriptions(w http.ResponseWriter, r *http.Request) 
+        - getSubscription(w http.ResponseWriter, r *http.Request) 
+        - createSubscription(w http.ResponseWriter, r *http.Request) 
+        - deleteSubscription(w http.ResponseWriter, r *http.Request) 
+        - updateSubscription(w http.ResponseWriter, r *http.Request) 
+        - registerTopicRoutes(r *mux.Router) 
+        - createTopic(w http.ResponseWriter, r *http.Request) 
+        - getTopics(w http.ResponseWriter, r *http.Request) 
+        - getTopic(w http.ResponseWriter, r *http.Request) 
+        - deleteTopic(w http.ResponseWriter, r *http.Request) 
+        - updateTopic(w http.ResponseWriter, r *http.Request) 
+
+        + Start() error
+
+    }
+    class authorizationHandler << (S,Aquamarine) >> {
+        + JWKS jwkCollection
+        + ISS string
+        + AUD string
+        + Middleware *go-jwt-middleware.JWTMiddleware
+
+        - getPemCert(token *jwt.Token) (string, error)
+        - createJWTMiddleWare() 
+        - getSubject(tokenString string) (string, error)
+
+    }
+}
+"http.Server" *-- "server.Covid19UpdateWebServer"
+
+"server.Covid19UpdateWebServer" o-- "server.authorizationHandler"
+
+@enduml

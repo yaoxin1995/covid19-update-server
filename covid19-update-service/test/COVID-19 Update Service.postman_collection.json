@@ -97,6 +97,8 @@
 									"    pm.expect(jsonData.telegramChatId).equals(\"578989238\");",
 									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + subId);",
 									"    pm.expect(jsonData._links.topics.href).equals(\"/subscriptions/\" + subId + \"/topics\");",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -104,6 +106,9 @@
 							}
 						}
 					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -156,6 +161,10 @@
 									"    pm.expect(jsonData._embedded.subscriptions[place].email).equals(\"test@example.com\");",
 									"    pm.expect(jsonData._embedded.subscriptions[place].telegramChatId).equals(\"578989238\");",
 									"    pm.expect(jsonData._embedded.subscriptions[place]._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\"));",
+									"",
+									"",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -196,6 +205,8 @@
 									"    pm.expect(jsonData.telegramChatId).equals(\"578989238\");",
 									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\"));",
 									"    pm.expect(jsonData._links.topics.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics\");",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -228,6 +239,8 @@
 								"exec": [
 									"pm.test(\"Request fails\", function () {",
 									"    pm.response.to.have.status(401);",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});"
 								],
 								"type": "text/javascript"
@@ -271,6 +284,8 @@
 									"    pm.expect(jsonData.telegramChatId).equals(null);",
 									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\"));",
 									"    pm.expect(jsonData._links.topics.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics\");",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -321,6 +336,8 @@
 									"    pm.expect(jsonData.telegramChatId).equals(null);",
 									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\"));",
 									"    pm.expect(jsonData._links.topics.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics\");",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -394,6 +411,8 @@
 								"exec": [
 									"pm.test(\"Request is successfull\", function () {",
 									"    pm.response.to.have.status(404);",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});"
 								],
 								"type": "text/javascript"
@@ -435,6 +454,8 @@
 									"    var subId = jsonData.id;",
 									"",
 									"    pm.environment.set(\"SUBSCRIPTION_ID\", subId);",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -475,6 +496,8 @@
 								"exec": [
 									"pm.test(\"Request fails\", function () {",
 									"    pm.response.to.have.status(400);",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -517,6 +540,8 @@
 								"exec": [
 									"pm.test(\"Request fails\", function () {",
 									"    pm.response.to.have.status(422);",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -573,6 +598,8 @@
 									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId);",
 									"    pm.expect(jsonData._links.events.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/events\");",
 									"    pm.expect(jsonData._links.incidence.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/incidence\");",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -635,6 +662,8 @@
 									"    pm.expect(jsonData._embedded.topics[place].position.longitude).equals(13.712836);",
 									"    pm.expect(jsonData._embedded.topics[place].threshold).equals(50);",
 									"    pm.expect(jsonData._embedded.topics[place]._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + pm.environment.get(\"TOPIC_ID\"));",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -682,6 +711,8 @@
 									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId);",
 									"    pm.expect(jsonData._links.events.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/events\");",
 									"    pm.expect(jsonData._links.incidence.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/incidence\");",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -716,6 +747,8 @@
 								"exec": [
 									"pm.test(\"Request is successful\", function () {",
 									"    pm.response.to.have.status(401);",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -767,6 +800,8 @@
 									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId);",
 									"    pm.expect(jsonData._links.events.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/events\");",
 									"    pm.expect(jsonData._links.incidence.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/incidence\");",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -824,6 +859,8 @@
 									"    pm.expect(jsonData._links.self.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId);",
 									"    pm.expect(jsonData._links.events.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/events\");",
 									"    pm.expect(jsonData._links.incidence.href).equals(\"/subscriptions/\" + pm.environment.get(\"SUBSCRIPTION_ID\") + \"/topics/\" + topicId + \"/incidence\");",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -858,6 +895,8 @@
 								"exec": [
 									"pm.test(\"Request is successful\", function () {",
 									"    pm.response.to.have.status(200);",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],
@@ -900,6 +939,8 @@
 									"    var topicId = jsonData.id;",
 									"",
 									"    pm.expect(jsonData.incidence).is.gte(0);",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});"
 								],
 								"type": "text/javascript"
@@ -967,6 +1008,8 @@
 								"exec": [
 									"pm.test(\"Request is successful\", function () {",
 									"    pm.response.to.have.status(404);",
+									"",
+									"    pm.response.to.be.header(\"Content-Type\", \"application/hal+json\");",
 									"});",
 									""
 								],

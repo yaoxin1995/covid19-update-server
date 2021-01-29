@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Server that provides the COVID-19 Update Service REST API.
 type Covid19UpdateWebServer struct {
 	*http.Server
 	authHandler *authorizationHandler
