@@ -300,7 +300,7 @@ As main features the client provides:
   - Within a subscription multiple Topics can be created.
 - Create/Check/Delete a topic
   - The user can create a topic by providing the GPS position and threshold of the location
-  - Whenever the threshold is exceeded an Event is created, User can checks the Event under Topic-Detail view .
+  - Whenever the topic's threshold is exceeded an event is created. The user can check the event via the  topic detail view.
 
 The client web applicaiton has its own user management. Persistence of data for user management is realized by using a SQLite database. Only the user's information is persisted on the client side, `Subscription` and `Topic` resource related information will be tracked by the COVID-19 Update Service.
 The user information include:
