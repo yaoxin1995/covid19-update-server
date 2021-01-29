@@ -3,7 +3,50 @@
 
 {% extends "blog/base.html" %}
 {% block content %}
-	<h1>About Page</h1>
+<article class="media content-section">
+	<div class="media-body">
+		<h1 class="article-title">About Page</h1>
+		
+			<div class="article-content">
+				<h2>Introduction</h2>
+				<p > The aim of the COVID19 Update Service is to inform a user about the current
+					COVID19 7-day incidence for, by the user selected, locations within Germany.
+					The user shall be notified if the incidence value exceeds a predefined threshold.
+					Notification channels to choose from are email and Telegram.
+				</p>
+				<h2>Usage of Client</h2>
+					<ul>
+					<li>First step :Registration
+						<ul>
+							<li>Please enter all required Information in order to create a user account</li>
+							<li>Notice:
+								<ul>
+									<li>Your password can’t be too similar to your other personal information.</li>
+									<li>Your password must contain at least 8 characters</li>
+									<li>Your password can’t be a commonly used password</li>
+									<li>Your password can’t be entirely numeric</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+					<li>Second Step: Login using your user name and password</li>
+					<li>Third Step: Click the Subscription button on the Profile view.
+						<ul>
+							<li>Notice:
+								<ul>
+									<li>you can't do anything ,unless you subscribed.in other word, the checkbox called "Activate subscription" located on Profile view has to be activated </li>
+									<li>You can change user information in profile view. </li>
+									<li>Please double check E-mail address as well as Telegram bot id. Because The email address and Telegram chat id will be used as the Subscription notification channels of COVID-19 Update Service</li>
+								</ul>
+							</li>
+						</ul>	
+					</li>
+					<li>Fourth step: Create a Topic	</li>
+					<li>Final step: Check your topic on Home page</li>
+					</ul>
+			</div>
+		</div>
+</article>
 {% endblock content %}
 
 
