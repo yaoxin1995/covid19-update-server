@@ -1,18 +1,24 @@
 version: '3.5'
 services:
-  notification-service:
-    container_name: notification-service
+  telegram-notification-service:
+    container_name: telegram-notification-service
     build:
-      context: ./notification-service
+      context: ./telegram-notification-service
     environment:
       - FLASK_APP=app.py
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - DB_FILE_PATH=./db/db.sql
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_NOTIFICATION_SERVICE_TELEGRAM_BOT_TOKEN}
+      - AUTH0_ISS=${TELEGRAM_NOTIFICATION_SERVICE_AUTH0_ISS}
+      - AUTH0_AUD=${TELEGRAM_NOTIFICATION_SERVICE_AUTH0_AUD}
       # Define messages for each message type
       - WELCOME_MESSAGE=Welcome, {{ USER_FULL_NAME }}! You are now able to configure {{ SERVICE_NAME }} via Telegram.
         Go to your dashboard and add the Telegram notification provider by entering this ID {{ USER_CHAT_ID }}.
       - UNKNOWN_MESSAGE=Sorry, {{ USER_FULL_NAME }}. I didn't understand you.
       # Use template variables (prefix TEMPLATE_VAR_)
       - TEMPLATE_VAR_SERVICE_NAME=COVID-19 incidence update notifications
+    volumes:
+      # Persist notification database
+      - notification-service-db:/opt/notification-service/db:rw
     command: flask run --host=0.0.0.0 --port 80
     restart: unless-stopped
 
@@ -22,16 +28,36 @@ services:
       context: ./covid19-update-service
     environment:
       - DB_TYPE=sqlite3
-      - DB_SOURCE=storage.db?_foreign_keys=on
+      - DB_SOURCE=./storage/storage.db?_foreign_keys=on
       - SERVER_PORT=9005
-      - POLL_INTERVAL_MINUTES=5
-      - TELEGRAM_CONTACT_URI=http://notification-service:80/notification
-      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
-      - SENDGRID_EMAIL=${SENDGRID_EMAIL}
-      - AUTH0_ISS=${AUTH0_ISS}
-      - AUTH0_AUD=${AUTH0_AUD}
-      # TODO: Why doesn't ip address work? Maybe set Access-Control-Allow-Origin: via nginx
-      - CORS_ORIGINS=*
+      - POLL_INTERVAL_MINUTES=60
+      - TELEGRAM_CONTACT_URI=${COVID19_UPDATE_SERVICE_TELEGRAM_CONTACT_URI}
+      - TELEGRAM_AUTH0_AUD=${COVID19_UPDATE_SERVICE_TELEGRAM_AUTH0_AUD}
+      - TELEGRAM_AUTH0_CLIENT_ID=${COVID19_UPDATE_SERVICE_TELEGRAM_AUTH0_CLIENT_ID}
+      - TELEGRAM_AUTH0_CLIENT_SECRET=${COVID19_UPDATE_SERVICE_TELEGRAM_AUTH0_CLIENT_SECRET}
+      - TELEGRAM_AUTH0_TOKEN_URL=${COVID19_UPDATE_SERVICE_TELEGRAM_AUTH0_TOKEN_URL}
+      - SENDGRID_API_KEY=${COVID19_UPDATE_SERVICE_SENDGRID_API_KEY}
+      - SENDGRID_EMAIL=${COVID19_UPDATE_SERVICE_SENDGRID_EMAIL}
+      - AUTH0_ISS=${COVID19_UPDATE_SERVICE_AUTH0_ISS}
+      - AUTH0_AUD=${COVID19_UPDATE_SERVICE_AUTH0_AUD}
+      - CORS_ORIGINS=
+    volumes:
+      - covid19-update-service-db:/app/storage:rw
+
+  dashboard-service:
+    container_name: dashboard-service
+    #build: ./dashboard-service/django_project/
+    build:
+      context: ./dashboard-service/django_project
+    environment:
+      # covid19-update-service:9005
+      - server_address=${DEPLOYMENT_SERVER_IP_ADDRESS}
+      - auth-url=scc2020g8.eu.auth0.com
+      - ALLOWED_HOSTS=${DEPLOYMENT_SERVER_IP_ADDRESS}
+    volumes:
+    - dashboard-service-db:/code/db:rw
+    command: python manage.py runserver 0.0.0.0:8000
+    restart: unless-stopped
 
   nginx:
     container_name: nginx
@@ -41,13 +67,11 @@ services:
       # Include certificate dir needed for HTTPS support
       - ./nginx/cert:/etc/nginx/cert:ro
     ports:
-      # Default port on which we want to access notification-service
       - 443:443
-      # HTTP mode needed to prevent certificate errors in Swagger
-      - 127.0.0.1:80:80
+      - 80:80
     restart: unless-stopped
 
-# Use Swagger.io editor for manual api tests
+# Use Swagger.io UI for manual api tests
 # Comment in the following line if you want to start Swagger editor container.
 #x-disabled:
   swagger-ui:
@@ -56,8 +80,13 @@ services:
       environment:
         # Use multiple api docs
         - "URLS=[{ url:  './api/covid19-update-service.yaml', name: 'Covid19 Update Service'},
-                 { url: './api/notification-service.yaml', name: 'Notification Service'}]"
+                 { url: './api/telegram-notification-service.yaml', name: 'Telegram Notification Service'}]"
       volumes:
         - ./covid19-update-service/doc/openapi.yaml:/usr/share/nginx/html/api/covid19-update-service.yaml
-        - ./notification-service/swagger_api_docu.yaml:/usr/share/nginx/html/api/notification-service.yaml
+        - ./telegram-notification-service/docs/api.yaml:/usr/share/nginx/html/api/telegram-notification-service.yaml
       restart: unless-stopped
+
+volumes:
+  notification-service-db:
+  covid19-update-service-db:
+  dashboard-service-db:
