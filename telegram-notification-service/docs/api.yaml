@@ -4,6 +4,8 @@ info:
   version: "1.1.0"
   title: "Telegram Notification Service API"
 servers:
+  - url: https://185.128.119.135
+    description: Cloud'n'Heat Server
   - url: http://127.0.0.1
 security:
   - bearerAuth: []

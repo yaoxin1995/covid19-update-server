@@ -4,10 +4,10 @@ info:
   version: "1.0.0"
   title: "COVID-19 Update Service"
 servers:
+  - url: https://185.128.119.135
+    description: Cloud'n'Heat Server
   - url: http://0.0.0.0:9005
     description: Local Server
-  - url: 185.128.119.135:9005
-    description: Cloud'n'Heat Server
 security:
   - bearerAuth: []
 paths:
